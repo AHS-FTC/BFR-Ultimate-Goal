@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.util.Range;
  * This file provides basic Telop driving for a Pushbot robot.
  * The code is structured as an Iterative OpMode
  *
- * This OpMode uses the common Pushbot hardware class to define the devices on the robot.
+ * This OpMode uses the common Pushbot com.bfr.hardware class to define the devices on the robot.
  * All device access is managed through the HardwarePushbot class.
  *
  * This particular OpMode executes a basic Tank Drive Teleop for a PushBot
@@ -54,7 +54,7 @@ import com.qualcomm.robotcore.util.Range;
 public class PushbotTeleopTank_Iterative extends OpMode{
 
     /* Declare OpMode members. */
-    HardwarePushbot robot       = new HardwarePushbot(); // use the class created to define a Pushbot's hardware
+    HardwarePushbot robot       = new HardwarePushbot(); // use the class created to define a Pushbot's com.bfr.hardware
     double          clawOffset  = 0.0 ;                  // Servo mid position
     final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
 
@@ -63,8 +63,8 @@ public class PushbotTeleopTank_Iterative extends OpMode{
      */
     @Override
     public void init() {
-        /* Initialize the hardware variables.
-         * The init() method of the hardware class does all the work here
+        /* Initialize the com.bfr.hardware variables.
+         * The init() method of the com.bfr.hardware class does all the work here
          */
         robot.init(hardwareMap);
 

@@ -35,7 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * This OpMode uses the common Pushbot hardware class to define the devices on the robot.
+ * This OpMode uses the common Pushbot com.bfr.hardware class to define the devices on the robot.
  * All device access is managed through the HardwarePushbot class.
  * The code is structured as a LinearOpMode
  *
@@ -53,7 +53,7 @@ import com.qualcomm.robotcore.util.Range;
 public class PushbotTeleopPOV_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot robot           = new HardwarePushbot();   // Use a Pushbot's hardware
+    HardwarePushbot robot           = new HardwarePushbot();   // Use a Pushbot's com.bfr.hardware
     double          clawOffset      = 0;                       // Servo mid position
     final double    CLAW_SPEED      = 0.02 ;                   // sets rate to move servo
 
@@ -65,8 +65,8 @@ public class PushbotTeleopPOV_Linear extends LinearOpMode {
         double turn;
         double max;
 
-        /* Initialize the hardware variables.
-         * The init() method of the hardware class does all the work here
+        /* Initialize the com.bfr.hardware variables.
+         * The init() method of the com.bfr.hardware class does all the work here
          */
         robot.init(hardwareMap);
 

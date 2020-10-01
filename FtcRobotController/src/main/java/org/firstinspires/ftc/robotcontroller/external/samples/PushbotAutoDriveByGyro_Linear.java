@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file illustrates the concept of driving a path based on Gyro heading and encoder counts.
- * It uses the common Pushbot hardware class to define the drive on the robot.
+ * It uses the common Pushbot com.bfr.hardware class to define the drive on the robot.
  * The code is structured as a LinearOpMode
  *
  * The code REQUIRES that you DO have encoders on the wheels,
@@ -75,7 +75,7 @@ import com.qualcomm.robotcore.util.Range;
 public class PushbotAutoDriveByGyro_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's com.bfr.hardware
     ModernRoboticsI2cGyro   gyro    = null;                    // Additional Gyro device
 
     static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
@@ -99,7 +99,7 @@ public class PushbotAutoDriveByGyro_Linear extends LinearOpMode {
 
         /*
          * Initialize the standard drive system variables.
-         * The init() method of the hardware class does most of the work here
+         * The init() method of the com.bfr.hardware class does most of the work here
          */
         robot.init(hardwareMap);
         gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");

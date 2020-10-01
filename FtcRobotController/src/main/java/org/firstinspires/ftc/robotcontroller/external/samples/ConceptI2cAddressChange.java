@@ -88,8 +88,8 @@ public class ConceptI2cAddressChange extends LinearOpMode {
 
   I2cAddr currentAddress = IR_SEEKER_V3_ORIGINAL_ADDRESS;
   // I2c addresses on Modern Robotics devices must be divisible by 2, and between 0x7e and 0x10
-  // Different hardware may have different rules.
-  // Be sure to read the requirements for the hardware you're using!
+  // Different com.bfr.hardware may have different rules.
+  // Be sure to read the requirements for the com.bfr.hardware you're using!
   // If you use an invalid address, you may make your device completely unusable.
   I2cAddr newAddress = I2cAddr.create8bit(0x42);
 
@@ -98,7 +98,7 @@ public class ConceptI2cAddressChange extends LinearOpMode {
   @Override
   public void runOpMode() {
 
-    // set up the hardware devices we are going to use
+    // set up the com.bfr.hardware devices we are going to use
     dim = hardwareMap.get(DeviceInterfaceModule.class, "dim");
 
     readCache = dim.getI2cReadCache(port);
@@ -107,8 +107,8 @@ public class ConceptI2cAddressChange extends LinearOpMode {
     writeLock = dim.getI2cWriteCacheLock(port);
 
     // I2c addresses on Modern Robotics devices must be divisible by 2, and between 0x7e and 0x10
-    // Different hardware may have different rules.
-    // Be sure to read the requirements for the hardware you're using!
+    // Different com.bfr.hardware may have different rules.
+    // Be sure to read the requirements for the com.bfr.hardware you're using!
     ModernRoboticsUsbDeviceInterfaceModule.throwIfModernRoboticsI2cAddressIsInvalid(newAddress);
 
     // wait for the start button to be pressed
@@ -150,7 +150,7 @@ public class ConceptI2cAddressChange extends LinearOpMode {
     dim.setI2cPortActionFlag(port);
     dim.writeI2cCacheToController(port);
 
-    telemetry.addData("I2cAddressChange", "Giving the hardware 60 seconds to make the change...");
+    telemetry.addData("I2cAddressChange", "Giving the com.bfr.hardware 60 seconds to make the change...");
     telemetry.update();
 
     // Changing the I2C address takes some time.

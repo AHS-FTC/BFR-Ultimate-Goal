@@ -168,7 +168,7 @@ Version 5.5 requires Android Studio 4.0 or later.
     * Error messages are highlighted
     * New color scheme
 * Attempts to force-stop a runaway/stuck OpMode without restarting the entire app
-    * Not all types of runaway conditions are stoppable, but if the user code attempts to talk to hardware during the runaway, the system should be able to capture it.
+    * Not all types of runaway conditions are stoppable, but if the user code attempts to talk to com.bfr.hardware during the runaway, the system should be able to capture it.
 * Makes various tweaks to the Self Inspect screen
     * Renames "OS version" entry to "Android version"
     * Renames "WiFi Direct Name" to "WiFi Name"
@@ -266,10 +266,10 @@ Version 5.5 requires Android Studio 4.0 or later.
     * Improves logging and reduces log spam during these conditions
 * Syncs the Control Hub time and timezone to a connected web browser programming the robot, if a Driver Station is not available.
 * Adds bulk read functionality for REV Hubs
-  * A bulk caching mode must be set at the Hub level with `LynxModule#setBulkCachingMode()`. This applies to all relevant SDK hardware classes that reference that Hub.
+  * A bulk caching mode must be set at the Hub level with `LynxModule#setBulkCachingMode()`. This applies to all relevant SDK com.bfr.hardware classes that reference that Hub.
   * The following following Hub bulk caching modes are available:
-    * `BulkCachingMode.OFF` (default): All hardware calls operate as usual. Bulk data can read through `LynxModule#getBulkData()` and processed manually.
-    * `BulkCachingMode.AUTO`: Applicable hardware calls are served from a bulk read cache that is cleared/refreshed automatically to ensure identical commands don't hit the same cache. The cache can also be cleared manually with `LynxModule#clearBulkCache()`, although this is not recommended.
+    * `BulkCachingMode.OFF` (default): All com.bfr.hardware calls operate as usual. Bulk data can read through `LynxModule#getBulkData()` and processed manually.
+    * `BulkCachingMode.AUTO`: Applicable com.bfr.hardware calls are served from a bulk read cache that is cleared/refreshed automatically to ensure identical commands don't hit the same cache. The cache can also be cleared manually with `LynxModule#clearBulkCache()`, although this is not recommended.
     * (advanced users) `BulkCachingMode.MANUAL`: Same as `BulkCachingMode.AUTO` except the cache is never cleared automatically. To avoid getting stale data, the cache must be manually cleared at the beginning of each loop body or as the user deems appropriate.
 * Removes PIDF Annotation values added in Rev 5.3 (to AndyMark, goBILDA and TETRIX motor configurations).
   * The new motor types will still be available but their Default control behavior will revert back to Rev 5.2
@@ -314,8 +314,8 @@ Version 5.5 requires Android Studio 4.0 or later.
 * Includes 64-bit support (to comply with [Google Play requirements](https://android-developers.googleblog.com/2019/01/get-your-apps-ready-for-64-bit.html)).
 * Protects against Stuck OpModes when a Restart Robot is requested. (Thanks to FROGbots-4634) ([ftc_app issue #709](https://github.com/ftctechnh/ftc_app/issues/709))
 * Blocks related changes:
-   * Fixes bug with blocks generated code when hardware device name is a java or javascript reserved word.
-   * Shows generated java code for blocks, even when hardware items are missing from the active configuration.
+   * Fixes bug with blocks generated code when com.bfr.hardware device name is a java or javascript reserved word.
+   * Shows generated java code for blocks, even when com.bfr.hardware items are missing from the active configuration.
    * Displays warning icon when outdated Vuforia and TensorFlow blocks are used ([SkyStone issue #27](https://github.com/FIRST-Tech-Challenge/SkyStone/issues/27))
 
 ## Version 5.1 (20190820-222104)
@@ -393,7 +393,7 @@ Known issues:
 Changes include:
  * Fix to prevent crash when deprecated configuration annotations are used.
  * Change to allow FTC Robot Controller APK to be auto-updated using FIRST Global Control Hub update scripts.
- * Removed samples for non supported / non legal hardware.
+ * Removed samples for non supported / non legal com.bfr.hardware.
  * Improvements to Telemetry.addData block with "text" socket.
  * Updated Blocks sample op mode list to include Rover Ruckus Vuforia example.
  * Update SDK library version number.
@@ -453,7 +453,7 @@ Changes include:
     - Support for REV Robotics 2m Distance Sensor.
     - Added support for a REV Touch Sensor (no longer have to configure as a generic digital device).
     - Added blocks for DcMotorEx methods.
-        + These are enhanced methods that you can use when supported by the motor controller hardware.
+        + These are enhanced methods that you can use when supported by the motor controller com.bfr.hardware.
 	+ The REV Robotics Expansion Hub supports these enhanced methods.
 	+ Enhanced methods include methods to get/set motor velocity (in encoder pulses per second), get/set PIDF coefficients, etc..
 
@@ -559,7 +559,7 @@ Changes with verion 3.3 include:
  * OnBot Java
     - Significant improvements with autocomplete function for OnBot Java editor.
     - Sample op modes can be selected as a template when creating new op mode.
-    - Fixes and changes to complete hardware setup feature.
+    - Fixes and changes to complete com.bfr.hardware setup feature.
     - Updated (and more useful) onBot welcome message.
 
 Known issues:
@@ -662,7 +662,7 @@ Changes include:
     - Provides support to update Expansion Hub firmware through FTC SDK.
     - Detects REV firmware version and records in log file.
     - Includes support for REV Control Hub (note that the REV Control Hub is not yet approved for FTC use).
-    - Implements FTC Blocks programming support for REV Expansion Hub and sensor hardware.
+    - Implements FTC Blocks programming support for REV Expansion Hub and sensor com.bfr.hardware.
     - Detects and alerts when I2C device disconnect.
 
 ## Version 2.62 (built on 17.01.07)
@@ -671,7 +671,7 @@ Changes include:
 
 ## Version 2.61 (released on 16.12.19)
   * Blocks Programming mode changes:
-     - Fix to correct issue when an exception was thrown because an OpticalDistanceSensor object appears twice in the hardware map (the second time as a LightSensor).
+     - Fix to correct issue when an exception was thrown because an OpticalDistanceSensor object appears twice in the com.bfr.hardware map (the second time as a LightSensor).
 
 ## Version 2.6 (released on 16.12.16)
   * Fixes for Gyro class:
@@ -834,7 +834,7 @@ Changes include:
  * setMode and getMode were added to the DcMotor class.
  * ContinuousRotationServo class has been added to the FTC SDK.
  * Range.clip() method has been overloaded so it can support this operation for int, short and byte integers.
- * Some changes have been made (new methods added) on how a user can access items from the hardware map.
+ * Some changes have been made (new methods added) on how a user can access items from the com.bfr.hardware map.
  * Users can now set the zero power behavior for a DC motor so that the motor will brake or float when power is zero.
  * Prototype Blockly Programming Mode has been added to FTC Robot Controller.  Users can place the Robot Controller into this mode, and then use a device (such as a laptop) that has a Javascript enabled browser to write Blockly-based Op Modes directly onto the Robot Controller.
  * Users can now configure the robot remotely through the FTC Driver Station app.
@@ -866,8 +866,8 @@ Changes include:
 
  * Changes made to make the FTC SDK synchronous (significant change!)
     - waitOneFullHardwareCycle() and waitForNextHardwareCycle() are no longer needed and have been deprecated.
-    - runOpMode() (for a LinearOpMode) is now decoupled from the system's hardware read/write thread.
-    - loop() (for an OpMode) is now decoupled from the system's hardware read/write thread.
+    - runOpMode() (for a LinearOpMode) is now decoupled from the system's com.bfr.hardware read/write thread.
+    - loop() (for an OpMode) is now decoupled from the system's com.bfr.hardware read/write thread.
     - Methods are synchronous.
     - For example, if you call setMode(DcMotorController.RunMode.RESET_ENCODERS) for a motor, the encoder is guaranteed to be reset when the method call is complete.
     - For legacy module (NXT compatible), user no longer has to toggle between read and write modes when reading from or writing to a legacy device.
@@ -927,7 +927,7 @@ Changes include:
  * added formatting variants to DbgLog and RobotLog APIs
  * code modified to allow for a long list of op mode names.
  * changes to improve thread safety of RobocolDatagramSocket
- * Fix for "missing hardware leaves robot controller disconnected from driver station" error
+ * Fix for "missing com.bfr.hardware leaves robot controller disconnected from driver station" error
  * fix for "fast tapping of Init/Start causes problems" (toast is now only instantiated on UI thread).
  * added some log statements for thread life cycle.
  * moved gamepad reset logic inside of initActiveOpMode() for robustness
@@ -937,8 +937,8 @@ Changes include:
  * updated FTDI driver
  * made ReadWriteRunnableStanard interface public.
  * fixed off-by-one errors in Command constructor
- * moved specific hardware implmentations into their own package.
- * moved specific gamepad implemnatations to the hardware library.
+ * moved specific com.bfr.hardware implmentations into their own package.
+ * moved specific gamepad implemnatations to the com.bfr.hardware library.
  * changed LICENSE file to new BSD version.
  * fixed race condition when shutting down Modern Robotics USB devices.
  * methods in the ColorSensor classes have been synchronized.
@@ -1004,4 +1004,4 @@ Changes include:
    - Teams can use blocking statements like Thread.sleep() within a linear op mode.
  * The API for the Legacy Module and Core Device Interface Module have been updated.
    - Support for encoders with the Legacy Module is now working.
- * The hardware loop has been updated for better performance.
+ * The com.bfr.hardware loop has been updated for better performance.

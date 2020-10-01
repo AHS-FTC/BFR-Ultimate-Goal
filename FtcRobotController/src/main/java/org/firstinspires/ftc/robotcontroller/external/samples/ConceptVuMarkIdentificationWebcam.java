@@ -81,7 +81,7 @@ public class ConceptVuMarkIdentificationWebcam extends LinearOpMode {
     VuforiaLocalizer vuforia;
 
     /**
-     * This is the webcam we are to use. As with other hardware devices such as motors and
+     * This is the webcam we are to use. As with other com.bfr.hardware devices such as motors and
      * servos, this device is identified using the robot configuration tool in the FTC application.
      */
     WebcamName webcamName;

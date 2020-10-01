@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * This file illustrates the concept of calibrating a MR Compass
- * It uses the common Pushbot hardware class to define the drive on the robot.
+ * It uses the common Pushbot com.bfr.hardware class to define the drive on the robot.
  * The code is structured as a LinearOpMode
  *
  *   This code assumes there is a compass configured with the name "compass"
@@ -57,7 +57,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class ConceptCompassCalibration extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot     robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+    HardwarePushbot     robot   = new HardwarePushbot();   // Use a Pushbot's com.bfr.hardware
     private ElapsedTime runtime = new ElapsedTime();
     CompassSensor       compass;
 
@@ -69,7 +69,7 @@ public class ConceptCompassCalibration extends LinearOpMode {
     public void runOpMode() {
 
         /* Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
+         * The init() method of the com.bfr.hardware class does all the work here
          */
         robot.init(hardwareMap);
 

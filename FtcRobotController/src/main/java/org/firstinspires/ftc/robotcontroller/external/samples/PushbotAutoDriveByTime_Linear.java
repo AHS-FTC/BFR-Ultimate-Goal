@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
  * This file illustrates the concept of driving a path based on time.
- * It uses the common Pushbot hardware class to define the drive on the robot.
+ * It uses the common Pushbot com.bfr.hardware class to define the drive on the robot.
  * The code is structured as a LinearOpMode
  *
  * The code assumes that you do NOT have encoders on the wheels,
@@ -60,7 +60,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's com.bfr.hardware
     private ElapsedTime     runtime = new ElapsedTime();
 
 
@@ -72,7 +72,7 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
 
         /*
          * Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
+         * The init() method of the com.bfr.hardware class does all the work here
          */
         robot.init(hardwareMap);
 

@@ -70,7 +70,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Disabled
 public class SensorColor extends LinearOpMode {
 
-  /** The colorSensor field will contain a reference to our color sensor hardware object */
+  /** The colorSensor field will contain a reference to our color sensor com.bfr.hardware object */
   NormalizedColorSensor colorSensor;
 
   /** The relativeLayout field is used to aid in providing interesting visual feedback

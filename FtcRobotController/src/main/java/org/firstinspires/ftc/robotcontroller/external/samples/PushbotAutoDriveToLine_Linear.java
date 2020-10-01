@@ -36,7 +36,7 @@ import com.qualcomm.robotcore.hardware.LightSensor;
 
 /**
  * This file illustrates the concept of driving up to a line and then stopping.
- * It uses the common Pushbot hardware class to define the drive on the robot.
+ * It uses the common Pushbot com.bfr.hardware class to define the drive on the robot.
  * The code is structured as a LinearOpMode
  *
  * The code shows using two different light sensors:
@@ -59,7 +59,7 @@ import com.qualcomm.robotcore.hardware.LightSensor;
 public class PushbotAutoDriveToLine_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
+    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's com.bfr.hardware
     LightSensor             lightSensor;      // Primary LEGO Light sensor,
     // OpticalDistanceSensor   lightSensor;   // Alternative MR ODS sensor
 
@@ -70,7 +70,7 @@ public class PushbotAutoDriveToLine_Linear extends LinearOpMode {
     public void runOpMode() {
 
         /* Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
+         * The init() method of the com.bfr.hardware class does all the work here
          */
         robot.init(hardwareMap);
 
