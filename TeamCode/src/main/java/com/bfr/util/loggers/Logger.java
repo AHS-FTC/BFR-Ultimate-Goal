@@ -1,5 +1,7 @@
 package com.bfr.util.loggers;
 
+import com.bfr.util.FTCUtilities;
+
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
 
 import java.io.File;

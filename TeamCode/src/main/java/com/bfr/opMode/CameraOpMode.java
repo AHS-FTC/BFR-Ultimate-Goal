@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
-@TeleOp(name = "Dif Odometry Logger", group = "Iterative Opmode")
+@TeleOp(name = "Dif Camera Logger", group = "Iterative Opmode")
 //@Disabled
 public class CameraOpMode extends OpMode {
     OpenCvCamera webcam;

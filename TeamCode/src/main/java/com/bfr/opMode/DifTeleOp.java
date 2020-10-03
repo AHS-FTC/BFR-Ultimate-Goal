@@ -2,14 +2,21 @@ package com.bfr.opMode;
 
 import com.bfr.hardware.Motor;
 import com.bfr.hardware.WestCoast;
+import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="Dif TeleOp", group="Iterative Opmode")
 //@Disabled
 public class DifTeleOp extends OpMode {
     WestCoast wc;
     Motor intake;
+    Motor shooter1;
+    Motor shooter2;
+    double shooterPower;
+
+    //adb connect 192.168.43.1:5555
 
         @Override
         @SuppressWarnings("all")
@@ -19,6 +26,12 @@ public class DifTeleOp extends OpMode {
             FTCUtilities.setOpMode(this);
             wc = new WestCoast();
             intake = new Motor("intake", 0, true);
+            shooter1 = new Motor("shooter1",0,true);
+            shooter2 = new Motor("shooter2",0,true);
+            shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+            shooterPower = 0;
 
 
 //            Telemetry tel = FtcDashboard.getInstance().getTelemetry();
@@ -57,6 +70,7 @@ public class DifTeleOp extends OpMode {
         @Override
         public void loop() {
             wc.arcadeDrive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+
             if (gamepad1.right_bumper){
                 intake.setPower(1);
             } else if (gamepad1.left_bumper){
@@ -64,6 +78,17 @@ public class DifTeleOp extends OpMode {
             } else{
                 intake.setPower(0);
             }
+
+            if (gamepad1.a){
+                shooterPower += .1;
+            } else if (gamepad1.b) {
+                shooterPower -= .1;
+            }
+
+            shooter1.setPower(shooterPower);
+            shooter2.setPower(shooterPower);
+            telemetry.addData("Power", shooterPower);
+            telemetry.update();
 
 
 

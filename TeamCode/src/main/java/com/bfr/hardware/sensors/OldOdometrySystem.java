@@ -1,6 +1,7 @@
 package com.bfr.hardware.sensors;
 
 import com.bfr.control.path.Position;
+import com.bfr.util.FTCUtilities;
 import com.bfr.util.loggers.DataLogger;
 import com.bfr.util.loggers.Logger;
 import com.bfr.util.loggers.MockDataLogger;
