@@ -7,14 +7,18 @@ import com.bfr.hardware.sensors.Odometer;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.List;
+
 @TeleOp(name="Dif Odometry Logger", group="Iterative Opmode")
 //@Disabled
 public class DifOdomOp extends OpMode {
+    List<LynxModule> allHubs;
 
     Odometer left, right;
     Odometry odometry;
@@ -31,6 +35,14 @@ public class DifOdomOp extends OpMode {
         odometry = new DifOdometry(left, right, Position.origin,16.16);
 
         logger = FtcDashboard.getInstance().getTelemetry();
+
+
+        allHubs = hardwareMap.getAll(LynxModule.class);
+
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
     }
 
     @Override
@@ -44,14 +56,17 @@ public class DifOdomOp extends OpMode {
 
     @Override
     public void loop() {
+        for(LynxModule module : allHubs){
+            module.clearBulkCache();
+        }
         odometry.update();
 
         logger.addData("left wheel", left.getDistance());
         logger.addData("right wheel", right.getDistance());
 
         Position p = odometry.getPosition();
-//        logger.addData("x", p.x);
-//        logger.addData("y", p.y);
+        logger.addData("x", p.x);
+        logger.addData("y", p.y);
         logger.addData("h", p.heading);
         logger.update();
     }
