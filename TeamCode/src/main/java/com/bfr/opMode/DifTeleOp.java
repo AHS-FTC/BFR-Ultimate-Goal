@@ -26,8 +26,8 @@ public class DifTeleOp extends OpMode {
             FTCUtilities.setOpMode(this);
             wc = new WestCoast();
             intake = new Motor("intake", 0, true);
-            shooter1 = new Motor("shooter1",0,true);
-            shooter2 = new Motor("shooter2",0,true);
+            shooter1 = new Motor("shooter1",0,false);
+            shooter2 = new Motor("shooter2",0,false);
             shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -71,19 +71,12 @@ public class DifTeleOp extends OpMode {
         public void loop() {
             wc.arcadeDrive(gamepad1.left_stick_y, gamepad1.right_stick_x);
 
-            if (gamepad1.right_bumper){
-                intake.setPower(1);
-            } else if (gamepad1.left_bumper){
-                intake.setPower(-.8);
-            } else{
-                intake.setPower(0);
+            shooterPower += gamepad1.right_trigger * .01;
+            shooterPower += gamepad1.left_trigger * -.01;
+            if (gamepad1.x){
+                shooterPower = 0;
             }
 
-            if (gamepad1.a){
-                shooterPower += .1;
-            } else if (gamepad1.b) {
-                shooterPower -= .1;
-            }
 
             shooter1.setPower(shooterPower);
             shooter2.setPower(shooterPower);

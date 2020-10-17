@@ -30,5 +30,31 @@ public class FTCMath {
         return angle;
     }
 
+    /**
+     * Ensures that the ideal angle is the closest possible wrapping relative to some reference angle
+     */
+    //todo add tests from: https://github.com/AHS-FTC/BFR-Pathfinder/commit/b7f0a25ad471195664f4f839b121fdd2a5e4940a
+    public static double ensureIdealAngle(double rawAngle, double referenceAngle){
+        double retAngle;
+        double angleDifference = referenceAngle - rawAngle;
+
+        //make sure angleDifference isn't more than 2pi away from the last angle
+        if (Math.abs(angleDifference) > 2 * Math.PI) {
+            angleDifference  %= (2 * Math.PI);
+        }
+
+        // Make sure we have the most 'efficient' relative angleDistance
+        if (Math.abs(angleDifference) > Math.PI) {
+            if (Math.signum(angleDifference) == 1) {
+                angleDifference = (2 * Math.PI) - angleDifference;
+            } else {
+                angleDifference =  angleDifference + (2 * Math.PI);
+            }
+        }
+
+        retAngle = referenceAngle - angleDifference;//derived from definition of angleDifference
+        return retAngle;
+    }
+
     private FTCMath(){}
 }

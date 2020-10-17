@@ -41,6 +41,10 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     }
 
     public static HardwareMap getHardwareMap() {
+        if(hardwareMap == null){
+            throw new NullPointerException("You forgot to set the hardwareMap in the OpMode, idiot!");
+        }
+
         return hardwareMap;
     }
 

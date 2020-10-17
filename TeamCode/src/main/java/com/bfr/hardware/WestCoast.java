@@ -1,7 +1,9 @@
 package com.bfr.hardware;
 
 import com.bfr.control.path.Position;
+import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.hardware.sensors.Odometer;
+import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.math.Circle;
 import com.bfr.util.math.Line;
@@ -19,15 +21,15 @@ public class WestCoast {
     private final double HALF_WIDTH = TRACK_WIDTH / 2.0;
 
     public WestCoast() {
-        leftMotor = new Motor("L", 0,true);
-        rightMotor = new Motor("R", 0,true);
+        leftMotor = new Motor("L", 0,false);
+        rightMotor = new Motor("R", 0,false);
 
-        //leftOdo = new OdometerImpl("l_odo", 3.95, false, 1440.0);
-        //rightOdo = new OdometerImpl("r_odo", 3.95, true, 1440.0);
+        leftOdo = new OdometerImpl("l_odo", 3.95, false, 1440.0);
+        rightOdo = new OdometerImpl("r_odo", 3.95, true, 1440.0);
 
-        //odometry = new DifOdometry(leftOdo, rightOdo, Position.origin, TRACK_WIDTH);
+        odometry = new DifOdometry(leftOdo, rightOdo, Position.origin, TRACK_WIDTH);
 
-        //odometry.start();
+        odometry.start();
     }
 
     /**
@@ -75,7 +77,7 @@ public class WestCoast {
         rightMotor.setPower(rightPower);
     }
 
-    public void tankDrive(double l, double r){
+    public void setTankPower(double l, double r){
         leftMotor.setPower(l);
         rightMotor.setPower(r);
     }
@@ -85,9 +87,15 @@ public class WestCoast {
         rightMotor.setPower(forward + turn);
     }
 
-    public void stop(){
+    /**
+     * Not to be confused with brakeMotors()
+     */
+    public void kill(){
         odometry.stop();
+        brakeMotors();
+    }
 
+    public void brakeMotors(){
         leftMotor.setPower(0);
         rightMotor.setPower(0);
     }
