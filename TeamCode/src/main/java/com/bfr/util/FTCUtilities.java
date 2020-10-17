@@ -67,20 +67,18 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     }
 
     public static void addData(String caption, Object object) {
-
         if (!testMode) {
             opMode.telemetry.addData(caption, object);
-        } else {
-            System.out.println(caption + ": " + object);
         }
+        System.out.println(caption + ": " + object);
     }
 
     public static void addLine(String line) {
         if (!testMode) {
             opMode.telemetry.addLine(line);
-        } else {
-            System.out.println(line);
         }
+        System.out.println(line);
+
     }
 
     public static void updateTelemetry() {
