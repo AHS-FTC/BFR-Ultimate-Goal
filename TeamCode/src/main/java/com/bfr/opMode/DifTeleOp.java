@@ -1,20 +1,24 @@
 package com.bfr.opMode;
 
 import com.bfr.hardware.Motor;
+import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="Dif TeleOp", group="Iterative Opmode")
 //@Disabled
 public class DifTeleOp extends OpMode {
     WestCoast wc;
     Motor intake;
-    Motor shooter1;
-    Motor shooter2;
+    Shooter shooter;
+    Motor shooter1, shooter2;
     double shooterPower;
+    CRServo s1;
 
     //adb connect 192.168.43.1:5555
 
@@ -26,10 +30,10 @@ public class DifTeleOp extends OpMode {
             FTCUtilities.setOpMode(this);
             wc = new WestCoast();
             intake = new Motor("intake", 0, true);
-            shooter1 = new Motor("shooter1",0,false);
-            shooter2 = new Motor("shooter2",0,false);
-            shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            shooter = new Shooter();
+//            shooter1 = new Motor("s1", 0, true);
+//            shooter2 = new Motor("s2", 0, true);
+            s1 = hardwareMap.get(CRServo.class,"s1");
 
             shooterPower = 0;
 
@@ -77,13 +81,19 @@ public class DifTeleOp extends OpMode {
                 shooterPower = 0;
             }
 
+            shooter.setPower(shooterPower);
+//            shooter1.setPower(shooterPower);
+//            shooter2.setPower(shooterPower);
 
-            shooter1.setPower(shooterPower);
-            shooter2.setPower(shooterPower);
             telemetry.addData("Power", shooterPower);
             telemetry.update();
 
-
+            if (gamepad1.a){
+                s1.setPower(1);
+            }
+            if (gamepad1.b){
+                s1.setPower(0);
+            }
 
 //            long startTime = System.currentTimeMillis();
 //            wc.gateauDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);

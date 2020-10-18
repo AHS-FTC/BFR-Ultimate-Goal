@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Robot {
     private WestCoast westCoast = new WestCoast();
+    private Shooter shooter = new Shooter();
     private Position position;
 
     private final double POWER = .6;
@@ -26,6 +27,8 @@ public class Robot {
 
         position = westCoast.getPosition();
     }
+
+    public Shooter getShooter(){return shooter;}
 
     public WestCoast getWestCoast() {
         return westCoast;
@@ -81,7 +84,7 @@ public class Robot {
      * The update() method contains maintenance stuff
      * it should be called every iteration in any blocking method.
      */
-    private void update(){
+    public void update(){
         //clear sensor cache
         for(LynxModule hub : hubs) {
             hub.clearBulkCache();
