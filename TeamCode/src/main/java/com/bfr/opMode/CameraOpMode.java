@@ -1,5 +1,8 @@
 package com.bfr.opMode;
 
+import com.bfr.control.vision.VisionSystem;
+import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -7,37 +10,23 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 
-@TeleOp(name = "Dif Camera Logger", group = "Iterative Opmode")
+@TeleOp(name = "Camera OpMode", group = "Linear Opmode")
 //@Disabled
-public class CameraOpMode extends OpMode {
-    OpenCvCamera webcam;
-
+public class CameraOpMode extends LinearOpMode {
     @Override
-    public void init() {
-        int cameraId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraId);
+    public void runOpMode() throws InterruptedException {
+        FTCUtilities.setOpMode(this);
+        VisionSystem visionSystem = new VisionSystem(true);
 
-        webcam.setPipeline(null);
+        waitForStart();
+
+        while (opModeIsActive()){
+            try {
+                visionSystem.runVision();
+            } catch (Throwable t){
+                t.printStackTrace(System.err);
+            }
+        }
     }
-
-    @Override
-    public void init_loop() {
-    }
-
-    @Override
-    public void start(){
-
-    }
-
-    @Override
-    public void loop() {
-
-    }
-
-    @Override
-    public void stop() {
-
-    }
-
 }
 

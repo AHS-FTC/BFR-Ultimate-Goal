@@ -19,17 +19,13 @@ import java.net.Socket;
  * (with help from 6929 Miles)
  */
 public class Network {
-    private static final String IP = "192.168.49.57";
+    private static final String IP = "192.168.43.57";
 
     private static DataOutputStream clientout;
 
-    public static void initTCP(){
-        try {
-            Socket s = new Socket(InetAddress.getByName("192.168.49.57"), 6969);
-            clientout = new DataOutputStream(s.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void initTCP() throws IOException {
+        Socket s = new Socket(InetAddress.getByName(IP), 6969);
+        clientout = new DataOutputStream(s.getOutputStream());
     }
 
     /**
@@ -55,7 +51,7 @@ public class Network {
 
         Bitmap bitmap = (Bitmap) image;
         // toggle with filter
-        bitmap = Bitmap.createScaledBitmap(bitmap, 600, 600, true); // 600x600 is very clear 320x240 is also good
+        //bitmap = Bitmap.createScaledBitmap(bitmap, 600, 600, true); // 600x600 is very clear 320x240 is also good
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);

@@ -7,20 +7,34 @@ import org.openftc.easyopencv.OpenCvPipeline;
  * EasyOpenCv only allows for continuous pipeline running on the webcam.
  * A FrameEjector pipeline does no processing, but captures and returns the next frame from
  * the continuous webcam feed.
+ *
+ * As always, be careful about memory leaks on the native stack.
  */
 public class FrameEjector extends OpenCvPipeline {
 
-    private Mat frame;
+    private Mat lastFrame = new Mat();
+    private boolean initialized = false;
 
     @Override
     public synchronized Mat processFrame(Mat input) {
-
-        frame = input.clone();
-
+        if(!initialized) initialized = true;
+        input.copyTo(lastFrame);
         return input;
     }
 
-    public synchronized Mat getFrame(){
-        return frame;
+    /**
+     * Fills a mat with the last frame from the camera.
+     * Done in this manner to prevent a memory leak.
+     * @param mat This mat will be populated by the camera frame.
+     */
+    public synchronized void copyFrameTo(Mat mat)
+    {
+        if(!initialized) throw new Error("Attempted to copy a frame before its camera was initialized");
+        lastFrame.copyTo(mat);
+    }
+
+
+    public synchronized boolean isInitialized(){
+        return initialized;
     }
 }
