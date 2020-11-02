@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -117,9 +119,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
      * Saves can be found in the downloads folder of the phone.
      */
     public static void saveImage(Bitmap bitmap) {
-        Calendar now = Calendar.getInstance();
         String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        String fileName = "BotImg_" + now.get(Calendar.DAY_OF_MONTH) + "_" + now.get(Calendar.HOUR_OF_DAY) + "_" + now.get(Calendar.MINUTE) + "_" + now.get(Calendar.SECOND) + now.get(Calendar.MILLISECOND) + ".jpg";
+        String fileName = getFileName();
         File img = new File(filePath, fileName);
         if (img.exists())
             img.delete();
@@ -129,10 +130,24 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
             out.flush();
             out.close();
 
-
         } catch (Exception e) {
             throw new Warning(e.getMessage());
         }
+    }
+    
+    public static void saveImage(Mat mat, String fileName){
+        System.out.println(getLogDirectory());
+        Imgcodecs.imwrite(getLogDirectory() + "/" + fileName, mat);
+    }
+
+    public static void saveImage(Mat mat){
+        saveImage(mat, getFileName());
+    }
+
+
+    private static String getFileName(){
+        Calendar now = Calendar.getInstance();
+        return "BotImg_" + now.get(Calendar.DAY_OF_MONTH) + "_" + now.get(Calendar.HOUR_OF_DAY) + "_" + now.get(Calendar.MINUTE) + "_" + now.get(Calendar.SECOND) + now.get(Calendar.MILLISECOND) + ".jpg";
     }
 
     public static void startTestMode() {
