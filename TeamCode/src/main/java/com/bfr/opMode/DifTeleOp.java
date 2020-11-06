@@ -83,7 +83,7 @@ public class DifTeleOp extends OpMode {
                 shooterPower = 0;
             }
 
-            robot.setShooterPower(shooterPower);
+            //robot.setShooterPower(shooterPower);
 //            shooter1.setPower(shooterPower);
 //            shooter2.setPower(shooterPower);
 
@@ -129,6 +129,7 @@ public class DifTeleOp extends OpMode {
 //            telemetry.addData("y", p.y);
 //            telemetry.addData("h", p.heading);
 //            telemetry.addData("deltaTime", System.currentTimeMillis() - startTime);
+            robot.update();
         }
 
         private void updateIndexerServo(){

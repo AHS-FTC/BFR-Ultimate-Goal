@@ -91,10 +91,19 @@ public class Robot {
      * it should be called every iteration in any blocking method.
      */
     public void update(){
+
+        long nanosBefore = System.nanoTime();
+
         //clear sensor cache
         for(LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
+
+        long nanosAfter = System.nanoTime();
+
+        long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
+
+        shooter.update(bulkReadTimestamp);
 
         //run sensor reads
         position = westCoast.getPosition();
