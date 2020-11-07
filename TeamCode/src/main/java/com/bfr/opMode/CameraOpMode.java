@@ -34,7 +34,6 @@ public class CameraOpMode extends LinearOpMode {
             sleep(1000);
         }
 
-        Network.stopTCP();
     }
 }
 

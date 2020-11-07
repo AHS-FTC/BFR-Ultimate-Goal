@@ -21,8 +21,8 @@ public class Cam {
     public Cam(String deviceName) {
         HardwareMap hardwareMap = FTCUtilities.getHardwareMap();
 
-        //int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        openCvCamera  = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, deviceName));
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        openCvCamera  = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, deviceName), cameraMonitorViewId);
 
         openCvCamera.setPipeline(frameEjector);
     }
@@ -31,7 +31,9 @@ public class Cam {
      * Initializes the camera and blocks until it starts running values into the frameEjector
      */
     public void start(){
-        openCvCamera.openCameraDeviceAsync(() -> openCvCamera.startStreaming(1184, 656, OpenCvCameraRotation.UPRIGHT));
+        openCvCamera.openCameraDeviceAsync(() -> {
+            openCvCamera.startStreaming(1184, 656, OpenCvCameraRotation.UPRIGHT);
+        });
 
         //wait for the camera to initialize
         while (!frameEjector.isInitialized()){
@@ -48,5 +50,12 @@ public class Cam {
      */
     public void copyFrameTo(Mat mat){
         frameEjector.copyFrameTo(mat);
+    }
+
+    /**
+     * Echos frameEjector.setOutputMat()
+     */
+    public void setOutputMat(Mat mat){
+        frameEjector.setOutputMat(mat);
     }
 }

@@ -13,13 +13,16 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class FrameEjector extends OpenCvPipeline {
 
     private Mat lastFrame = new Mat();
+    private Mat outputMat = new Mat();
+
     private boolean initialized = false;
 
     @Override
     public synchronized Mat processFrame(Mat input) {
         if(!initialized) initialized = true;
         input.copyTo(lastFrame);
-        return input;
+
+        return outputMat;
     }
 
     /**
@@ -31,6 +34,14 @@ public class FrameEjector extends OpenCvPipeline {
     {
         if(!initialized) throw new Error("Attempted to copy a frame before its camera was initialized");
         lastFrame.copyTo(mat);
+    }
+
+    /**
+     * Set the mat that gets 'returned' by the pipeline and shows up on the phone screen.
+     * @param mat
+     */
+    public synchronized void setOutputMat(Mat mat){
+        mat.copyTo(outputMat);
     }
 
 

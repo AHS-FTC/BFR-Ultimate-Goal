@@ -3,9 +3,14 @@ package com.bfr.control.vision;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.Network;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Vision system designed for Temerity in 2020-21 UG.
@@ -16,6 +21,8 @@ public class VisionSystem {
 
     private Mat currentMat = new Mat();
 
+    private BackboardThresholdPipeline pipeline = new BackboardThresholdPipeline();
+
     public VisionSystem(boolean streamMode) {
         cam = new Cam("Webcam 1");
 
@@ -23,30 +30,41 @@ public class VisionSystem {
 
         cam.start();
 
-        if (streamMode) {
-            try {
-                Network.initTCP();
-
-                Mat initMat = new Mat();
-                cam.copyFrameTo(initMat);
-
-                Network.startTCP(initMat);
-            } catch (IOException e) {
-                FTCUtilities.addLine("TCP Initialization failed, running in non-stream mode");
-                FTCUtilities.updateTelemetry();
-                e.printStackTrace(System.err);
-                this.streamMode = false;
-            }
-        }
+        Mat initMat = new Mat();
+        cam.copyFrameTo(initMat);
 
     }
 
     public void runVision(){
         cam.copyFrameTo(currentMat);
-        if (streamMode){
-            Network.updateTCPMat(currentMat);
-        }
-        FTCUtilities.saveImage(currentMat);
+
+        Mat thresholdMat = pipeline.processFrame(currentMat);
+
+        cam.setOutputMat(thresholdMat);
+
+        thresholdMat.release();
+        //FTCUtilities.saveImage(currentMat);
+    }
+
+    public void calibrate(){
+        cam.copyFrameTo(currentMat);
+
+        Rect cropRect = new Rect(0,0,100,100);
+
+        Mat roi = currentMat.submat(cropRect);
+
+        List<Mat> channels = new ArrayList<>();
+
+        Core.split(roi, channels);
+
+        Mat hueChannel = channels.get(0);
+
+        Scalar meanScalar = Core.mean(hueChannel);
+
+        double mean = meanScalar.val[0];
+
+        roi.release();
+        hueChannel.release();
     }
 
 }
