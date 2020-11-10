@@ -51,20 +51,6 @@ public class VisionSystem {
 
         Rect cropRect = new Rect(0,0,100,100);
 
-        Mat roi = currentMat.submat(cropRect);
-
-        List<Mat> channels = new ArrayList<>();
-
-        Core.split(roi, channels);
-
-        Mat hueChannel = channels.get(0);
-
-        Scalar meanScalar = Core.mean(hueChannel);
-
-        double mean = meanScalar.val[0];
-
-        roi.release();
-        hueChannel.release();
     }
 
 }
