@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -137,7 +138,11 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     
     public static void saveImage(Mat mat, String fileName){
         System.out.println(getLogDirectory());
-        Imgcodecs.imwrite(getLogDirectory() + "/" + fileName, mat);
+
+        Mat rgb = new Mat();
+        Imgproc.cvtColor(mat, rgb, Imgproc.COLOR_BGR2RGB);
+        Imgcodecs.imwrite(getLogDirectory() + "/" + fileName, rgb);
+        rgb.release();
     }
 
     public static void saveImage(Mat mat){

@@ -1,16 +1,10 @@
 package com.bfr.control.vision;
 
-import com.bfr.hardware.Robot;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -36,8 +36,7 @@ public class VisionSystem {
     }
 
     public void runVision(){
-        cam.copyFrameTo(currentMat);
-
+        update();
         Mat thresholdMat = pipeline.processFrame(currentMat);
 
         cam.setOutputMat(thresholdMat);
@@ -47,10 +46,20 @@ public class VisionSystem {
     }
 
     public void calibrate(){
-        cam.copyFrameTo(currentMat);
+        update();
 
-        Rect cropRect = new Rect(0,0,100,100);
-
+        double avgHue = VisionUtil.findAvgOfRegion(currentMat, 650,300,75,100, VisionUtil.HSVChannel.HUE);
+        pipeline.setHue(avgHue);
     }
+
+    public void saveCurrentFrame(){
+        update();
+        FTCUtilities.saveImage(currentMat);
+    }
+
+    private void update(){
+        cam.copyFrameTo(currentMat);
+    }
+
 
 }

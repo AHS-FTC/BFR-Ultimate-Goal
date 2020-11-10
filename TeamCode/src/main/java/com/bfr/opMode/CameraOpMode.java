@@ -27,13 +27,15 @@ public class CameraOpMode extends LinearOpMode {
 
         VisionSystem visionSystem = new VisionSystem(true);
 
+        visionSystem.saveCurrentFrame();
+        //visionSystem.calibrate();
+
         waitForStart();
 
         while (opModeIsActive()){
             visionSystem.runVision();
-            sleep(1000);
+            //sleep(50);
         }
-
     }
 }
 

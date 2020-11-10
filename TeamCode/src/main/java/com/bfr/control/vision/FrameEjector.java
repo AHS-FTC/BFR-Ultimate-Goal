@@ -22,6 +22,10 @@ public class FrameEjector extends OpenCvPipeline {
         if(!initialized) initialized = true;
         input.copyTo(lastFrame);
 
+        if (outputMat.empty()){
+            input.copyTo(outputMat);
+        }
+
         return outputMat;
     }
 
