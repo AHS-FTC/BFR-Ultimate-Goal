@@ -2,9 +2,6 @@ package com.bfr.opMode;
 
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
-import com.bfr.hardware.SerialServo;
-import com.bfr.hardware.Shooter;
-import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.Switch;
 import com.bfr.util.Toggle;
@@ -17,9 +14,11 @@ public class DifTeleOp extends OpMode {
     Robot robot;
     Intake intake;
     private double shooterPower, intakePower;
-    SerialServo indexerServo;
+
     Switch intakeOutSwitch, intakeInSwitch;
     Toggle indexerToggle;
+    long waitTime = 300;
+    long lastTime;
 
     //adb connect 192.168.43.1:5555
 
@@ -31,8 +30,6 @@ public class DifTeleOp extends OpMode {
             FTCUtilities.setOpMode(this);
             robot = new Robot();
             intake = robot.getIntake();
-            indexerServo = new SerialServo("s1", false);
-            indexerServo.mapPosition(-.1, .4);
             shooterPower = 0;
 
             intakeOutSwitch = new Switch();
@@ -71,6 +68,7 @@ public class DifTeleOp extends OpMode {
 
         @Override
         public void start() {
+            lastTime = FTCUtilities.getCurrentTimeMillis();
         }
 
         @Override
@@ -116,9 +114,9 @@ public class DifTeleOp extends OpMode {
                 }
             }
 
-            if (gamepad1.a) {
-                indexerToggle.canFlip();
-                updateIndexerServo();
+            if (gamepad1.a && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
+                lastTime = FTCUtilities.getCurrentTimeMillis();
+                robot.getShooter().runIndexerServos();
             }
 
 //            long startTime = System.currentTimeMillis();
@@ -130,14 +128,6 @@ public class DifTeleOp extends OpMode {
 //            telemetry.addData("h", p.heading);
 //            telemetry.addData("deltaTime", System.currentTimeMillis() - startTime);
             robot.update();
-        }
-
-        private void updateIndexerServo(){
-            if (indexerToggle.isEnabled()){
-                indexerServo.setPosition(1);
-            } else {
-                indexerServo.setPosition(0);
-            }
         }
 
         @Override

@@ -31,6 +31,8 @@ public class Robot {
 
     public Intake getIntake(){return intake;}
 
+    public Shooter getShooter(){return shooter;}
+
     public void drive(double forward, double turn){
         westCoast.arcadeDrive(forward, turn);
     }
