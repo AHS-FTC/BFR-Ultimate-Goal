@@ -9,7 +9,6 @@ import org.opencv.imgproc.Imgproc;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VisionUtilTest {
-
     @BeforeAll
     static void beforeAll() {
         System.load(System.getProperty("user.dir") + "/lib/libopencv_java410.so");
@@ -17,11 +16,10 @@ class VisionUtilTest {
 
     @Test
     void testRegionAverage() {
-        String resPath = getClass().getClassLoader().getResource("pinkcorner.png").getPath();
+        Mat in = VisionTests.loadResourceAsMat("pinkcorner.png");
 
-        Mat m = Imgcodecs.imread(resPath);
         Mat hsv = new Mat();
-        Imgproc.cvtColor(m, hsv, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(in, hsv, Imgproc.COLOR_BGR2HSV);
 
         assertEquals(161, VisionUtil.findAvgOfRegion(hsv, 0, 400, 100, 100, VisionUtil.HSVChannel.HUE));
         assertEquals(133, VisionUtil.findAvgOfRegion(hsv, 0, 400, 100, 100, VisionUtil.HSVChannel.SATURATION));

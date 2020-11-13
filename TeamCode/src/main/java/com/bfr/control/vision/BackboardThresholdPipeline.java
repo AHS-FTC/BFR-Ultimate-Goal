@@ -17,6 +17,8 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     private Scalar min = new Scalar(0, 50, 0);
     private Scalar max = new Scalar(30, 255, 255);
 
+    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10, 10));
+
     private static final double HUE_RANGE = 10;
 
     @Override
@@ -25,8 +27,6 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
         Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
         Core.inRange(hsv, min, max, thresh);
 
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10, 10));
-
         Imgproc.erode(thresh, eroded, kernel);
         Imgproc.dilate(eroded, dilated, kernel);
 
@@ -34,7 +34,6 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     }
 
     public void setHue(double middleHueVal){
-        System.out.println(middleHueVal);
         min.set(new double[] {middleHueVal - HUE_RANGE, 50, 0});
         max.set(new double[] {middleHueVal + HUE_RANGE, 255, 255});
     }
