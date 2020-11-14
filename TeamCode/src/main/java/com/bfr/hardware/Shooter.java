@@ -15,7 +15,7 @@ public class Shooter {
     private Motor shooterMotor1, shooterMotor2;
     private double rpm = 0;
 
-    SerialServo indexerServo;
+    SerialServo indexerServo, holderServo;
 
     private long lastBulkReadTimeStamp = System.nanoTime();
     private double lastRotations;
@@ -33,8 +33,12 @@ public class Shooter {
         shooterMotor1 = new Motor("s1", 41.0,true);
         shooterMotor2 = new Motor("s2", 41.0,true);
 
-        indexerServo = new SerialServo("s1", false);
-        indexerServo.mapPosition(0, .3);
+        indexerServo = new SerialServo("indexer", false);
+        holderServo = new SerialServo("holder", false);
+
+        indexerServo.mapPosition(-.05, .2);
+        holderServo.mapPosition(.3, .5);
+        holderServo.setPosition(1);
 
         shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -59,7 +63,7 @@ public class Shooter {
         PUSHING2(3*WAIT_TIME),
         RETRACTING2(4*WAIT_TIME),
         PUSHING3(5*WAIT_TIME),
-        RESTING(6*WAIT_TIME);
+        RESTING(6*WAIT_TIME+100);
 
         public final long endTime;
 
@@ -71,6 +75,7 @@ public class Shooter {
     public void runIndexerServos(){
         startTime = FTCUtilities.getCurrentTimeMillis();
         indexerServo.setPosition(1);
+        holderServo.setPosition(0);
         servoState = State.PUSHING1;
         updateIndexerServos();
     }
@@ -109,6 +114,7 @@ public class Shooter {
             case PUSHING3:
                 if (nextState){
                     indexerServo.setPosition(0);
+                    holderServo.setPosition(1);
                     servoState = State.RESTING;
                 }
                 break;
