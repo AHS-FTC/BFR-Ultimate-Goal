@@ -73,37 +73,15 @@ public class VisionUtil {
     }
 
     /**
-     * Takes a cropped, binary mat and finds the corners of the vision target
+     * Adds 'padding' to a rect, adding space on all sides
+     * @param padding how many pixels we should add on each side
      */
-    public static void findViewpointCorners(Mat input){
-        Mat inverted = new Mat();
-        Core.bitwise_not(input, inverted);
+    public static void padRect(Rect rect, int padding){
+        rect.x -= padding;
+        rect.y -= padding;
 
-        List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(inverted, contours, new Mat(),  Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
-
-        //convert largest contour to matOfPoint2f
-        MatOfPoint2f largestContour = new MatOfPoint2f(findLargestContour(contours).toArray());
-        MatOfPoint2f approx = new MatOfPoint2f();
-
-        double epsilon = 0.05 * Imgproc.arcLength(largestContour, true);
-        Imgproc.approxPolyDP(largestContour, approx, epsilon, true);
-        Point[] points = approx.toArray();
-
-        assert points.length == 4;
-
-        for (int i = 0; i < points.length; i++) {
-            MatOfPoint pointMat= new MatOfPoint(points);
-            List<MatOfPoint> list = new ArrayList<>();
-            list.add(pointMat);
-
-            Imgproc.polylines(input, list, true, new Scalar(100), 1);
-            Imgproc.circle(input, points[i], 1, new Scalar(50), 1);
-        }
-
-        inverted.release();
-        largestContour.release();
-        approx.release();
+        rect.width += (2 * padding);
+        rect.height += (2 * padding);
     }
 
 

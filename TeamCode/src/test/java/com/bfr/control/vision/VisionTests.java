@@ -3,14 +3,21 @@ package com.bfr.control.vision;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+/**
+ * All of these vision tests aren't really conventional tests and thus should generally be disabled.
+ * They're to qualitatively test and experiment with vision.
+ * Instead of pass/fail, they output a mat to a file on your computer.
+ *
+ * If you wanna run these, you'll have to adjust the output filepath in saveMat();
+ */
 public class VisionTests {
     @BeforeAll
     static void beforeAll() {
+        //load the native OpenCv library
         System.load(System.getProperty("user.dir") + "/lib/libopencv_java410.so");
     }
 
@@ -24,30 +31,25 @@ public class VisionTests {
 
         Mat out = pipeline.processFrame(in);
 
-        Imgcodecs.imwrite("/home/appleby/Desktop/out.png", out);
+        saveMat(out);
     }
 
     @Test
     //@Disabled
     void testCropBackboard() {
-        BackboardCropPipeline pipeline = new BackboardCropPipeline();
+        Mat in = loadResourceAsMatBinary("threshgoal.png");
+        Mat out = VisionSystem.cropBackboard(in).mat;
 
-        Mat in = loadResourceAsMat("threshgoal.png");
-        //Imgproc.cvtColor(in, in, Imgproc.COLOR);
-
-        Mat out = pipeline.processFrame(in);
-
-        Imgcodecs.imwrite("/home/appleby/Desktop/out.png", out);
+        saveMat(out);
     }
 
     @Test
         //@Disabled
     void testCornerFinder() {
         Mat in = loadResourceAsMatBinary("threshcroppedgoal.png");
+        Mat color = loadResourceAsMat("bluegoal.jpg");
 
-        VisionUtil.findViewpointCorners(in);
-
-        Imgcodecs.imwrite("/home/appleby/Desktop/out.png", in);
+        saveMat(VisionSystem.getTargetRect(in, color, 164, 169).mat);
     }
 
     /**
@@ -69,4 +71,9 @@ public class VisionTests {
         m.release();
         return retVal;
     }
+
+    private static void saveMat(Mat out) {
+        Imgcodecs.imwrite("/home/appleby/Desktop/out.png", out);
+    }
+
 }
