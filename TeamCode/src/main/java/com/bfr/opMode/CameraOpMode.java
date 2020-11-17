@@ -1,5 +1,6 @@
 package com.bfr.opMode;
 
+import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.VisionSystem;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.Network;
@@ -27,14 +28,22 @@ public class CameraOpMode extends LinearOpMode {
 
         VisionSystem visionSystem = new VisionSystem(true);
 
-        visionSystem.saveCurrentFrame();
-        //visionSystem.calibrate();
+        //visionSystem.saveCurrentFrame();
+        visionSystem.calibrate();
 
         waitForStart();
 
         while (opModeIsActive()){
-            visionSystem.runVision();
-            //sleep(50);
+            try {
+                visionSystem.runVision();
+            } catch (VisionException e) {
+                System.out.println("Vision failed. " + e.getMessage());
+                FTCUtilities.addLine("Vision failed."  + e.getMessage());
+                FTCUtilities.updateTelemetry();
+                visionSystem.dump();
+                e.printStackTrace();
+                requestOpModeStop();
+            }
         }
     }
 }

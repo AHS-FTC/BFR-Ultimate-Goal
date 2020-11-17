@@ -1,5 +1,7 @@
 package com.bfr.control.vision;
 
+import com.bfr.util.FTCUtilities;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -41,12 +43,9 @@ public class VisionUtil {
         Rect cropRect = new Rect(x, y, width, height);
 
         Mat roi = mat.submat(cropRect);
+        FTCUtilities.saveImage(roi);
 
-        List<Mat> channels = new ArrayList<>();
-
-        Core.split(roi, channels);
-
-        Mat channel = channels.get(hsvChannel.index);
+        Mat channel = getHSVChannel(roi, hsvChannel);
         Scalar meanScalar = Core.mean(channel);
 
         roi.release();
@@ -55,7 +54,20 @@ public class VisionUtil {
         return meanScalar.val[0];
     }
 
-    public static MatOfPoint findLargestContour(List<MatOfPoint> contours){
+    /**
+     * Grabs one channel of an HSV image
+     */
+    public static Mat getHSVChannel(Mat input, HSVChannel hsvChannel){
+        List<Mat> channels = new ArrayList<>();
+        Core.split(input, channels);
+        return channels.get(hsvChannel.index);
+    }
+
+    public static MatOfPoint findLargestContour(List<MatOfPoint> contours) throws VisionException{
+        if(contours.size() == 0){
+            throw new VisionException("No contours found");
+        }
+
         MatOfPoint largestContour = contours.get(0);
         double largestArea = Imgproc.contourArea(largestContour);
 

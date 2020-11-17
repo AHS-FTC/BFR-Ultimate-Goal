@@ -6,7 +6,10 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -38,6 +41,9 @@ public class VisionSystem {
     private int xOffset_fullToBackboard = 0;
     private int yOffset_fullToBackboard = 0;
 
+    //intermediate mats
+    private Mat backboardThresholdMat, backboardTrimmedMat, unprocessedTarget, processedTarget;
+
     public VisionSystem(boolean streamMode) {
         cam = new Cam("Webcam 1");
 
@@ -51,27 +57,44 @@ public class VisionSystem {
     }
 
     //todo when finished: run step by step through calcs and check for memory leaks.
-    public void runVision(){
+    public void runVision() throws VisionException {
         update();
-        Mat backboardThresholdMat = backboardThresholdPipeline.processFrame(currentMat);
+        backboardThresholdMat = backboardThresholdPipeline.processFrame(currentMat);
 
-        CroppedMatContainer croppedMatContainer = cropBackboard(backboardThresholdMat);
+        CroppedMatContainer backboardContainer = cropBackboard(backboardThresholdMat);
+        backboardTrimmedMat = backboardContainer.mat;
 
         //keep track of the offsets between different frames of reference.
-        xOffset_fullToBackboard = croppedMatContainer.xOffset;
-        yOffset_fullToBackboard = croppedMatContainer.yOffset;
+        xOffset_fullToBackboard = backboardContainer.xOffset;
+        yOffset_fullToBackboard = backboardContainer.yOffset;
 
-        cam.setOutputMat(backboardThresholdMat);
+        CroppedMatContainer targetContainer = getTarget(backboardTrimmedMat, currentMat, xOffset_fullToBackboard, yOffset_fullToBackboard);
 
+        unprocessedTarget = targetContainer.mat;
+        processedTarget = processTarget(unprocessedTarget);
+
+        drawTargetCorners(processedTarget);
+
+//        System.out.println("size: " + targetContainer.mat.size());
+
+        //Imgproc.cvtColor(targetContainer.mat, targetContainer.mat, Imgproc.COLOR_GRAY2RGB);
+        cam.setOutputMat(processedTarget);
+
+        //release mats to avoid memory leak on the native heap
         backboardThresholdMat.release();
-        croppedMatContainer.mat.release();
+        backboardTrimmedMat.release();
+        backboardContainer.mat.release();
+        targetContainer.mat.release();
+        unprocessedTarget.release();
+        processedTarget.release();
         //FTCUtilities.saveImage(currentMat);
     }
 
     public void calibrate(){
         update();
 
-        double avgHue = VisionUtil.findAvgOfRegion(currentMat, 650,300,75,100, VisionUtil.HSVChannel.HUE);
+        double avgHue = VisionUtil.findAvgOfRegion(currentMat, 720,345,55,90, VisionUtil.HSVChannel.HUE);
+        //System.out.println("calibration hue: " + avgHue);
         backboardThresholdPipeline.setHue(avgHue);
     }
 
@@ -82,6 +105,46 @@ public class VisionSystem {
 
     private void update(){
         cam.copyFrameTo(currentMat);
+        Imgproc.cvtColor(currentMat, currentMat, Imgproc.COLOR_RGB2HSV);
+    }
+
+    /**
+     * Dumps the current frame + all intermediate frames to the robot hard drive.
+     * For debugging purposes.
+     */
+    public void dump(){
+        String directory = "vision_dump/";
+
+        Imgproc.cvtColor(currentMat, currentMat, Imgproc.COLOR_HSV2BGR);
+        FTCUtilities.saveImage(currentMat, directory + "1_unprocessed.png");
+
+        if (backboardThresholdMat != null) {
+            if (!backboardThresholdMat.empty()) {
+                Imgproc.cvtColor(backboardThresholdMat, backboardThresholdMat, Imgproc.COLOR_GRAY2BGR);
+                FTCUtilities.saveImage(backboardThresholdMat, directory + "2_bb_thresh.png");
+            }
+        }
+
+        if (backboardTrimmedMat != null) {
+            if (!backboardTrimmedMat.empty()) {
+                Imgproc.cvtColor(backboardTrimmedMat, backboardTrimmedMat, Imgproc.COLOR_GRAY2BGR);
+                FTCUtilities.saveImage(backboardTrimmedMat, directory + "3_bb_trimmed.png");
+            }
+        }
+
+        if (unprocessedTarget != null) {
+            if (!unprocessedTarget.empty()) {
+                Imgproc.cvtColor(unprocessedTarget, unprocessedTarget, Imgproc.COLOR_HSV2BGR);
+                FTCUtilities.saveImage(unprocessedTarget, directory + "4_target.png");
+            }
+        }
+
+        if (processedTarget != null) {
+            if (!processedTarget.empty()) {
+                Imgproc.cvtColor(processedTarget, processedTarget, Imgproc.COLOR_GRAY2BGR);
+                FTCUtilities.saveImage(processedTarget, directory + "5_target_processed.png");
+            }
+        }
     }
 
     //******************** VISION PROCESSING MEMBERS ***************************
@@ -92,7 +155,7 @@ public class VisionSystem {
      * Take a mat with a thresholded backboard and crop it down to its bounding box.
      * Save the offset while we're at it.
      */
-    static CroppedMatContainer cropBackboard(Mat input) {
+    static CroppedMatContainer cropBackboard(Mat input) throws VisionException {
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(input, contours, hierarchy,  Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -115,7 +178,7 @@ public class VisionSystem {
      * @param input binary mat where white is target
      * @return the full color mat
      */
-    static CroppedMatContainer getTargetRect(Mat input, Mat original, int xOffset, int yOffset){
+    static CroppedMatContainer getTarget(Mat input, Mat original, int xOffset, int yOffset) throws VisionException {
         Mat inverted = new Mat();
         Core.bitwise_not(input, inverted);
 
@@ -125,9 +188,14 @@ public class VisionSystem {
         Rect rect = Imgproc.boundingRect(largestContour);
         //convert largest contour to matOfPoint2f
 
+        int padding = 7;
+        if(rect.x + xOffset < padding || rect.y + yOffset < padding){
+            throw new VisionException("insufficient space around target for corner detection padding");
+        }
+
         //add padding to the corners of the Rect so that we can run corner detection and
         //have some space to work with
-        VisionUtil.padRect(rect, 7);
+        VisionUtil.padRect(rect, padding);
 
         //save the target's frame of reference in relation to the backboard
         int backboardXOffset = rect.x;
@@ -138,12 +206,20 @@ public class VisionSystem {
         rect.x += xOffset;
         rect.y += yOffset;
 
+//        System.out.println("x: " + rect.x);
+//        System.out.println("y: " + rect.y);
+//        System.out.println("w: " + rect.width);
+//        System.out.println("h: " + rect.height);
+//
         Mat coloredTarget = original.submat(rect);
+        Mat copy = new Mat();
+        coloredTarget.copyTo(copy);
 
         inverted.release();
         largestContour.release();
+        coloredTarget.release();
 
-        return new CroppedMatContainer(coloredTarget, backboardXOffset, backboardYOffset);
+        return new CroppedMatContainer(copy, backboardXOffset, backboardYOffset);
     }
 
     /**
@@ -159,6 +235,49 @@ public class VisionSystem {
             this.mat = mat;
             this.xOffset = xOffset;
             this.yOffset = yOffset;
+        }
+    }
+
+    /**
+     * Extracts the saturation channel of the target mat and blurs out
+     * the center region where the logo is.
+     */
+    static Mat processTarget(Mat input){
+        Mat sat = VisionUtil.getHSVChannel(input, VisionUtil.HSVChannel.SATURATION);
+
+        //blur the inner 2/3 of the image
+        int blurWidth = (sat.width() / 3) * 2;
+        int blurHeight = (sat.height() / 3) * 2;
+        int xOffset = (sat.width() - blurWidth) / 2;
+        int yOffset = (sat.height() - blurHeight) / 2;
+
+        Rect rect = new Rect(xOffset, yOffset, blurWidth,blurHeight);
+        Mat sub = sat.submat(rect);
+        //Imgproc.GaussianBlur(sub, sub, new Size(15,15), 0);
+        Imgproc.blur(sub, sub, new Size(15,15));
+        //Imgproc.threshold(sub, sub, 0,5, Imgproc.THRESH_BINARY);
+
+        return sat;
+    }
+
+    /**
+     * Takes an image and finds the 4 sharpest corners.
+     * Uses Shi-Tomasi method of corner detection, takes some nice parameters
+     */
+    static void drawTargetCorners(Mat input) throws VisionException {
+
+        MatOfPoint corners = new MatOfPoint();
+
+        Imgproc.goodFeaturesToTrack(input, corners, 4, 0.01, 50);
+
+        Point[] cornerArray = corners.toArray();
+
+        if (cornerArray.length != 4) {
+            throw new VisionException("Exception finding corners: " + cornerArray.length + " corners found.");
+        }
+
+        for (Point p: cornerArray) {
+            Imgproc.circle(input, p, 3, new Scalar(0), 1);
         }
     }
 

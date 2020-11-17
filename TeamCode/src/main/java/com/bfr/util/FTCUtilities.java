@@ -137,8 +137,6 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     }
     
     public static void saveImage(Mat mat, String fileName){
-        System.out.println(getLogDirectory());
-
         Mat rgb = new Mat();
         Imgproc.cvtColor(mat, rgb, Imgproc.COLOR_BGR2RGB);
         Imgcodecs.imwrite(getLogDirectory() + "/" + fileName, rgb);

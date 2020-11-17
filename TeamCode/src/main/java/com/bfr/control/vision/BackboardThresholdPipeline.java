@@ -9,7 +9,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class BackboardThresholdPipeline extends OpenCvPipeline {
 
-    private Mat hsv = new Mat();
+    //private Mat hsv = new Mat();
     private Mat thresh = new Mat();
     private Mat eroded = new Mat();
     private Mat dilated = new Mat();
@@ -17,15 +17,15 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     private Scalar min = new Scalar(0, 50, 0);
     private Scalar max = new Scalar(30, 255, 255);
 
-    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(10, 10));
+    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
     private static final double HUE_RANGE = 10;
 
     @Override
     public Mat processFrame(Mat input) {
 
-        Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
-        Core.inRange(hsv, min, max, thresh);
+        //Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
+        Core.inRange(input, min, max, thresh);
 
         Imgproc.erode(thresh, eroded, kernel);
         Imgproc.dilate(eroded, dilated, kernel);

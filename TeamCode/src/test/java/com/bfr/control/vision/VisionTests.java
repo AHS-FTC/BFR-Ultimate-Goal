@@ -22,7 +22,7 @@ public class VisionTests {
     }
 
     @Test
-    @Disabled
+    //@Disabled
     void testThresholdBlueBackboard() {
         BackboardThresholdPipeline pipeline = new BackboardThresholdPipeline();
         pipeline.setHue(110);
@@ -36,7 +36,7 @@ public class VisionTests {
 
     @Test
     //@Disabled
-    void testCropBackboard() {
+    void testCropBackboard() throws VisionException{
         Mat in = loadResourceAsMatBinary("threshgoal.png");
         Mat out = VisionSystem.cropBackboard(in).mat;
 
@@ -45,11 +45,24 @@ public class VisionTests {
 
     @Test
         //@Disabled
-    void testCornerFinder() {
-        Mat in = loadResourceAsMatBinary("threshcroppedgoal.png");
-        Mat color = loadResourceAsMat("bluegoal.jpg");
+    void testRegionalBlur() {
+        Mat in = loadResourceAsMat("colortarget.png");
 
-        saveMat(VisionSystem.getTargetRect(in, color, 164, 169).mat);
+        Mat out = VisionSystem.processTarget(in);
+
+        saveMat(out);
+    }
+
+
+    @Test
+        //@Disabled
+    void testCornerFinder() throws VisionException{
+        Mat in = loadResourceAsMat("processedtarget.png");
+        Imgproc.cvtColor(in, in, Imgproc.COLOR_BGR2GRAY);
+
+        VisionSystem.drawTargetCorners(in);
+
+        saveMat(in);
     }
 
     /**
