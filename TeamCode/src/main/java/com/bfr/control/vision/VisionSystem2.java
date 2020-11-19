@@ -20,7 +20,7 @@ import java.util.List;
  * Looks for the white vision target on the backboard and deduces the location of the robot.
  * @author Alex Appleby, Team 16896
  */
-public class VisionSystem {
+public class VisionSystem2 {
     private Cam cam;
     private boolean streamMode;
 
@@ -44,7 +44,7 @@ public class VisionSystem {
     //intermediate mats
     private Mat backboardThresholdMat, backboardTrimmedMat, unprocessedTarget, processedTarget;
 
-    public VisionSystem(boolean streamMode) {
+    public VisionSystem2(boolean streamMode) {
         cam = new Cam("Webcam 1");
 
         this.streamMode = streamMode;

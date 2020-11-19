@@ -1,7 +1,6 @@
 package com.bfr.control.vision;
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -38,7 +37,7 @@ public class VisionTests {
     //@Disabled
     void testCropBackboard() throws VisionException{
         Mat in = loadResourceAsMatBinary("threshgoal.png");
-        Mat out = VisionSystem.cropBackboard(in).mat;
+        Mat out = VisionSystem2.cropBackboard(in).mat;
 
         saveMat(out);
     }
@@ -48,7 +47,7 @@ public class VisionTests {
     void testRegionalBlur() {
         Mat in = loadResourceAsMat("colortarget.png");
 
-        Mat out = VisionSystem.processTarget(in);
+        Mat out = VisionSystem2.processTarget(in);
 
         saveMat(out);
     }
@@ -60,7 +59,7 @@ public class VisionTests {
         Mat in = loadResourceAsMat("processedtarget.png");
         Imgproc.cvtColor(in, in, Imgproc.COLOR_BGR2GRAY);
 
-        VisionSystem.drawTargetCorners(in);
+        VisionSystem2.drawTargetCorners(in);
 
         saveMat(in);
     }

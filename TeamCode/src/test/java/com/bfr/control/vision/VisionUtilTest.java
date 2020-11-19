@@ -9,7 +9,7 @@ import org.opencv.imgproc.Imgproc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class VisionUtilTest {
+public class VisionUtilTest {
     @BeforeAll
     static void beforeAll() {
         System.load(System.getProperty("user.dir") + "/lib/libopencv_java410.so");
@@ -36,5 +36,25 @@ class VisionUtilTest {
         assertEquals(rect.y, 0);
         assertEquals(rect.height, 12);
         assertEquals(rect.width, 7);
+    }
+
+    /**
+     * Loads file in resources
+     */
+    public static Mat loadResourceAsMat(String filename){
+        String resPath = VisionTests.class.getClassLoader().getResource(filename).getPath();
+
+        return Imgcodecs.imread(resPath);
+    }
+
+    public static Mat loadResourceAsMatBinary(String filename){
+        Mat m = loadResourceAsMat(filename);
+        Imgproc.cvtColor(m, m, Imgproc.COLOR_BGR2GRAY);
+        Mat retVal = new Mat();
+
+        Imgproc.threshold(m , retVal, 100, 255, Imgproc.THRESH_BINARY);
+
+        m.release();
+        return retVal;
     }
 }

@@ -28,6 +28,8 @@ public class DifTeleOp extends OpMode {
             //BNO055IMU imu = hardwareMap.get(IMU.class, "imu");
 
             FTCUtilities.setOpMode(this);
+
+
             wc = new WestCoast();
             intake = new Motor("intake", 0, true);
             shooter = new Shooter();

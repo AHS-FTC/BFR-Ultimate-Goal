@@ -37,9 +37,9 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     public static String getLogDirectory() {
         if (testMode) {
-            return (System.getProperty("user.dir"));
+            return System.getProperty("user.home") + "/Desktop/";
         } else {
-            return (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+            return (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/");
         }
     }
 
@@ -138,9 +138,22 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     
     public static void saveImage(Mat mat, String fileName){
         Mat rgb = new Mat();
-        Imgproc.cvtColor(mat, rgb, Imgproc.COLOR_BGR2RGB);
-        Imgcodecs.imwrite(getLogDirectory() + "/" + fileName, rgb);
+
+        if(testMode){
+            mat.copyTo(rgb);
+        } else {
+            Imgproc.cvtColor(mat, rgb, Imgproc.COLOR_BGR2RGB);
+        }
+
+        Imgcodecs.imwrite(getLogDirectory() + fileName, rgb);
         rgb.release();
+    }
+
+    public static void saveImage(Mat mat, String fileName, int conversion2BGR){
+        Mat converted = new Mat();
+        Imgproc.cvtColor(mat, converted, conversion2BGR);
+        saveImage(converted, fileName);
+        converted.release();
     }
 
     public static void saveImage(Mat mat){
