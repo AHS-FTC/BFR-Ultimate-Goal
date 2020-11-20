@@ -1,8 +1,6 @@
 package com.bfr.control.vision.objects;
 
 import com.bfr.control.vision.VisionException;
-import com.bfr.control.vision.VisionTests;
-import com.bfr.control.vision.VisionUtil;
 import com.bfr.control.vision.VisionUtilTest;
 import com.bfr.util.FTCUtilities;
 
@@ -13,7 +11,7 @@ import org.opencv.imgproc.Imgproc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BackboardTest {
+class TargetTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -26,14 +24,18 @@ class BackboardTest {
 
     @Test
     void testMake() throws VisionException {
+        Target target = new Target();
+
         Backboard backboard = new Backboard();
         Mat in = VisionUtilTest.loadResourceAsMat("bluegoal.jpg");
-
         Imgproc.cvtColor(in, in, Imgproc.COLOR_BGR2HSV);
+
         backboard.make(in);
 
-        backboard.dump();
+        target.make(backboard);
 
+        backboard.dump();
+        target.dump();
         in.release();
     }
 }
