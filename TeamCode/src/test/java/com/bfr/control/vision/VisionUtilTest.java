@@ -3,6 +3,7 @@ package com.bfr.control.vision;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -36,6 +37,18 @@ public class VisionUtilTest {
         assertEquals(rect.y, 0);
         assertEquals(rect.height, 12);
         assertEquals(rect.width, 7);
+    }
+
+    @Test
+    void testRectAroundPoint() {
+        Rect rect = VisionUtil.rectAroundPoint(new Point(0,0), 1);
+
+        assertEquals(rect.x, -1);
+        assertEquals(rect.y, -1);
+        assertEquals(rect.height, 2);
+        assertEquals(rect.width, 2);
+
+        assertEquals(rect.area(), 4);
     }
 
     /**

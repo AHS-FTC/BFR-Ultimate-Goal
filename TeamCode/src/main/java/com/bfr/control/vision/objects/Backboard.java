@@ -35,6 +35,7 @@ public class Backboard extends VisionObject {
 
     //protected for use in other VisionObjects and tests
     Mat binaryCropped = new Mat(), colorCropped = new Mat();
+    double xOffset, yOffset;
 
     public Backboard(){}
 
@@ -61,6 +62,9 @@ public class Backboard extends VisionObject {
 
         dilated.submat(boundingRect).copyTo(binaryCropped);
         fullImage.submat(boundingRect).copyTo(colorCropped);
+
+        xOffset = boundingRect.x;
+        yOffset = boundingRect.y;
 
         //empty contours to prevent memory leak
         for (MatOfPoint c : contours) {

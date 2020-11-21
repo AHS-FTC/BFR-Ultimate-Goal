@@ -10,6 +10,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -94,6 +95,12 @@ public class VisionUtil {
 
         rect.width += (2 * padding);
         rect.height += (2 * padding);
+    }
+
+    public static Rect rectAroundPoint(Point point, int padding){
+        Rect rect = new Rect(point, new Size(0,0));
+        padRect(rect, padding);
+        return rect;
     }
 
 
