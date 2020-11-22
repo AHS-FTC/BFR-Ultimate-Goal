@@ -25,7 +25,8 @@ public class Shooter {
     private RunningAvg runningAvg = new RunningAvg(20);
     private PDFController controller;
 
-    private State servoState = State.RESTING;
+    private IndexerState servoState = IndexerState.RESTING;
+    private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
     private final static long WAIT_TIME = 120;
 
@@ -57,7 +58,7 @@ public class Shooter {
         shooterMotor2.setPower(power);
     }
 
-    private enum State {
+    private enum IndexerState {
         PUSHING1(WAIT_TIME),
         RETRACTING1(2*WAIT_TIME),
         PUSHING2(3*WAIT_TIME),
@@ -67,16 +68,21 @@ public class Shooter {
 
         public final long endTime;
 
-        State(long endTime) {
+        IndexerState(long endTime) {
             this.endTime = endTime;
         }
+    }
+
+    private enum ShooterState {
+        RESTING,
+        RUNNING
     }
 
     public void runIndexerServos(){
         startTime = FTCUtilities.getCurrentTimeMillis();
         indexerServo.setPosition(1);
         holderServo.setPosition(0);
-        servoState = State.PUSHING1;
+        servoState = IndexerState.PUSHING1;
         updateIndexerServos();
     }
 
@@ -90,36 +96,57 @@ public class Shooter {
             case PUSHING1:
                 if (nextState){
                     indexerServo.setPosition(0);
-                    servoState = State.RETRACTING1;
+                    servoState = IndexerState.RETRACTING1;
                 }
                 break;
             case RETRACTING1:
                 if (nextState) {
                     indexerServo.setPosition(1);
-                    servoState = State.PUSHING2;
+                    servoState = IndexerState.PUSHING2;
                 }
                 break;
             case PUSHING2:
                 if (nextState){
                     indexerServo.setPosition(0);
-                    servoState = State.RETRACTING2;
+                    servoState = IndexerState.RETRACTING2;
                 }
                 break;
             case RETRACTING2:
                 if (nextState) {
                     indexerServo.setPosition(1);
-                    servoState = State.PUSHING3;
+                    servoState = IndexerState.PUSHING3;
                 }
                 break;
             case PUSHING3:
                 if (nextState){
                     indexerServo.setPosition(0);
                     holderServo.setPosition(1);
-                    servoState = State.RESTING;
+                    servoState = IndexerState.RESTING;
                 }
                 break;
         }
 
+    }
+
+    public void runShooter(){
+        shooterState = ShooterState.RUNNING;
+        updateShooterState();
+    }
+
+    public void stopShooter(){
+        shooterState = ShooterState.RESTING;
+        setPower(0);
+        updateShooterState();
+    }
+
+    private void updateShooterState(){
+        switch (shooterState){
+            case RESTING:
+                return;
+            case RUNNING:
+                setPower(controller.getOutput(rpm));
+                break;
+        }
     }
 
     public void update(long bulkReadTimestamp){
@@ -134,11 +161,12 @@ public class Shooter {
         telemetry.addData("rpm", rpm);
         telemetry.update();
 
-        setPower(controller.getOutput(rpm));
+//        setPower(controller.getOutput(rpm));
 
         lastRotations = shooterMotor1.getRotations();
         lastBulkReadTimeStamp = bulkReadTimestamp;
 
         updateIndexerServos();
+        updateShooterState();
     }
 }

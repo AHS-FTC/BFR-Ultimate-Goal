@@ -7,6 +7,7 @@ import com.bfr.hardware.sensors.OdometerImpl;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
@@ -46,6 +47,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         }
 
         return hardwareMap;
+    }
+
+    public static Controller getGamepad1(){
+        return new Controller(opMode.gamepad2);
+    }
+
+    public static Controller getGamepad2(){
+        return new Controller(opMode.gamepad2);
     }
 
     public static void setOpMode(OpMode opMode) {
