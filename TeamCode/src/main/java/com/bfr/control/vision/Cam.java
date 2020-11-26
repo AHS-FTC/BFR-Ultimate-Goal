@@ -18,6 +18,13 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
+    public static final int RES_WIDTH = 1184;
+    public static final int RES_HEIGHT = 656;
+    public static final double FOV_H = Math.toRadians(53.4);
+    public static final double FOV_V = Math.toRadians(31.6);
+    public static final double FOCAL_LENGTH_PX = RES_WIDTH / (2 * Math.tan(FOV_H) / 2.0);
+    public static final double FOCAL_LENGTH_PX_2 = RES_HEIGHT / (2 * Math.tan(FOV_V) / 2.0);
+
     public Cam(String deviceName) {
         HardwareMap hardwareMap = FTCUtilities.getHardwareMap();
 
@@ -32,7 +39,7 @@ public class Cam {
      */
     public void start(){
         openCvCamera.openCameraDeviceAsync(() -> {
-            openCvCamera.startStreaming(1184, 656, OpenCvCameraRotation.UPRIGHT);
+            openCvCamera.startStreaming(RES_WIDTH, 656, OpenCvCameraRotation.UPRIGHT);
         });
 
         //wait for the camera to initialize
@@ -43,6 +50,10 @@ public class Cam {
                 e.printStackTrace();
             }
         }
+    }
+
+    public double findHorizontalAngle(){
+        return 0;
     }
 
     /**
