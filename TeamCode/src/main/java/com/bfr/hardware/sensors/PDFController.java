@@ -1,8 +1,12 @@
 package com.bfr.hardware.sensors;
 
+import com.bfr.util.Constants;
+import com.bfr.util.FTCUtilities;
+
 public class PDFController {
     private final double Kp, Kd, Kf;
     private final double setPoint;
+    private long lastTime = FTCUtilities.getCurrentTimeMillis();
 
     private double lastError;
 
@@ -18,9 +22,13 @@ public class PDFController {
     public double getOutput(double current){
         double error = setPoint - current;
 
-        double derivative = error - lastError;
+        long currentTime = FTCUtilities.getCurrentTimeMillis();
+        long deltaTime = currentTime - lastTime;
+
+        double derivative = (error - lastError)/deltaTime;
 
         lastError = error;
-        return (Kp * error) + (Kd *  derivative) + Kf;
+        lastTime = currentTime;
+        return (Constants.p * error) + (Constants.d *  derivative) + Kf;
     }
 }

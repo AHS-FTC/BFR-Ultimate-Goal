@@ -3,10 +3,12 @@ package com.bfr.opMode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
 import com.bfr.hardware.sensors.DifOdometry;
+import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.Odometer;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -23,6 +25,7 @@ public class DifOdomOp extends OpMode {
     Odometer left, right;
     Odometry odometry;
     Telemetry logger;
+    IMU imu;
 
     @Override
     public void init() {
@@ -36,6 +39,7 @@ public class DifOdomOp extends OpMode {
 
         logger = FtcDashboard.getInstance().getTelemetry();
 
+        imu = new IMU("imu", true);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
 
@@ -60,6 +64,8 @@ public class DifOdomOp extends OpMode {
             module.clearBulkCache();
         }
         odometry.update();
+
+        logger.addData("imu", imu.getHeading());
 
         logger.addData("left wheel", left.getDistance());
         logger.addData("right wheel", right.getDistance());

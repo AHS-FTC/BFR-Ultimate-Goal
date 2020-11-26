@@ -1,10 +1,14 @@
 package com.bfr.hardware;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
+import com.bfr.hardware.sensors.IMU;
+import com.bfr.hardware.sensors.PDFController;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.FTCMath;
 import com.qualcomm.hardware.lynx.LynxModule;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
 
 import java.util.List;
@@ -13,7 +17,9 @@ public class Robot {
     private WestCoast westCoast = new WestCoast();
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
+    private IMU imu;
     private Position position;
+    private Telemetry dashboardTelemetry;
 
     private final double POWER = .6;
 
@@ -22,11 +28,15 @@ public class Robot {
     public Robot() {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
+        imu = new IMU("imu", true);
+
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
         position = westCoast.getPosition();
+
+        dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
     }
 
     public Intake getIntake(){return intake;}
@@ -54,6 +64,10 @@ public class Robot {
         turnToHeading(targetPos.heading);
     }
 
+    /**
+     * For use with encoder values and a global positioning system
+     * @param targetHeading
+     */
     public void turnToHeading(double targetHeading){
         //turning CCW -> positive to agree with rads (and vice versa)
         double turnDir = Math.signum(targetHeading - position.heading);
@@ -69,7 +83,7 @@ public class Robot {
     }
 
     /**
-     * Drives straight forward or backwards using encoder values and PID.
+     * Drives straight forward or backwards using encoder values and PID. Use with a global positioning system
      * @param targetDistance
      */
     public void driveDistance(double targetDistance){
@@ -83,6 +97,36 @@ public class Robot {
             update();
             //todo implement pid
         }
+
+        westCoast.brakeMotors();
+    }
+
+    public void driveStraight(double targetDistance){
+        westCoast.resetEncoders();
+        double driveDirection = Math.signum(targetDistance);
+
+        westCoast.setTankPower(-driveDirection*.3, -driveDirection*.3);
+        while ((driveDirection * targetDistance) <= westCoast.getAvgDistance()){
+            //Keep the robot driving straight
+        }
+//        westCoast.brakeMotors();
+    }
+
+    public void turn(double globalAngle){
+        PDFController pdfController = new PDFController(0, 0, 0, globalAngle, imu.getHeading());
+
+        double error;
+        do {
+            double imuHeading = imu.getHeading();
+            error = globalAngle - imuHeading;
+            System.out.println("error " + error);
+
+            dashboardTelemetry.addData("heading", imuHeading);
+            dashboardTelemetry.update();
+
+            double turnPower = pdfController.getOutput(imuHeading);
+            westCoast.setTankPower(-turnPower, turnPower);
+        } while(Math.abs(error) > 1);
 
         westCoast.brakeMotors();
     }
