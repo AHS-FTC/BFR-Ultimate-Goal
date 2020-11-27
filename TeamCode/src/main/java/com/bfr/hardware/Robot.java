@@ -2,14 +2,15 @@ package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
+import com.bfr.control.pidf.PIDFConfig;
+import com.bfr.control.pidf.TurnConstants;
 import com.bfr.hardware.sensors.IMU;
-import com.bfr.hardware.sensors.PDFController;
+import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.FTCMath;
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
 
 import java.util.List;
 
@@ -113,7 +114,29 @@ public class Robot {
     }
 
     public void turn(double globalAngle){
-        PDFController pdfController = new PDFController(0, 0, 0, globalAngle, imu.getHeading());
+        PIDFConfig pidfConfig = new PIDFConfig() {
+            @Override
+            public double kP() {
+                return TurnConstants.kP;
+            }
+
+            @Override
+            public double kI() {
+                return 0;
+            }
+
+            @Override
+            public double kD() {
+                return TurnConstants.kD;
+            }
+
+            @Override
+            public double feedForward(double setPoint) {
+                return 0;
+            }
+        };
+
+        PIDFController PIDFController = new PIDFController(pidfConfig, globalAngle, imu.getHeading());
 
         double error;
         do {
@@ -124,7 +147,7 @@ public class Robot {
             dashboardTelemetry.addData("heading", imuHeading);
             dashboardTelemetry.update();
 
-            double turnPower = pdfController.getOutput(imuHeading);
+            double turnPower = PIDFController.getOutput(imuHeading);
             westCoast.setTankPower(-turnPower, turnPower);
         } while(Math.abs(error) > 1);
 
