@@ -5,9 +5,11 @@ import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.hardware.sensors.Odometer;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
+import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Circle;
 import com.bfr.util.math.Line;
 import com.bfr.util.math.Point;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 /**
  * West coast drive / 6 Wheel drive for Aokigahara
@@ -20,7 +22,18 @@ public class WestCoast {
     private final double TRACK_WIDTH = 16.16;
     private final double HALF_WIDTH = TRACK_WIDTH / 2.0;
 
+    private Mode mode = Mode.DRIVER_CONTROL;
+    private final Gamepad driverGamepad;
+
+    private enum Mode {
+        DRIVER_CONTROL,
+        DRIVE_STRAIGHT,
+        POINT_TURN,
+    }
+
     public WestCoast() {
+        driverGamepad = FTCUtilities.getOpMode().gamepad1;
+
         leftMotor = new Motor("L", 0,false);
         rightMotor = new Motor("R", 0,false);
 
@@ -113,5 +126,18 @@ public class WestCoast {
     public Position getPosition(){
         odometry.update();
         return odometry.getPosition();
+    }
+
+    public void update(){
+        switch (mode){
+            case POINT_TURN:
+                //todo
+            case DRIVE_STRAIGHT:
+                //todo
+            case DRIVER_CONTROL:
+                arcadeDrive(driverGamepad.left_stick_y, driverGamepad.left_stick_x);
+        }
+
+
     }
 }
