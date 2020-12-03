@@ -33,6 +33,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static Map<String, DcMotor> testMotors = new HashMap();
     private static Map<String, OdometerImpl> testOdometers = new HashMap();
 
+    private static long mockTime = 0;
+
     public static String getLogDirectory() {
         if (testMode) {
             return (System.getProperty("user.dir"));
@@ -117,7 +119,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         if (!testMode) {
             return System.currentTimeMillis();
         } else {
-            throw new UnsupportedOperationException("Time isn't mocked yet. Do it.");
+            return mockTime++;
         }
     }
 

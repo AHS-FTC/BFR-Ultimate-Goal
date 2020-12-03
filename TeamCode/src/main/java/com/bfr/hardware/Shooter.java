@@ -1,7 +1,9 @@
 package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.bfr.hardware.sensors.PDFController;
+import com.bfr.control.pidf.ShooterConstants;
+import com.bfr.control.pidf.PIDFConfig;
+import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.Toggle;
 import com.bfr.util.math.RunningAvg;
@@ -24,7 +26,7 @@ public class Shooter {
     private static Telemetry telemetry = FtcDashboard.getInstance().getTelemetry();
 
     private RunningAvg runningAvg = new RunningAvg(20);
-    private PDFController controller;
+    private PIDFController controller;
 
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
@@ -49,9 +51,32 @@ public class Shooter {
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         lastRotations = shooterMotor1.getRotations();
-        controller = new PDFController(0.002, 0,0.8, 3000, lastRotations);
 
-        powerShotToggle = new Toggle();
+        PIDFConfig pidfConfig = new PIDFConfig() {
+            @Override
+            public double kP() {
+                return ShooterConstants.kP;
+            }
+
+            @Override
+            public double kI() {
+                return 0;
+            }
+
+            @Override
+            public double kD() {
+                return ShooterConstants.kD;
+            }
+
+            //todo make more sophisticated feedforward model.
+            @Override
+            public double feedForward(double setPoint) {
+                return 0.8;
+
+            }
+        };
+
+        controller = new PIDFController(pidfConfig, 3000, lastRotations);
     }
 
     public void brakeMotors(){
@@ -81,7 +106,7 @@ public class Shooter {
 
     private enum ShooterState {
         RESTING,
-        RUNNING,
+        RUNNING
     }
 
     public void runIndexerServos(){
