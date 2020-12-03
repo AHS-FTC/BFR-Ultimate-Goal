@@ -4,8 +4,8 @@ import com.bfr.util.Constants;
 import com.bfr.util.FTCUtilities;
 
 public class PDFController {
-    private final double Kp, Kd, Kf;
-    private final double setPoint;
+    private final double Kp, Kd;
+    private double setPoint, Kf; //was final
     private long lastTime = FTCUtilities.getCurrentTimeMillis();
 
     private double lastError;
@@ -29,6 +29,14 @@ public class PDFController {
 
         lastError = error;
         lastTime = currentTime;
-        return (Constants.p * error) + (Constants.d *  derivative) + Kf;
+        return (Kp * error) + (Kd *  derivative) + Kf;
+    }
+
+    public void setSetPoint(double setPoint){
+        this.setPoint = setPoint;
+    }
+
+    public void setKf(double Kf){
+        this.Kf = Kf;
     }
 }

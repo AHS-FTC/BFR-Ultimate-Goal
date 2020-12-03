@@ -3,6 +3,7 @@ package com.bfr.hardware;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.hardware.sensors.PDFController;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.Toggle;
 import com.bfr.util.math.RunningAvg;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -30,6 +31,8 @@ public class Shooter {
     private long startTime, elapsedTime;
     private final static long WAIT_TIME = 120;
 
+    private Toggle powerShotToggle;
+
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
         shooterMotor2 = new Motor("s2", 41.0,true);
@@ -40,12 +43,15 @@ public class Shooter {
         indexerServo.mapPosition(-.05, .2);
         holderServo.mapPosition(.3, .5);
         holderServo.setPosition(1);
+        indexerServo.setPosition(0);
 
         shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         lastRotations = shooterMotor1.getRotations();
         controller = new PDFController(0.002, 0,0.8, 3000, lastRotations);
+
+        powerShotToggle = new Toggle();
     }
 
     public void brakeMotors(){
@@ -75,7 +81,7 @@ public class Shooter {
 
     private enum ShooterState {
         RESTING,
-        RUNNING
+        RUNNING,
     }
 
     public void runIndexerServos(){
@@ -137,6 +143,22 @@ public class Shooter {
         shooterState = ShooterState.RESTING;
         setPower(0);
         updateShooterState();
+    }
+
+    public void shootPowerShots(){
+        powerShotToggle.canFlip();
+        updateShooterSpeed();
+        updateShooterState();
+    }
+
+    private void updateShooterSpeed(){
+        if (powerShotToggle.isEnabled()){
+            controller.setKf(.6);
+            controller.setSetPoint(2600);
+        } else {
+            controller.setKf(.8);
+            controller.setSetPoint(3000);
+        }
     }
 
     private void updateShooterState(){
