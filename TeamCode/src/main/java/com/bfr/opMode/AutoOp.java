@@ -21,7 +21,15 @@ public class AutoOp extends LinearOpMode {
 
         //robot.driveStraight(10);
 
+        robot.turn(10);
+        sleep(1000);
+        robot.turn(30);
+        sleep(1000);
         robot.turn(90);
+        sleep(1000);
+        robot.turn(180);
+        sleep(1000);
+        robot.turn(360);
 
     }
 }

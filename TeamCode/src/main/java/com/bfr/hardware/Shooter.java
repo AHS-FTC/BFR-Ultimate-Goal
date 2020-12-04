@@ -76,7 +76,7 @@ public class Shooter {
             }
         };
 
-        controller = new PIDFController(pidfConfig, 3000, lastRotations);
+        controller = new PIDFController(pidfConfig, 3000, lastRotations, 3);
     }
 
     public void brakeMotors(){
@@ -170,21 +170,21 @@ public class Shooter {
         updateShooterState();
     }
 
-    public void shootPowerShots(){
-        powerShotToggle.canFlip();
-        updateShooterSpeed();
-        updateShooterState();
-    }
+//    public void shootPowerShots(){
+//        powerShotToggle.canFlip();
+//        updateShooterSpeed();
+//        updateShooterState();
+//    }
 
-    private void updateShooterSpeed(){
-        if (powerShotToggle.isEnabled()){
-            controller.setKf(.6);
-            controller.setSetPoint(2600);
-        } else {
-            controller.setKf(.8);
-            controller.setSetPoint(3000);
-        }
-    }
+//    private void updateShooterSpeed(){
+//        if (powerShotToggle.isEnabled()){
+//            controller.setKf(.6);
+//            controller.setSetPoint(2600);
+//        } else {
+//            controller.setKf(.8);
+//            controller.setSetPoint(3000);
+//        }
+//    }
 
     private void updateShooterState(){
         switch (shooterState){

@@ -122,7 +122,7 @@ public class Robot {
 
             @Override
             public double kI() {
-                return 0;
+                return TurnConstants.kI;
             }
 
             @Override
@@ -136,7 +136,8 @@ public class Robot {
             }
         };
 
-        PIDFController PIDFController = new PIDFController(pidfConfig, globalAngle, imu.getHeading());
+        PIDFController turnController = new PIDFController(pidfConfig, globalAngle, imu.getHeading(),3);
+        turnController.setStabilityThreshold(.01);
 
         double error;
         do {
@@ -147,9 +148,9 @@ public class Robot {
             dashboardTelemetry.addData("heading", imuHeading);
             dashboardTelemetry.update();
 
-            double turnPower = PIDFController.getOutput(imuHeading);
+            double turnPower = turnController.getOutput(imuHeading);
             westCoast.setTankPower(-turnPower, turnPower);
-        } while(Math.abs(error) > 1);
+        } while(!turnController.isStable() || Math.abs(error) > 1);
 
         westCoast.brakeMotors();
     }

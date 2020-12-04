@@ -131,10 +131,10 @@ public class DifTeleOp extends OpMode {
                 updateShooter();
             }
 
-            if (gamepad2.x && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
-                lastTime = FTCUtilities.getCurrentTimeMillis();
-                robot.getShooter().shootPowerShots();
-            }
+//            if (gamepad2.x && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
+//                lastTime = FTCUtilities.getCurrentTimeMillis();
+//                robot.getShooter().shootPowerShots();
+//            }
 
 //            long startTime = System.currentTimeMillis();
 //            wc.gateauDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);

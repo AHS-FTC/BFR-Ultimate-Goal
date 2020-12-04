@@ -27,6 +27,7 @@ class PIDFControllerTest {
     @Test
     void testIntegral() {
         PIDFController controller = new PIDFController(0,1,0,10,0);
+        controller.setStabilityThreshold(100);
 
         //delta time progresses by 1 ms each call
         assertEquals(5, controller.getOutput(5));
