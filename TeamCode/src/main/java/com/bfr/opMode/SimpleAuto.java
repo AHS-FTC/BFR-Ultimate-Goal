@@ -5,13 +5,14 @@ import com.bfr.hardware.Motor;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp(name="Simple Auto", group="Iterative Opmode")
-//@Disabled
+@Disabled
 public class SimpleAuto extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

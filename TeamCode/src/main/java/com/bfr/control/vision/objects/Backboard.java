@@ -53,6 +53,7 @@ public class Backboard extends VisionObject {
         Imgproc.dilate(eroded, dilated, kernel);
 
         //Find the bounding box of the largest contour.
+        contours.clear();
         Imgproc.findContours(dilated, contours, hierarchy,  Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
         MatOfPoint largestContour = VisionUtil.findLargestContour(contours);

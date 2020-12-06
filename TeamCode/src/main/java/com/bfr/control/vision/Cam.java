@@ -18,8 +18,8 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
-    public static final int RES_WIDTH = 640;
-    public static final int RES_HEIGHT = 480;
+    public static final int RES_WIDTH = 800;
+    public static final int RES_HEIGHT = 600;
     public static final double MIDDLE_X = RES_WIDTH / 2.0;
 
     public static final double FOV_H = Math.toRadians(48.5);
@@ -43,7 +43,7 @@ public class Cam {
      */
     public void start(){
         openCvCamera.openCameraDeviceAsync(() -> {
-            openCvCamera.startStreaming(RES_WIDTH, 656, OpenCvCameraRotation.UPRIGHT);
+            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, OpenCvCameraRotation.UPRIGHT);
         });
 
         //wait for the camera to initialize

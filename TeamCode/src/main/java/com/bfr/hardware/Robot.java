@@ -113,7 +113,7 @@ public class Robot {
 //        westCoast.brakeMotors();
     }
 
-    public void turn(double globalAngle){
+    public void turnGlobal(double globalAngle){
         PIDFConfig pidfConfig = new PIDFConfig() {
             @Override
             public double kP() {
@@ -158,6 +158,10 @@ public class Robot {
         westCoast.brakeMotors();
     }
 
+    public void turnLocal(double angle){
+        turnGlobal(imu.getHeading() + angle);
+    }
+
 
     /**
      * The update() method contains maintenance stuff
@@ -188,4 +192,5 @@ public class Robot {
     public Position getPosition() {
         return position;
     }
+
 }
