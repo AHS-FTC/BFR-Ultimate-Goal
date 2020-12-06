@@ -78,7 +78,7 @@ public class DifTeleOp extends OpMode {
 
         @Override
         public void loop() {
-            robot.drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+            robot.drive(-gamepad1.left_stick_y, -gamepad1.right_stick_x);
 
             shooterPower += gamepad1.right_trigger * .01;
             shooterPower += gamepad1.left_trigger * -.01;
@@ -130,6 +130,11 @@ public class DifTeleOp extends OpMode {
                 shooterToggle.canFlip();
                 updateShooter();
             }
+
+//            if (gamepad2.x && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
+//                lastTime = FTCUtilities.getCurrentTimeMillis();
+//                robot.getShooter().shootPowerShots();
+//            }
 
 //            long startTime = System.currentTimeMillis();
 //            wc.gateauDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);

@@ -21,15 +21,25 @@ public class WestCoast {
     private final double HALF_WIDTH = TRACK_WIDTH / 2.0;
 
     public WestCoast() {
-        leftMotor = new Motor("L", 0,true);
-        rightMotor = new Motor("R", 0,true);
+        leftMotor = new Motor("L", 0,false);
+        rightMotor = new Motor("R", 0,false);
 
-        leftOdo = new OdometerImpl("l_odo", 3.95, false, 1440.0);
-        rightOdo = new OdometerImpl("r_odo", 3.95, true, 1440.0);
+        leftOdo = new OdometerImpl("l_odo", 3.95, false, 1440.0); //false
+        rightOdo = new OdometerImpl("r_odo", 3.95, true, 1440.0); //true
 
         odometry = new DifOdometry(leftOdo, rightOdo, Position.origin, TRACK_WIDTH);
 
         odometry.start();
+    }
+
+    public double getAvgDistance(){
+        double addedDistance = leftOdo.getDistance() + rightOdo.getDistance();
+        return (addedDistance/2.0);
+    }
+
+    public void resetEncoders(){
+        leftOdo.reset();
+        rightOdo.reset();
     }
 
     /**

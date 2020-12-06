@@ -1,8 +1,11 @@
 package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.bfr.hardware.sensors.PDFController;
+import com.bfr.control.pidf.ShooterConstants;
+import com.bfr.control.pidf.PIDFConfig;
+import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.Toggle;
 import com.bfr.util.math.RunningAvg;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -23,12 +26,14 @@ public class Shooter {
     private static Telemetry telemetry = FtcDashboard.getInstance().getTelemetry();
 
     private RunningAvg runningAvg = new RunningAvg(20);
-    private PDFController controller;
+    private PIDFController controller;
 
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
     private final static long WAIT_TIME = 120;
+
+    private Toggle powerShotToggle;
 
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
@@ -40,12 +45,38 @@ public class Shooter {
         indexerServo.mapPosition(-.05, .2);
         holderServo.mapPosition(.3, .5);
         holderServo.setPosition(1);
+        indexerServo.setPosition(0);
 
         shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         lastRotations = shooterMotor1.getRotations();
-        controller = new PDFController(0.002, 0,0.8, 3000, lastRotations);
+
+        PIDFConfig pidfConfig = new PIDFConfig() {
+            @Override
+            public double kP() {
+                return ShooterConstants.kP;
+            }
+
+            @Override
+            public double kI() {
+                return 0;
+            }
+
+            @Override
+            public double kD() {
+                return ShooterConstants.kD;
+            }
+
+            //todo make more sophisticated feedforward model.
+            @Override
+            public double feedForward(double setPoint, double error) {
+                return 0.8;
+
+            }
+        };
+
+        controller = new PIDFController(pidfConfig, 3000, lastRotations, 3);
     }
 
     public void brakeMotors(){
@@ -138,6 +169,22 @@ public class Shooter {
         setPower(0);
         updateShooterState();
     }
+
+//    public void shootPowerShots(){
+//        powerShotToggle.canFlip();
+//        updateShooterSpeed();
+//        updateShooterState();
+//    }
+
+//    private void updateShooterSpeed(){
+//        if (powerShotToggle.isEnabled()){
+//            controller.setKf(.6);
+//            controller.setSetPoint(2600);
+//        } else {
+//            controller.setKf(.8);
+//            controller.setSetPoint(3000);
+//        }
+//    }
 
     private void updateShooterState(){
         switch (shooterState){
