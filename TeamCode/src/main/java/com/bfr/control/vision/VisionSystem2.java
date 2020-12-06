@@ -105,7 +105,6 @@ public class VisionSystem2 {
 
     private void update(){
         cam.copyFrameTo(currentMat);
-        Imgproc.cvtColor(currentMat, currentMat, Imgproc.COLOR_RGB2HSV);
     }
 
     /**

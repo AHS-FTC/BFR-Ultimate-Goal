@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -63,8 +64,8 @@ public class Cam {
     //todo use the more accurate method to do this.
     public static double getAngleFromX(double pixelX){
 
-        //negative is right, ccw; positive is left, cw
-        double distanceFromCenter = pixelX - MIDDLE_X;
+        //positive is left, ccw; negative is right, cw
+        double distanceFromCenter = MIDDLE_X - pixelX;
 
         double degreesPerPixel = Math.toDegrees(FOV_H) / RES_WIDTH;
 
@@ -75,11 +76,15 @@ public class Cam {
      * Echos frameEjector.copyFrameTo()
      */
     public void copyFrameTo(Mat mat){
-        frameEjector.copyFrameTo(mat);
+        Mat hsv = new Mat();
+        frameEjector.copyFrameTo(hsv);
+        Imgproc.cvtColor(hsv, hsv, Imgproc.COLOR_RGB2HSV);
+        hsv.copyTo(mat);
+        hsv.release();
     }
 
     /**
-     * Echos frameEjector.setOutputMat()
+     * Echos frameEjector.setOutputMat() and converts to HSV
      */
     public void setOutputMat(Mat mat){
         frameEjector.setOutputMat(mat);

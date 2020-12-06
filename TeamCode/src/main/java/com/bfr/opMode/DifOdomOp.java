@@ -10,6 +10,7 @@ import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.List;
 
 @TeleOp(name="Dif Odometry Logger", group="Iterative Opmode")
-//@Disabled
+@Disabled
 public class DifOdomOp extends OpMode {
     List<LynxModule> allHubs;
 

@@ -36,10 +36,10 @@ public class TurnToGoalOpMode extends LinearOpMode {
                     double targetX = backboard.getMiddleX();
                     double angleToTarget = Cam.getAngleFromX(targetX);
                     robot.turnLocal(angleToTarget);
-
                 } catch (VisionException e){
                     e.printStackTrace();
                     System.out.println("frick");
+                    backboard.dump();
                 }
             }
             cam.setOutputMat(mat);
