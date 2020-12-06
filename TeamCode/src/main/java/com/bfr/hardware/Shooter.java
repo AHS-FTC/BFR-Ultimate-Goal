@@ -70,7 +70,7 @@ public class Shooter {
 
             //todo make more sophisticated feedforward model.
             @Override
-            public double feedForward(double setPoint) {
+            public double feedForward(double setPoint, double error) {
                 return 0.8;
 
             }

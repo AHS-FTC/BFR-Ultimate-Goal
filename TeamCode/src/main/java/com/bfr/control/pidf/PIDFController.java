@@ -48,7 +48,7 @@ public class PIDFController {
                     }
 
                     @Override
-                    public double feedForward(double setPoint) {
+                    public double feedForward(double setPoint, double error) {
                         return 0;
                     }
                 },
@@ -98,7 +98,7 @@ public class PIDFController {
         dashboardTelemetry.addData("icorr", iCorrection);
         dashboardTelemetry.addData("dcorr", dCorrection);
 
-        return pCorrection + iCorrection + dCorrection + constants.feedForward(setPoint);
+        return pCorrection + iCorrection + dCorrection + constants.feedForward(setPoint, error);
     }
 
     public void setStabilityThreshold(double threshold){

@@ -131,13 +131,16 @@ public class Robot {
             }
 
             @Override
-            public double feedForward(double setPoint) {
-                return 0;
+            public double feedForward(double setPoint, double error) {
+                if(Math.abs(error) < TurnConstants.finishedThreshold || Math.abs(error) > 20){
+                    return 0;
+                }
+                return TurnConstants.minPower * Math.signum(error);
             }
         };
 
         PIDFController turnController = new PIDFController(pidfConfig, globalAngle, imu.getHeading(),3);
-        turnController.setStabilityThreshold(.01);
+        turnController.setStabilityThreshold(.005);
 
         double error;
         do {
@@ -150,7 +153,7 @@ public class Robot {
 
             double turnPower = turnController.getOutput(imuHeading);
             westCoast.setTankPower(-turnPower, turnPower);
-        } while(!turnController.isStable() || Math.abs(error) > 1);
+        } while(!turnController.isStable() || Math.abs(error) > TurnConstants.finishedThreshold);
 
         westCoast.brakeMotors();
     }
