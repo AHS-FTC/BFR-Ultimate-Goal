@@ -12,6 +12,7 @@ import java.util.List;
 public class Robot {
     private WestCoast westCoast = new WestCoast();
     private Shooter shooter = new Shooter();
+    private Intake intake = new Intake();
     private Position position;
 
     private final double POWER = .6;
@@ -28,10 +29,15 @@ public class Robot {
         position = westCoast.getPosition();
     }
 
-    public Shooter getShooter(){return shooter;}
+    public Intake getIntake(){return intake;}
 
-    public WestCoast getWestCoast() {
-        return westCoast;
+    public void drive(double forward, double turn){
+        westCoast.arcadeDrive(forward, turn);
+    }
+
+    //todo this is only temporary as the shooter will be modal
+    public void setShooterPower(double power){
+        shooter.setPower(power);
     }
 
     public void driveToPosition(Position targetPos){
@@ -85,10 +91,19 @@ public class Robot {
      * it should be called every iteration in any blocking method.
      */
     public void update(){
+
+        long nanosBefore = System.nanoTime();
+
         //clear sensor cache
         for(LynxModule hub : hubs) {
             hub.clearBulkCache();
         }
+
+        long nanosAfter = System.nanoTime();
+
+        long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
+
+        shooter.update(bulkReadTimestamp);
 
         //run sensor reads
         position = westCoast.getPosition();

@@ -1,24 +1,25 @@
 package com.bfr.opMode;
 
-import com.bfr.hardware.Motor;
+import com.bfr.hardware.Intake;
+import com.bfr.hardware.Robot;
+import com.bfr.hardware.SerialServo;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.Switch;
+import com.bfr.util.Toggle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp(name="Dif TeleOp", group="Iterative Opmode")
 //@Disabled
 public class DifTeleOp extends OpMode {
-    WestCoast wc;
-    Motor intake;
-    Shooter shooter;
-    Motor shooter1, shooter2;
-    double shooterPower;
-    CRServo s1;
+    Robot robot;
+    Intake intake;
+    private double shooterPower, intakePower;
+    SerialServo indexerServo;
+    Switch intakeOutSwitch, intakeInSwitch;
+    Toggle indexerToggle;
 
     //adb connect 192.168.43.1:5555
 
@@ -28,17 +29,16 @@ public class DifTeleOp extends OpMode {
             //BNO055IMU imu = hardwareMap.get(IMU.class, "imu");
 
             FTCUtilities.setOpMode(this);
-
-
-            wc = new WestCoast();
-            intake = new Motor("intake", 0, true);
-            shooter = new Shooter();
-//            shooter1 = new Motor("s1", 0, true);
-//            shooter2 = new Motor("s2", 0, true);
-            s1 = hardwareMap.get(CRServo.class,"s1");
-
+            robot = new Robot();
+            intake = robot.getIntake();
+            indexerServo = new SerialServo("s1", false);
+            indexerServo.mapPosition(-.1, .4);
             shooterPower = 0;
 
+            intakeOutSwitch = new Switch();
+            intakeInSwitch = new Switch();
+
+            indexerToggle = new Toggle();
 
 //            Telemetry tel = FtcDashboard.getInstance().getTelemetry();
 
@@ -75,7 +75,7 @@ public class DifTeleOp extends OpMode {
 
         @Override
         public void loop() {
-            wc.arcadeDrive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+            robot.drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
 
             shooterPower += gamepad1.right_trigger * .01;
             shooterPower += gamepad1.left_trigger * -.01;
@@ -83,18 +83,42 @@ public class DifTeleOp extends OpMode {
                 shooterPower = 0;
             }
 
-            shooter.setPower(shooterPower);
+            //robot.setShooterPower(shooterPower);
 //            shooter1.setPower(shooterPower);
 //            shooter2.setPower(shooterPower);
 
-            telemetry.addData("Power", shooterPower);
+
+
+            telemetry.addData("Shooter Power", shooterPower);
             telemetry.update();
 
-            if (gamepad1.a){
-                s1.setPower(1);
+            //press l bumper to reverse intake
+            if (gamepad1.left_bumper) {
+                if(intakeOutSwitch.canFlip()) {
+                    if (intakePower == -.8) {
+                        intakePower = 0;
+                    } else {
+                        intakePower = -.8;
+                    }
+                    intake.setPower(intakePower);
+                }
             }
-            if (gamepad1.b){
-                s1.setPower(0);
+
+            //press r bumper to intake
+            if (gamepad1.right_bumper) {
+                if (intakeInSwitch.canFlip()) {
+                    if (intakePower == 1.0) {
+                        intakePower = 0;
+                    } else {
+                        intakePower = 1.0;
+                    }
+                    intake.setPower(intakePower);
+                }
+            }
+
+            if (gamepad1.a) {
+                indexerToggle.canFlip();
+                updateIndexerServo();
             }
 
 //            long startTime = System.currentTimeMillis();
@@ -105,11 +129,20 @@ public class DifTeleOp extends OpMode {
 //            telemetry.addData("y", p.y);
 //            telemetry.addData("h", p.heading);
 //            telemetry.addData("deltaTime", System.currentTimeMillis() - startTime);
+            robot.update();
+        }
+
+        private void updateIndexerServo(){
+            if (indexerToggle.isEnabled()){
+                indexerServo.setPosition(1);
+            } else {
+                indexerServo.setPosition(0);
+            }
         }
 
         @Override
         public void stop() {
-//            wc.stop();
+//            wc.kill();
         }
 
     }
