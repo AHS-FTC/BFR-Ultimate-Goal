@@ -34,8 +34,11 @@ public class Backboard extends VisionObject {
     private final Mat hierarchy = new Mat();
 
     //protected for use in other VisionObjects and tests
-    Mat binaryCropped = new Mat(), colorCropped = new Mat();
+    public Mat binaryCropped = new Mat(), colorCropped = new Mat();
     double xOffset, yOffset;
+
+    //the middle x pixel of the backboard
+    private double middleX = 0.0;
 
     public Backboard(){}
 
@@ -66,11 +69,13 @@ public class Backboard extends VisionObject {
         xOffset = boundingRect.x;
         yOffset = boundingRect.y;
 
+        middleX = (boundingRect.tl().x + boundingRect.br().x) / 2.0;
+
         //empty contours to prevent memory leak
-        for (MatOfPoint c : contours) {
-            c.release();
-        }
-        largestContour.release();
+//        for (MatOfPoint c : contours) {
+//            c.release();
+//        }
+//        largestContour.release();
     }
 
     /**
@@ -91,6 +96,10 @@ public class Backboard extends VisionObject {
         hierarchy.release();
         binaryCropped.release();
         colorCropped.release();
+    }
+
+    public double getMiddleX() {
+        return middleX;
     }
 
     @Override

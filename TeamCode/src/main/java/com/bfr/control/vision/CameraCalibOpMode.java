@@ -16,7 +16,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name = "Camera OpMode", group = "Linear Opmode")
+@TeleOp(name = "Camera Calibration OpMode", group = "Linear Opmode")
 //@Disabled
 public class CameraCalibOpMode extends LinearOpMode {
 

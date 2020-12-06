@@ -18,9 +18,13 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
-    public static final int RES_WIDTH = 1184;
-    public static final int RES_HEIGHT = 656;
-    public static final double FOV_H = Math.toRadians(53.4);
+    public static final int RES_WIDTH = 640;
+    public static final int RES_HEIGHT = 480;
+    public static final double MIDDLE_X = RES_WIDTH / 2.0;
+
+    public static final double FOV_H = Math.toRadians(48.5);
+
+    //todo make these gud
     public static final double FOV_V = Math.toRadians(31.6);
     public static final double FOCAL_LENGTH_PX = RES_WIDTH / (2 * Math.tan(FOV_H) / 2.0);
     public static final double FOCAL_LENGTH_PX_2 = RES_HEIGHT / (2 * Math.tan(FOV_V) / 2.0);
@@ -54,6 +58,17 @@ public class Cam {
 
     public double findHorizontalAngle(){
         return 0;
+    }
+
+    //todo use the more accurate method to do this.
+    public static double getAngleFromX(double pixelX){
+
+        //negative is right, ccw; positive is left, cw
+        double distanceFromCenter = pixelX - MIDDLE_X;
+
+        double degreesPerPixel = Math.toDegrees(FOV_H) / RES_WIDTH;
+
+        return distanceFromCenter * degreesPerPixel;
     }
 
     /**
