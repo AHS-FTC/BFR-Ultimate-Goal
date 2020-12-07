@@ -52,10 +52,7 @@ public class PIDFController {
                         return 0;
                     }
                 },
-                setPoint,
-                initialValue,
-                1);
-
+                setPoint, initialValue, 1);
     }
 
     /**
@@ -94,9 +91,11 @@ public class PIDFController {
         double iCorrection = constants.kI() * errorSum;
         double dCorrection = constants.kD() * derivative;
 
-        dashboardTelemetry.addData("pcorr", pCorrection);
-        dashboardTelemetry.addData("icorr", iCorrection);
-        dashboardTelemetry.addData("dcorr", dCorrection);
+        if(FTCUtilities.isDebugMode()){
+            dashboardTelemetry.addData("pcorr", pCorrection);
+            dashboardTelemetry.addData("icorr", iCorrection);
+            dashboardTelemetry.addData("dcorr", dCorrection);
+        }
 
         return pCorrection + iCorrection + dCorrection + constants.feedForward(setPoint, error);
     }
@@ -115,6 +114,10 @@ public class PIDFController {
         initialValue = currentValue;
         lastError = setPoint - currentValue;
         lastTime = FTCUtilities.getCurrentTimeMillis();
+    }
+
+    public void setSetPoint(double setPoint){
+        this.setPoint = setPoint;
     }
 
 }

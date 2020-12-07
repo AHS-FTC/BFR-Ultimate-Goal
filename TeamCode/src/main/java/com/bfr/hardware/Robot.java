@@ -7,7 +7,6 @@ import com.bfr.control.pidf.TurnConstants;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
-import com.bfr.util.math.FTCMath;
 import com.qualcomm.hardware.lynx.LynxModule;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -19,10 +18,7 @@ public class Robot {
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
     private IMU imu;
-    private Position position;
-    private Telemetry dashboardTelemetry;
-
-    private final double POWER = .6;
+    private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private List<LynxModule> hubs;
 
@@ -34,10 +30,6 @@ public class Robot {
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-
-        position = westCoast.getPosition();
-
-        dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
     }
 
     public Intake getIntake(){return intake;}
@@ -53,64 +45,25 @@ public class Robot {
         shooter.setPower(power);
     }
 
+    //todo consider fixing?
     public void driveToPosition(Position targetPos){
 
-        double angleToTarget = FTCMath.ensureIdealAngle(position.angleTo(targetPos), position.heading);
-        double distanceToTarget = position.distanceTo(targetPos);
+        //double angleToTarget = FTCMath.ensureIdealAngle(position.angleTo(targetPos), position.heading);
+        //double distanceToTarget = position.distanceTo(targetPos);
 
-        turnToHeading(angleToTarget);
+        //turnToHeading(angleToTarget);
 
-        driveDistance(distanceToTarget);
-
-        turnToHeading(targetPos.heading);
+        //driveDistance(distanceToTarget);
+        //turnToHeading(targetPos.heading);
     }
 
-    /**
-     * For use with encoder values and a global positioning system
-     * @param targetHeading
-     */
-    public void turnToHeading(double targetHeading){
-        //turning CCW -> positive to agree with rads (and vice versa)
-        double turnDir = Math.signum(targetHeading - position.heading);
 
-        westCoast.setTankPower(turnDir * -POWER, turnDir * POWER);
-        while (Math.abs(position.heading - targetHeading) > Math.toRadians(2.5) && FTCUtilities.opModeIsActive()){
-            FTCUtilities.addData("heading", position.heading);
-            FTCUtilities.addData("error", Math.abs(position.heading - targetHeading));
-            FTCUtilities.updateTelemetry();
+    public void driveStraight(double power, double targetRotations){
+        westCoast.startDriveStraight(power, targetRotations);
+
+        while (westCoast.getMode() == WestCoast.Mode.DRIVE_STRAIGHT && FTCUtilities.opModeIsActive()){
             update();
         }
-        westCoast.brakeMotors();
-    }
-
-    /**
-     * Drives straight forward or backwards using encoder values and PID. Use with a global positioning system
-     * @param targetDistance
-     */
-    public void driveDistance(double targetDistance){
-        double driveDir = Math.signum(targetDistance);
-
-        Position startPosition = new Position(0,0,0);
-        startPosition.copyFrom(position);
-
-        westCoast.setTankPower(driveDir * POWER, driveDir * POWER);
-        while (startPosition.distanceTo(position) < targetDistance && FTCUtilities.opModeIsActive()){
-            update();
-            //todo implement pid
-        }
-
-        westCoast.brakeMotors();
-    }
-
-    public void driveStraight(double targetDistance){
-        westCoast.resetEncoders();
-        double driveDirection = Math.signum(targetDistance);
-
-        westCoast.setTankPower(-driveDirection*.3, -driveDirection*.3);
-        while ((driveDirection * targetDistance) <= westCoast.getAvgDistance()){
-            //Keep the robot driving straight
-        }
-//        westCoast.brakeMotors();
     }
 
     public void turnGlobal(double globalAngle){
@@ -162,7 +115,6 @@ public class Robot {
         turnGlobal(imu.getHeading() + angle);
     }
 
-
     /**
      * The update() method contains maintenance stuff
      * it should be called every iteration in any blocking method.
@@ -177,20 +129,14 @@ public class Robot {
         }
 
         long nanosAfter = System.nanoTime();
-
         long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
 
         shooter.update(bulkReadTimestamp);
+        westCoast.update();
 
-        //run sensor reads
-        position = westCoast.getPosition();
-        //finish sensor reads
-
+        if(FTCUtilities.isDebugMode()){
+            dashboardTelemetry.update();
+        }
         //todo track loop times
     }
-
-    public Position getPosition() {
-        return position;
-    }
-
 }

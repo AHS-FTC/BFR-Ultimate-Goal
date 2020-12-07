@@ -7,7 +7,6 @@ import com.bfr.hardware.sensors.OdometerImpl;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
@@ -33,6 +32,9 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static OpMode opMode;
 
     private static boolean testMode = false;
+
+    //for logging with Dashboard
+    private static boolean debugMode = false;
     private static Map<String, DcMotor> testMotors = new HashMap();
     private static Map<String, OdometerImpl> testOdometers = new HashMap();
 
@@ -65,6 +67,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     public static void setOpMode(OpMode opMode) {
         FTCUtilities.opMode = opMode;
         FTCUtilities.hardwareMap = opMode.hardwareMap;
+
+        debugMode = true;
     }
 
     public static OpMode getOpMode() {
@@ -179,6 +183,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     public static void startTestMode() {
         testMode = true;
+    }
+
+    /**
+     * In debugMode, logging with Dashboard is valid.
+     * @return
+     */
+    public static boolean isDebugMode(){
+        return debugMode;
     }
 
     private FTCUtilities() {

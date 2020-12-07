@@ -23,7 +23,7 @@ public class Shooter {
     private long lastBulkReadTimeStamp = System.nanoTime();
     private double lastRotations;
     private static final double minsPerNano = 1.6666667E-11;
-    private static Telemetry telemetry = FtcDashboard.getInstance().getTelemetry();
+    private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private RunningAvg runningAvg = new RunningAvg(20);
     private PIDFController controller;
@@ -205,8 +205,7 @@ public class Shooter {
         rpm = -runningAvg.calc(deltaRotations / deltaTime);
 
         //todo fix negative permanently
-        telemetry.addData("rpm", rpm);
-        telemetry.update();
+        dashboardTelemetry.addData("Shooter RPM", rpm);
 
 //        setPower(controller.getOutput(rpm));
 

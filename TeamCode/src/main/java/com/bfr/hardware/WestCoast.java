@@ -1,31 +1,39 @@
 package com.bfr.hardware;
 
-import com.bfr.control.path.Position;
-import com.bfr.hardware.sensors.DifOdometry;
-import com.bfr.hardware.sensors.Odometer;
-import com.bfr.hardware.sensors.OdometerImpl;
-import com.bfr.hardware.sensors.Odometry;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.bfr.control.pidf.PIDFConfig;
+import com.bfr.control.pidf.PIDFController;
+import com.bfr.control.pidf.RampdownConstants;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Circle;
+import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Line;
 import com.bfr.util.math.Point;
 import com.qualcomm.robotcore.hardware.Gamepad;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
  * West coast drive / 6 Wheel drive for Aokigahara
  */
 public class WestCoast {
     private Motor leftMotor, rightMotor;
-    private Odometer leftOdo, rightOdo;
 
-    private Odometry odometry;
+    private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
+
     private final double TRACK_WIDTH = 16.16;
     private final double HALF_WIDTH = TRACK_WIDTH / 2.0;
 
-    private Mode mode = Mode.DRIVER_CONTROL;
+    private Mode mode = Mode.IDLE;
     private final Gamepad driverGamepad;
 
-    private enum Mode {
+    private double driveStraightPower = 0.0;
+    private double driveStraightRotations = 0.0;
+
+    private PIDFController rampdownController;
+
+    public enum Mode {
+        IDLE,
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
         POINT_TURN,
@@ -34,25 +42,45 @@ public class WestCoast {
     public WestCoast() {
         driverGamepad = FTCUtilities.getOpMode().gamepad1;
 
-        leftMotor = new Motor("L", 0,false);
-        rightMotor = new Motor("R", 0,false);
+        leftMotor = new Motor("L", 1440.0,false);
+        rightMotor = new Motor("R", 1440.0,false);
 
-        leftOdo = new OdometerImpl("l_odo", 3.95, false, 1440.0); //false
-        rightOdo = new OdometerImpl("r_odo", 3.95, true, 1440.0); //true
+        leftMotor.flipEncoder();
 
-        odometry = new DifOdometry(leftOdo, rightOdo, Position.origin, TRACK_WIDTH);
+        //initial values sorta don't matter here. we update them in driveStraight().
+        rampdownController = new PIDFController(new PIDFConfig() {
+            @Override
+            public double kP() {
+                return RampdownConstants.kP;
+            }
 
-        odometry.start();
+            @Override
+            public double kI() {
+                return RampdownConstants.kI;
+            }
+
+            @Override
+            public double kD() {
+                return RampdownConstants.kD;
+            }
+
+            @Override
+            public double feedForward(double setPoint, double error) {
+                return 0;
+            }
+        }, 0,0,3);
+
+        //todo find stability threshold
+        rampdownController.setStabilityThreshold(0.001);
     }
 
-    public double getAvgDistance(){
-        double addedDistance = leftOdo.getDistance() + rightOdo.getDistance();
-        return (addedDistance/2.0);
+    private double getAvgRotations(){
+        return (leftMotor.getRotations() + rightMotor.getRotations()) / 2.0;
     }
 
     public void resetEncoders(){
-        leftOdo.reset();
-        rightOdo.reset();
+        leftMotor.zeroDistance();
+        rightMotor.zeroDistance();
     }
 
     /**
@@ -110,34 +138,56 @@ public class WestCoast {
         rightMotor.setPower(forward + turn);
     }
 
-    /**
-     * Not to be confused with brakeMotors()
-     */
-    public void kill(){
-        odometry.stop();
-        brakeMotors();
-    }
-
     public void brakeMotors(){
-        leftMotor.setPower(0);
-        rightMotor.setPower(0);
+        leftMotor.setPower(0.0);
+        rightMotor.setPower(0.0);
     }
 
-    public Position getPosition(){
-        odometry.update();
-        return odometry.getPosition();
+    public void startDriveStraight(double power, double targetRotations){
+        driveStraightPower = power;
+        driveStraightRotations = targetRotations;
+        resetEncoders();
+
+        rampdownController.reset(getAvgRotations());
+        rampdownController.setSetPoint(driveStraightRotations);
+
+        mode = Mode.DRIVE_STRAIGHT;
+    }
+
+    public Mode getMode() {
+        return mode;
     }
 
     public void update(){
         switch (mode){
+            case IDLE:
+                break;
             case POINT_TURN:
                 //todo
+                break;
             case DRIVE_STRAIGHT:
-                //todo
+                double avgRotations = getAvgRotations();
+                double error = driveStraightRotations - avgRotations;
+                double rampdownPower = rampdownController.getOutput(avgRotations);
+
+                if(FTCUtilities.isDebugMode()){
+                    dashboardTelemetry.addData("rotations", avgRotations);
+                    dashboardTelemetry.addData("drive straight power", driveStraightPower);
+                }
+
+                if(rampdownController.isStable() && Math.abs(error) < RampdownConstants.finishedThreshold){
+                    mode = Mode.IDLE;
+                    brakeMotors();
+                    break;
+                }
+
+                //take closest to zero between the default driving power and the PID rampdown power
+                double motorPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
+                setTankPower(motorPower, motorPower);
+                break;
             case DRIVER_CONTROL:
                 arcadeDrive(driverGamepad.left_stick_y, driverGamepad.left_stick_x);
+                break;
         }
-
-
     }
 }
