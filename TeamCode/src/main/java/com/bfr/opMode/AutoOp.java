@@ -1,11 +1,9 @@
 package com.bfr.opMode;
 
-import com.bfr.control.path.Position;
 import com.bfr.hardware.Robot;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @Autonomous(name="BFR Auto", group="Linear OpMode")
 //@Disabled
@@ -21,7 +19,15 @@ public class AutoOp extends LinearOpMode {
 
         //robot.driveStraight(10);
 
-        robot.turn(90);
+        robot.turnGlobal(10);
+        sleep(1000);
+        robot.turnGlobal(30);
+        sleep(1000);
+        robot.turnGlobal(90);
+        sleep(1000);
+        robot.turnGlobal(180);
+        sleep(1000);
+        robot.turnGlobal(360);
 
     }
 }

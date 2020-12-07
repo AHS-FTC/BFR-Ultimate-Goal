@@ -19,17 +19,16 @@ import java.net.Socket;
  * (with help from 6929 Miles)
  */
 public class Network {
-    private static final String IP = "192.168.49.57";
+    private static final String IP = "192.168.43.57";
 
     private static DataOutputStream clientout;
 
-    public static void initTCP(){
-        try {
-            Socket s = new Socket(InetAddress.getByName("192.168.49.57"), 6969);
-            clientout = new DataOutputStream(s.getOutputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private static Mat tcpMat = new Mat();
+    private static TCPThread tcpThread;
+
+    public static void initTCP() throws IOException {
+        Socket s = new Socket(InetAddress.getByName(IP), 6969);
+        clientout = new DataOutputStream(s.getOutputStream());
     }
 
     /**
@@ -44,18 +43,52 @@ public class Network {
         }
     }
 
+    public static void startTCP(Mat mat){
+        tcpMat = mat;
+        tcpThread = new TCPThread();
+        tcpThread.start();
+    }
+
+    public static void stopTCP(){
+        tcpThread.kill();
+    }
+
+    private static class TCPThread extends Thread {
+        private boolean running = true;
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (running){
+               sendTCPMat();
+            }
+        }
+
+        public synchronized void kill(){
+            running = false;
+        }
+    }
+
+    public static synchronized void updateTCPMat(Mat mat){
+        tcpMat = mat;
+    }
+
     /**
      * Sends an OpenCV Mat over TCP to the pathfinder
      */
-    public static void sendTCP(Mat mat){
-        Bitmap image = Bitmap.createBitmap(mat.cols(),
-                mat.rows(), Bitmap.Config.RGB_565);
+    private static synchronized void sendTCPMat(){
+        Bitmap image = Bitmap.createBitmap(tcpMat.cols(),
+                tcpMat.rows(), Bitmap.Config.RGB_565);
 
-        Utils.matToBitmap(mat, image);
+        Utils.matToBitmap(tcpMat, image);
 
         Bitmap bitmap = (Bitmap) image;
         // toggle with filter
-        bitmap = Bitmap.createScaledBitmap(bitmap, 600, 600, true); // 600x600 is very clear 320x240 is also good
+        bitmap = Bitmap.createScaledBitmap(bitmap, 320, 240, true); // 600x600 is very clear 320x240 is also good
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
@@ -65,7 +98,7 @@ public class Network {
             clientout.writeInt(byteArray.length);
             clientout.write(byteArray);
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 }

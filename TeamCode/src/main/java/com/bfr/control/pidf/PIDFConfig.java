@@ -11,5 +11,5 @@ public interface PIDFConfig {
     double kP();
     double kI();
     double kD();
-    double feedForward(double setPoint);
+    double feedForward(double setPoint, double error);
 }

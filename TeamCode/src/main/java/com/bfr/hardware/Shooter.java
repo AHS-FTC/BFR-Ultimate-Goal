@@ -5,6 +5,7 @@ import com.bfr.control.pidf.ShooterConstants;
 import com.bfr.control.pidf.PIDFConfig;
 import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.Toggle;
 import com.bfr.util.math.RunningAvg;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -32,6 +33,8 @@ public class Shooter {
     private long startTime, elapsedTime;
     private final static long WAIT_TIME = 120;
 
+    private Toggle powerShotToggle;
+
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
         shooterMotor2 = new Motor("s2", 41.0,true);
@@ -42,6 +45,7 @@ public class Shooter {
         indexerServo.mapPosition(-.05, .2);
         holderServo.mapPosition(.3, .5);
         holderServo.setPosition(1);
+        indexerServo.setPosition(0);
 
         shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -66,13 +70,13 @@ public class Shooter {
 
             //todo make more sophisticated feedforward model.
             @Override
-            public double feedForward(double setPoint) {
+            public double feedForward(double setPoint, double error) {
                 return 0.8;
 
             }
         };
 
-        controller = new PIDFController(pidfConfig, 3000, lastRotations);
+        controller = new PIDFController(pidfConfig, 3000, lastRotations, 3);
     }
 
     public void brakeMotors(){
@@ -165,6 +169,22 @@ public class Shooter {
         setPower(0);
         updateShooterState();
     }
+
+//    public void shootPowerShots(){
+//        powerShotToggle.canFlip();
+//        updateShooterSpeed();
+//        updateShooterState();
+//    }
+
+//    private void updateShooterSpeed(){
+//        if (powerShotToggle.isEnabled()){
+//            controller.setKf(.6);
+//            controller.setSetPoint(2600);
+//        } else {
+//            controller.setKf(.8);
+//            controller.setSetPoint(3000);
+//        }
+//    }
 
     private void updateShooterState(){
         switch (shooterState){

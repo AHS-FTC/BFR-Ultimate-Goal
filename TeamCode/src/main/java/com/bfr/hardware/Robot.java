@@ -113,7 +113,7 @@ public class Robot {
 //        westCoast.brakeMotors();
     }
 
-    public void turn(double globalAngle){
+    public void turnGlobal(double globalAngle){
         PIDFConfig pidfConfig = new PIDFConfig() {
             @Override
             public double kP() {
@@ -122,7 +122,7 @@ public class Robot {
 
             @Override
             public double kI() {
-                return 0;
+                return TurnConstants.kI;
             }
 
             @Override
@@ -131,12 +131,16 @@ public class Robot {
             }
 
             @Override
-            public double feedForward(double setPoint) {
-                return 0;
+            public double feedForward(double setPoint, double error) {
+                if(Math.abs(error) < TurnConstants.finishedThreshold || Math.abs(error) > 20){
+                    return 0;
+                }
+                return TurnConstants.minPower * Math.signum(error);
             }
         };
 
-        PIDFController PIDFController = new PIDFController(pidfConfig, globalAngle, imu.getHeading());
+        PIDFController turnController = new PIDFController(pidfConfig, globalAngle, imu.getHeading(),3);
+        turnController.setStabilityThreshold(.005);
 
         double error;
         do {
@@ -147,11 +151,15 @@ public class Robot {
             dashboardTelemetry.addData("heading", imuHeading);
             dashboardTelemetry.update();
 
-            double turnPower = PIDFController.getOutput(imuHeading);
+            double turnPower = turnController.getOutput(imuHeading);
             westCoast.setTankPower(-turnPower, turnPower);
-        } while(Math.abs(error) > 1);
+        } while(!turnController.isStable() || Math.abs(error) > TurnConstants.finishedThreshold);
 
         westCoast.brakeMotors();
+    }
+
+    public void turnLocal(double angle){
+        turnGlobal(imu.getHeading() + angle);
     }
 
 
@@ -184,4 +192,5 @@ public class Robot {
     public Position getPosition() {
         return position;
     }
+
 }
