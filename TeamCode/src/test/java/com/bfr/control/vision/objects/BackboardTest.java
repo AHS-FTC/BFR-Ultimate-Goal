@@ -27,7 +27,7 @@ class BackboardTest {
     @Test
     void testMake() throws VisionException {
         Backboard backboard = new Backboard();
-        Mat in = VisionUtilTest.loadResourceAsMat("bluegoal.jpg");
+        Mat in = VisionUtilTest.loadResourceAsMat("bluegoal.png");
 
         Imgproc.cvtColor(in, in, Imgproc.COLOR_BGR2HSV);
         backboard.make(in);

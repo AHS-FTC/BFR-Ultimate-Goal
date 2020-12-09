@@ -2,6 +2,7 @@ package com.bfr.opMode;
 
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
+import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.Switch;
 import com.bfr.util.Toggle;
@@ -11,12 +12,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name="Dif TeleOp", group="Iterative Opmode")
 //@Disabled
 public class DifTeleOp extends OpMode {
-    Robot robot;
-    Intake intake;
-    private double shooterPower, intakePower;
+    private Robot robot;
+    private Intake intake;
+    private WestCoast westCoast;
+    private double intakePower;
 
-    Switch intakeOutSwitch, intakeInSwitch;
-    Toggle indexerToggle, shooterToggle;
+    private Switch intakeOutSwitch, intakeInSwitch, autoAimSwitch;
+    private Toggle indexerToggle, shooterToggle;
     long waitTime = 300;
     long lastTime;
 
@@ -29,12 +31,15 @@ public class DifTeleOp extends OpMode {
             //BNO055IMU imu = hardwareMap.get(IMU.class, "imu");
 
             FTCUtilities.setOpMode(this);
+            WestCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
+
             robot = new Robot();
             intake = robot.getIntake();
-            shooterPower = 0;
+            westCoast = robot.getWestCoast();
 
             intakeOutSwitch = new Switch();
             intakeInSwitch = new Switch();
+            autoAimSwitch = new Switch();
 
             indexerToggle = new Toggle();
             shooterToggle = new Toggle();
@@ -74,27 +79,11 @@ public class DifTeleOp extends OpMode {
         @Override
         public void start() {
             lastTime = FTCUtilities.getCurrentTimeMillis();
+            westCoast.startDriverControl();
         }
 
         @Override
         public void loop() {
-            robot.drive(-gamepad1.left_stick_y, -gamepad1.right_stick_x);
-
-            shooterPower += gamepad1.right_trigger * .01;
-            shooterPower += gamepad1.left_trigger * -.01;
-            if (gamepad1.x){
-                shooterPower = 0;
-            }
-
-            //robot.setShooterPower(shooterPower);
-//            shooter1.setPower(shooterPower);
-//            shooter2.setPower(shooterPower);
-
-
-
-            telemetry.addData("Shooter Power", shooterPower);
-            telemetry.update();
-
             //press l bumper to reverse intake
             if (gamepad1.left_bumper) {
                 if(intakeOutSwitch.canFlip()) {
@@ -125,25 +114,16 @@ public class DifTeleOp extends OpMode {
             }
 
             if (gamepad2.y && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
-//TODO          fix vvvvv
+//TODO          fix time thingy
                 lastTime = FTCUtilities.getCurrentTimeMillis();
                 shooterToggle.canFlip();
                 updateShooter();
             }
 
-//            if (gamepad2.x && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
-//                lastTime = FTCUtilities.getCurrentTimeMillis();
-//                robot.getShooter().shootPowerShots();
-//            }
+            if (autoAimSwitch.canFlip() && gamepad1.x){
+                robot.autoAim();
+            }
 
-//            long startTime = System.currentTimeMillis();
-//            wc.gateauDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-//
-//            Position p = wc.getPosition();
-//            telemetry.addData("x", p.x);
-//            telemetry.addData("y", p.y);
-//            telemetry.addData("h", p.heading);
-//            telemetry.addData("deltaTime", System.currentTimeMillis() - startTime);
             robot.update();
         }
 
@@ -157,7 +137,7 @@ public class DifTeleOp extends OpMode {
 
     @Override
         public void stop() {
-//            wc.kill();
+
         }
 
     }

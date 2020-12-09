@@ -19,14 +19,14 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
-    public static final int RES_WIDTH = 800;
-    public static final int RES_HEIGHT = 600;
+    public static final int RES_WIDTH = 640;
+    public static final int RES_HEIGHT = 360;
     public static final double MIDDLE_X = RES_WIDTH / 2.0;
 
-    public static final double FOV_H = Math.toRadians(48.5);
+    public static final double FOV_H = Math.toRadians(92.2);
 
     //todo make these gud
-    public static final double FOV_V = Math.toRadians(31.6);
+    public static final double FOV_V = Math.toRadians(60.6);
     public static final double FOCAL_LENGTH_PX = RES_WIDTH / (2 * Math.tan(FOV_H) / 2.0);
     public static final double FOCAL_LENGTH_PX_2 = RES_HEIGHT / (2 * Math.tan(FOV_V) / 2.0);
 
@@ -44,7 +44,7 @@ public class Cam {
      */
     public void start(){
         openCvCamera.openCameraDeviceAsync(() -> {
-            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, OpenCvCameraRotation.UPRIGHT);
+            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN);
         });
 
         //wait for the camera to initialize
@@ -55,10 +55,6 @@ public class Cam {
                 e.printStackTrace();
             }
         }
-    }
-
-    public double findHorizontalAngle(){
-        return 0;
     }
 
     //todo use the more accurate method to do this.

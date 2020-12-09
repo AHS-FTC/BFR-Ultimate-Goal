@@ -1,6 +1,7 @@
 package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.bfr.control.pidf.RingBuffer;
 import com.bfr.control.pidf.ShooterConstants;
 import com.bfr.control.pidf.PIDFConfig;
 import com.bfr.control.pidf.PIDFController;
@@ -18,20 +19,21 @@ public class Shooter {
     private Motor shooterMotor1, shooterMotor2;
     private double rpm = 0;
 
-    SerialServo indexerServo, holderServo;
+    private SerialServo indexerServo, holderServo;
 
     private long lastBulkReadTimeStamp = System.nanoTime();
     private double lastRotations;
     private static final double minsPerNano = 1.6666667E-11;
     private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
-    private RunningAvg runningAvg = new RunningAvg(20);
+    //private RunningAvg runningAvg = new RunningAvg(20);
+    private RingBuffer<DataPoint> ringBuffer = new RingBuffer(10, new DataPoint(0, FTCUtilities.getCurrentTimeMillis()));
     private PIDFController controller;
 
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
-    private final static long WAIT_TIME = 120;
+    private final static long WAIT_TIME = 250;
 
     private Toggle powerShotToggle;
 
@@ -196,15 +198,29 @@ public class Shooter {
         }
     }
 
+    private class DataPoint{
+        final double rotations;
+        final long time;
+
+        public DataPoint(double rotations, long time) {
+            this.rotations = rotations;
+            this.time = time;
+        }
+    }
+
     public void update(long bulkReadTimestamp){
-        double deltaRotations = lastRotations - shooterMotor1.getRotations();
+
+        DataPoint current = new DataPoint(shooterMotor1.getRotations(), bulkReadTimestamp);
+        DataPoint last = ringBuffer.insert(current);
+
+        double deltaRotations = current.rotations - last.rotations;
 
         //note conversions to minutes
-        double deltaTime = (bulkReadTimestamp - lastBulkReadTimeStamp) * minsPerNano;
+        double deltaTime = (current.time - last.time) * minsPerNano;
 
-        rpm = -runningAvg.calc(deltaRotations / deltaTime);
 
-        //todo fix negative permanently
+        rpm = deltaRotations / deltaTime;
+
         dashboardTelemetry.addData("Shooter RPM", rpm);
 
 //        setPower(controller.getOutput(rpm));

@@ -34,7 +34,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static boolean testMode = false;
 
     //for logging with Dashboard
-    private static boolean debugMode = false;
+    private static boolean dashboardMode = false;
     private static Map<String, DcMotor> testMotors = new HashMap();
     private static Map<String, OdometerImpl> testOdometers = new HashMap();
 
@@ -68,7 +68,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         FTCUtilities.opMode = opMode;
         FTCUtilities.hardwareMap = opMode.hardwareMap;
 
-        debugMode = true;
+        dashboardMode = true;
     }
 
     public static OpMode getOpMode() {
@@ -189,8 +189,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
      * In debugMode, logging with Dashboard is valid.
      * @return
      */
-    public static boolean isDebugMode(){
-        return debugMode;
+    public static boolean isDashboardMode(){
+        return dashboardMode;
     }
 
     private FTCUtilities() {

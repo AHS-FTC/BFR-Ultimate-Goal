@@ -13,7 +13,7 @@ package com.bfr.util;
  * @author Andrew Seybold
  */
 public class Switch {
-    private final static double BUTTON_THRESHOLD = 300; //in millis - time between presses
+    private final static long BUTTON_THRESHOLD = 300; //in millis - time between presses
     private long lastPress;
 
     public Switch() {

@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.util.FTCUtilities;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
 
 public class PIDFController {
     private final PIDFConfig constants;
@@ -91,7 +90,7 @@ public class PIDFController {
         double iCorrection = constants.kI() * errorSum;
         double dCorrection = constants.kD() * derivative;
 
-        if(FTCUtilities.isDebugMode()){
+        if(FTCUtilities.isDashboardMode()){
             dashboardTelemetry.addData("pcorr", pCorrection);
             dashboardTelemetry.addData("icorr", iCorrection);
             dashboardTelemetry.addData("dcorr", dCorrection);
@@ -114,6 +113,11 @@ public class PIDFController {
         initialValue = currentValue;
         lastError = setPoint - currentValue;
         lastTime = FTCUtilities.getCurrentTimeMillis();
+    }
+
+    public void reset(double currentValue, double newSetPoint){
+        setSetPoint(newSetPoint);
+        reset(currentValue);
     }
 
     public void setSetPoint(double setPoint){
