@@ -7,9 +7,13 @@ import com.bfr.hardware.sensors.OdometerImpl;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,11 +36,13 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static Map<String, DcMotor> testMotors = new HashMap();
     private static Map<String, OdometerImpl> testOdometers = new HashMap();
 
+    private static long mockTime = 0;
+
     public static String getLogDirectory() {
         if (testMode) {
-            return (System.getProperty("user.dir"));
+            return System.getProperty("user.home") + "/Desktop/";
         } else {
-            return (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+            return (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/");
         }
     }
 
@@ -46,6 +52,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         }
 
         return hardwareMap;
+    }
+
+    public static Controller getGamepad1(){
+        return new Controller(opMode.gamepad2);
+    }
+
+    public static Controller getGamepad2(){
+        return new Controller(opMode.gamepad2);
     }
 
     public static void setOpMode(OpMode opMode) {
@@ -108,7 +122,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         if (!testMode) {
             return System.currentTimeMillis();
         } else {
-            throw new UnsupportedOperationException("Time isn't mocked yet. Do it.");
+            return mockTime++;
         }
     }
 
@@ -117,9 +131,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
      * Saves can be found in the downloads folder of the phone.
      */
     public static void saveImage(Bitmap bitmap) {
-        Calendar now = Calendar.getInstance();
         String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
-        String fileName = "BotImg_" + now.get(Calendar.DAY_OF_MONTH) + "_" + now.get(Calendar.HOUR_OF_DAY) + "_" + now.get(Calendar.MINUTE) + "_" + now.get(Calendar.SECOND) + now.get(Calendar.MILLISECOND) + ".jpg";
+        String fileName = getFileName();
         File img = new File(filePath, fileName);
         if (img.exists())
             img.delete();
@@ -129,10 +142,39 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
             out.flush();
             out.close();
 
-
         } catch (Exception e) {
             throw new Warning(e.getMessage());
         }
+    }
+    
+    public static void saveImage(Mat mat, String fileName){
+        Mat rgb = new Mat();
+
+        if(testMode){
+            mat.copyTo(rgb);
+        } else {
+            Imgproc.cvtColor(mat, rgb, Imgproc.COLOR_BGR2RGB);
+        }
+
+        Imgcodecs.imwrite(getLogDirectory() + fileName, rgb);
+        rgb.release();
+    }
+
+    public static void saveImage(Mat mat, String fileName, int conversion2BGR){
+        Mat converted = new Mat();
+        Imgproc.cvtColor(mat, converted, conversion2BGR);
+        saveImage(converted, fileName);
+        converted.release();
+    }
+
+    public static void saveImage(Mat mat){
+        saveImage(mat, getFileName());
+    }
+
+
+    private static String getFileName(){
+        Calendar now = Calendar.getInstance();
+        return "BotImg_" + now.get(Calendar.DAY_OF_MONTH) + "_" + now.get(Calendar.HOUR_OF_DAY) + "_" + now.get(Calendar.MINUTE) + "_" + now.get(Calendar.SECOND) + now.get(Calendar.MILLISECOND) + ".jpg";
     }
 
     public static void startTestMode() {

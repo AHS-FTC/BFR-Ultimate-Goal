@@ -16,10 +16,11 @@ public class DifTeleOp extends OpMode {
     private double shooterPower, intakePower;
 
     Switch intakeOutSwitch, intakeInSwitch;
-    Toggle indexerToggle;
+    Toggle indexerToggle, shooterToggle;
     long waitTime = 300;
     long lastTime;
 
+    //Controller gamepad1, gamepad2;
     //adb connect 192.168.43.1:5555
 
         @Override
@@ -36,6 +37,10 @@ public class DifTeleOp extends OpMode {
             intakeInSwitch = new Switch();
 
             indexerToggle = new Toggle();
+            shooterToggle = new Toggle();
+
+//            gamepad1 = FTCUtilities.getGamepad1();
+//            gamepad2 = FTCUtilities.getGamepad2();
 
 //            Telemetry tel = FtcDashboard.getInstance().getTelemetry();
 
@@ -73,7 +78,7 @@ public class DifTeleOp extends OpMode {
 
         @Override
         public void loop() {
-            robot.drive(gamepad1.left_stick_y, gamepad1.right_stick_x);
+            robot.drive(-gamepad1.left_stick_y, -gamepad1.right_stick_x);
 
             shooterPower += gamepad1.right_trigger * .01;
             shooterPower += gamepad1.left_trigger * -.01;
@@ -119,6 +124,18 @@ public class DifTeleOp extends OpMode {
                 robot.getShooter().runIndexerServos();
             }
 
+            if (gamepad2.y && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
+//TODO          fix vvvvv
+                lastTime = FTCUtilities.getCurrentTimeMillis();
+                shooterToggle.canFlip();
+                updateShooter();
+            }
+
+//            if (gamepad2.x && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
+//                lastTime = FTCUtilities.getCurrentTimeMillis();
+//                robot.getShooter().shootPowerShots();
+//            }
+
 //            long startTime = System.currentTimeMillis();
 //            wc.gateauDrive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 //
@@ -130,7 +147,15 @@ public class DifTeleOp extends OpMode {
             robot.update();
         }
 
-        @Override
+    private void updateShooter() {
+        if (shooterToggle.isEnabled()){
+            robot.getShooter().runShooter();
+        } else {
+            robot.getShooter().stopShooter();
+        }
+    }
+
+    @Override
         public void stop() {
 //            wc.kill();
         }

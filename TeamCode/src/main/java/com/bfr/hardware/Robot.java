@@ -1,11 +1,16 @@
 package com.bfr.hardware;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
+import com.bfr.control.pidf.PIDFConfig;
+import com.bfr.control.pidf.TurnConstants;
+import com.bfr.hardware.sensors.IMU;
+import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.FTCMath;
 import com.qualcomm.hardware.lynx.LynxModule;
 
-import org.opencv.core.Mat;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.List;
 
@@ -13,7 +18,9 @@ public class Robot {
     private WestCoast westCoast = new WestCoast();
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
+    private IMU imu;
     private Position position;
+    private Telemetry dashboardTelemetry;
 
     private final double POWER = .6;
 
@@ -22,11 +29,15 @@ public class Robot {
     public Robot() {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
+        imu = new IMU("imu", true);
+
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
         position = westCoast.getPosition();
+
+        dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
     }
 
     public Intake getIntake(){return intake;}
@@ -54,6 +65,10 @@ public class Robot {
         turnToHeading(targetPos.heading);
     }
 
+    /**
+     * For use with encoder values and a global positioning system
+     * @param targetHeading
+     */
     public void turnToHeading(double targetHeading){
         //turning CCW -> positive to agree with rads (and vice versa)
         double turnDir = Math.signum(targetHeading - position.heading);
@@ -69,7 +84,7 @@ public class Robot {
     }
 
     /**
-     * Drives straight forward or backwards using encoder values and PID.
+     * Drives straight forward or backwards using encoder values and PID. Use with a global positioning system
      * @param targetDistance
      */
     public void driveDistance(double targetDistance){
@@ -85,6 +100,66 @@ public class Robot {
         }
 
         westCoast.brakeMotors();
+    }
+
+    public void driveStraight(double targetDistance){
+        westCoast.resetEncoders();
+        double driveDirection = Math.signum(targetDistance);
+
+        westCoast.setTankPower(-driveDirection*.3, -driveDirection*.3);
+        while ((driveDirection * targetDistance) <= westCoast.getAvgDistance()){
+            //Keep the robot driving straight
+        }
+//        westCoast.brakeMotors();
+    }
+
+    public void turnGlobal(double globalAngle){
+        PIDFConfig pidfConfig = new PIDFConfig() {
+            @Override
+            public double kP() {
+                return TurnConstants.kP;
+            }
+
+            @Override
+            public double kI() {
+                return TurnConstants.kI;
+            }
+
+            @Override
+            public double kD() {
+                return TurnConstants.kD;
+            }
+
+            @Override
+            public double feedForward(double setPoint, double error) {
+                if(Math.abs(error) < TurnConstants.finishedThreshold || Math.abs(error) > 20){
+                    return 0;
+                }
+                return TurnConstants.minPower * Math.signum(error);
+            }
+        };
+
+        PIDFController turnController = new PIDFController(pidfConfig, globalAngle, imu.getHeading(),3);
+        turnController.setStabilityThreshold(.005);
+
+        double error;
+        do {
+            double imuHeading = imu.getHeading();
+            error = globalAngle - imuHeading;
+            System.out.println("error " + error);
+
+            dashboardTelemetry.addData("heading", imuHeading);
+            dashboardTelemetry.update();
+
+            double turnPower = turnController.getOutput(imuHeading);
+            westCoast.setTankPower(-turnPower, turnPower);
+        } while(!turnController.isStable() || Math.abs(error) > TurnConstants.finishedThreshold);
+
+        westCoast.brakeMotors();
+    }
+
+    public void turnLocal(double angle){
+        turnGlobal(imu.getHeading() + angle);
     }
 
 
@@ -117,4 +192,5 @@ public class Robot {
     public Position getPosition() {
         return position;
     }
+
 }

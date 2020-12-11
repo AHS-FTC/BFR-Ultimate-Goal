@@ -1,43 +1,37 @@
 package com.bfr.opMode;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.bfr.control.vision.VisionException;
+import com.bfr.control.vision.VisionSystem2;
+import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-
-@TeleOp(name = "Dif Camera Logger", group = "Iterative Opmode")
+@TeleOp(name = "Camera OpMode", group = "Linear Opmode")
 //@Disabled
-public class CameraOpMode extends OpMode {
-    OpenCvCamera webcam;
-
+public class CameraOpMode extends LinearOpMode {
     @Override
-    public void init() {
-        int cameraId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraId);
+    public void runOpMode() throws InterruptedException {
+        FTCUtilities.setOpMode(this);
 
-        webcam.setPipeline(null);
+        VisionSystem2 visionSystem2 = new VisionSystem2(true);
+
+        //visionSystem.saveCurrentFrame();
+        visionSystem2.calibrate();
+
+        waitForStart();
+
+        while (opModeIsActive()){
+            try {
+                visionSystem2.runVision();
+            } catch (VisionException e) {
+                System.out.println("Vision failed. " + e.getMessage());
+                FTCUtilities.addLine("Vision failed."  + e.getMessage());
+                FTCUtilities.updateTelemetry();
+                visionSystem2.dump();
+                e.printStackTrace();
+                requestOpModeStop();
+            }
+        }
     }
-
-    @Override
-    public void init_loop() {
-    }
-
-    @Override
-    public void start(){
-
-    }
-
-    @Override
-    public void loop() {
-
-    }
-
-    @Override
-    public void stop() {
-
-    }
-
 }
 
