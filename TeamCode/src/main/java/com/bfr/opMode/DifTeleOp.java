@@ -2,143 +2,88 @@ package com.bfr.opMode;
 
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
+import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
+import com.bfr.util.Controller;
 import com.bfr.util.FTCUtilities;
-import com.bfr.util.Switch;
-import com.bfr.util.Toggle;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import static com.bfr.hardware.Intake.State.*;
+import static com.bfr.util.Controller.Input.*;
 
 @TeleOp(name="Dif TeleOp", group="Iterative Opmode")
 //@Disabled
 public class DifTeleOp extends OpMode {
     private Robot robot;
-    private Intake intake;
     private WestCoast westCoast;
-    private double intakePower;
 
-    private Switch intakeOutSwitch, intakeInSwitch, autoAimSwitch;
-    private Toggle indexerToggle, shooterToggle;
-    long waitTime = 300;
-    long lastTime;
-
-    //Controller gamepad1, gamepad2;
     //adb connect 192.168.43.1:5555
 
-        @Override
-        @SuppressWarnings("all")
-        public void init() {
-            //BNO055IMU imu = hardwareMap.get(IMU.class, "imu");
+    @Override
+    public void init() {
+        FTCUtilities.setOpMode(this);
 
-            FTCUtilities.setOpMode(this);
-            WestCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
+        Controller controller1 = FTCUtilities.getController1();
+        Controller controller2 = FTCUtilities.getController2();
 
-            robot = new Robot();
-            intake = robot.getIntake();
-            westCoast = robot.getWestCoast();
+        WestCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
 
-            intakeOutSwitch = new Switch();
-            intakeInSwitch = new Switch();
-            autoAimSwitch = new Switch();
+        robot = new Robot();
+        Intake intake = robot.getIntake();
+        westCoast = robot.getWestCoast();
 
-            indexerToggle = new Toggle();
-            shooterToggle = new Toggle();
+        Shooter shooter = robot.getShooter();
+        controller1.setAction(A, shooter::runIndexerServos);
 
-//            gamepad1 = FTCUtilities.getGamepad1();
-//            gamepad2 = FTCUtilities.getGamepad2();
-
-//            Telemetry tel = FtcDashboard.getInstance().getTelemetry();
-
-
-//            double turnTarget = 90;
-//            double current = imu.getAngularOrientation().firstAngle;
-//
-//            int direction;
-//            if(current < turnTarget){
-//                direction = 1;
-//            } else {
-//                direction = -1;
-//            }
-//
-//            leftMotor.setPower(direction * 1.0);
-//            rightMotor.setPower(direction * -1.0);
-//
-//            while (Math.abs(imu.getAngularOrientation().firstAngle - turnTarget) < 5.0){
-//                //do nothing
-//            }
-//
-//            leftMotor.setPower(0.0);
-//            rightMotor.setPower(0.0);
-
-        }
-
-        @Override
-        public void init_loop() {
-        }
-
-        @Override
-        public void start() {
-            lastTime = FTCUtilities.getCurrentTimeMillis();
-            westCoast.startDriverControl();
-        }
-
-        @Override
-        public void loop() {
-            //press l bumper to reverse intake
-            if (gamepad1.left_bumper) {
-                if(intakeOutSwitch.canFlip()) {
-                    if (intakePower == -.8) {
-                        intakePower = 0;
-                    } else {
-                        intakePower = -.8;
-                    }
-                    intake.setPower(intakePower);
-                }
+        controller1.setAction(Y, () -> {
+            if (shooter.isRunning()){
+                shooter.stopShooter();
+            } else {
+                shooter.runShooter();
             }
+        });
 
-            //press r bumper to intake
-            if (gamepad1.right_bumper) {
-                if (intakeInSwitch.canFlip()) {
-                    if (intakePower == 1.0) {
-                        intakePower = 0;
-                    } else {
-                        intakePower = 1.0;
-                    }
-                    intake.setPower(intakePower);
-                }
+        controller1.setAction(R_BUMPER, () -> {
+            if(intake.getState() == STOPPED || intake.getState() == OUT){
+                intake.changeState(IN);
+            } else {
+                intake.changeState(STOPPED);
             }
+        });
 
-            if (gamepad1.a && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
-                lastTime = FTCUtilities.getCurrentTimeMillis();
-                robot.getShooter().runIndexerServos();
+        controller1.setAction(L_BUMPER, () -> {
+            if(intake.getState() == STOPPED || intake.getState() == IN){
+                intake.changeState(OUT);
+            } else {
+                intake.changeState(STOPPED);
             }
+        });
 
-            if (gamepad2.y && (waitTime < (FTCUtilities.getCurrentTimeMillis() - lastTime))){
-//TODO          fix time thingy
-                lastTime = FTCUtilities.getCurrentTimeMillis();
-                shooterToggle.canFlip();
-                updateShooter();
-            }
-
-            if (autoAimSwitch.canFlip() && gamepad1.x){
-                robot.autoAim();
-            }
-
-            robot.update();
-        }
-
-    private void updateShooter() {
-        if (shooterToggle.isEnabled()){
-            robot.getShooter().runShooter();
-        } else {
-            robot.getShooter().stopShooter();
-        }
+        controller1.setAction(X, () -> {
+            robot.autoAim();
+        });
     }
 
     @Override
-        public void stop() {
-
-        }
-
+    public void init_loop() {
     }
+
+    @Override
+    public void start() {
+        westCoast.startDriverControl();
+    }
+
+    @Override
+    public void loop() {
+        Controller.update();
+        robot.update();
+    }
+
+    @Override
+    public void stop() {
+        robot.stopAll();
+    }
+
+}
 

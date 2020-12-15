@@ -104,7 +104,6 @@ public class PIDFController {
     }
 
     public boolean isStable(){
-        System.out.println("derivative " + derivative);
         return (Math.abs(derivative) < stabilityThreshold);
     }
 

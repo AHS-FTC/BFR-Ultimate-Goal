@@ -23,7 +23,7 @@ public class Cam {
     public static final int RES_HEIGHT = 360;
     public static final double MIDDLE_X = RES_WIDTH / 2.0;
 
-    public static final double FOV_H = Math.toRadians(92.2);
+    public static final double FOV_H = Math.toRadians(87.0);
 
     //todo make these gud
     public static final double FOV_V = Math.toRadians(60.6);

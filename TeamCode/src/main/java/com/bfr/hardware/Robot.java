@@ -3,6 +3,7 @@ package com.bfr.hardware;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.vision.Cam;
 import com.bfr.control.vision.VisionException;
+import com.bfr.control.vision.VisionUtil;
 import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
@@ -36,9 +37,23 @@ public class Robot {
         cam = new Cam("Webcam 1");
         cam.start();
 
+
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+
+        //calibrate vision
+        cam.copyFrameTo(latestFrame);
+//        FTCUtilities.saveImage(latestFrame, "yote.png");
+        double avgHue = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.HUE);
+        double sat = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.SATURATION);
+        double val = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.VALUE);
+
+        System.out.println("calibration hue: " + avgHue);
+        System.out.println("calibration sat: " + sat);
+        System.out.println("calibration val: " + val);
+
+        backboard.calibrate(avgHue, sat, val);
     }
 
     public Intake getIntake(){return intake;}
@@ -65,7 +80,7 @@ public class Robot {
             double targetX = backboard.getMiddleX();
             double angleToTarget = Cam.getAngleFromX(targetX);
             westCoast.startTurnLocal(angleToTarget);
-            //backboard.dump();
+            backboard.dump();
         } catch (VisionException e){
             e.printStackTrace();
             System.out.println("frick");
@@ -88,6 +103,12 @@ public class Robot {
 
     public WestCoast getWestCoast() {
         return westCoast;
+    }
+
+    public void stopAll(){
+        westCoast.brakeMotors();
+        shooter.stopShooter();
+        intake.changeState(Intake.State.STOPPED);
     }
 
     /**

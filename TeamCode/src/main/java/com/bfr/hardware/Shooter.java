@@ -33,9 +33,7 @@ public class Shooter {
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
-    private final static long WAIT_TIME = 250;
-
-    private Toggle powerShotToggle;
+    private final static long WAIT_TIME = 175;
 
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
@@ -79,11 +77,6 @@ public class Shooter {
         };
 
         controller = new PIDFController(pidfConfig, 3000, lastRotations, 3);
-    }
-
-    public void brakeMotors(){
-        shooterMotor1.setPower(0);
-        shooterMotor2.setPower(0);
     }
 
     public void setPower(double power){
@@ -206,6 +199,13 @@ public class Shooter {
             this.rotations = rotations;
             this.time = time;
         }
+    }
+
+    public boolean isRunning(){
+        if(shooterState == ShooterState.RUNNING){
+            return true;
+        }
+        return false;
     }
 
     public void update(long bulkReadTimestamp){

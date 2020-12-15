@@ -38,6 +38,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static Map<String, DcMotor> testMotors = new HashMap();
     private static Map<String, OdometerImpl> testOdometers = new HashMap();
 
+    private static Controller controller1, controller2;
+
     private static long mockTime = 0;
 
     public static String getLogDirectory() {
@@ -56,17 +58,20 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         return hardwareMap;
     }
 
-    public static Controller getGamepad1(){
-        return new Controller(opMode.gamepad2);
+    public static Controller getController1(){
+        return controller1;
     }
 
-    public static Controller getGamepad2(){
-        return new Controller(opMode.gamepad2);
+    public static Controller getController2(){
+        return controller2;
     }
 
     public static void setOpMode(OpMode opMode) {
         FTCUtilities.opMode = opMode;
         FTCUtilities.hardwareMap = opMode.hardwareMap;
+
+        controller1 = new Controller(opMode.gamepad1);
+        controller2 = new Controller(opMode.gamepad2);
 
         dashboardMode = true;
     }

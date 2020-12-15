@@ -232,6 +232,7 @@ public class WestCoast {
 
         turnController.reset(imu.getHeading(), globalAngle);
         mode = Mode.POINT_TURN;
+
     }
 
     public void startTurnLocal(double globalAngle){
@@ -255,7 +256,10 @@ public class WestCoast {
                 double angleError = targetAngle - imuHeading;
 
                 if(FTCUtilities.isDashboardMode()){
-                    dashboardTelemetry.addData("heading", imuHeading);
+                    FTCUtilities.addData("heading", imuHeading);
+                    FTCUtilities.addData("Target Heading", targetAngle);
+                    FTCUtilities.updateTelemetry();
+
                 }
 
                 if(turnController.isStable() && Math.abs(angleError) < TurnConstants.finishedThreshold){
@@ -265,6 +269,7 @@ public class WestCoast {
                 }
 
                 double turnPower = turnController.getOutput(imuHeading);
+
                 setTankPower(-turnPower, turnPower);
 
                 break;

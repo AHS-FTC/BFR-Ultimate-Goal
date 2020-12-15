@@ -80,11 +80,11 @@ public class Backboard extends VisionObject {
     }
 
     /**
-     * Tune the accepted hue range for backboard thresholding.
+     * Tune the accepted ranges for backboard thresholding.
      */
-    public void setHue(double middleHueVal) {
-        min.set(new double[] {middleHueVal - HUE_RANGE, 100, 50});
-        max.set(new double[] {middleHueVal + HUE_RANGE, 255, 255});
+    public void calibrate(double middleHue, double saturation, double value) {
+        min = new Scalar(middleHue - HUE_RANGE, saturation - 100, value - 100);
+        max = new Scalar(middleHue + HUE_RANGE, 255, 255);
     }
 
     @Override
