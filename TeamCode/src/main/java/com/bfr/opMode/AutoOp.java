@@ -17,8 +17,9 @@ public class AutoOp extends LinearOpMode {
 
         waitForStart();
 
-        robot.driveStraight(1, 8.0);
+        robot.driveStraight(.8, 8.0);
         //robot.turnLocal(180.0);
+        sleep(5000);
 
     }
 }
