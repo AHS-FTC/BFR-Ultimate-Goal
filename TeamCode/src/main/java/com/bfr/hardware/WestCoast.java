@@ -27,11 +27,13 @@ public class WestCoast {
     private final double TRACK_WIDTH = 16.16;
     private final double HALF_WIDTH = TRACK_WIDTH / 2.0;
 
+    public static final double INCHES_PER_ROTATION = 12.2;
+
     private Mode mode = Mode.IDLE;
     private final Gamepad driverGamepad;
 
     private double driveStraightPower = 0.0;
-    private double driveStraightRotations = 0.0;
+    private double driveStraightDistance = 0.0;
 
     private double targetAngle = 0.0;
 
@@ -101,15 +103,12 @@ public class WestCoast {
 
             @Override
             public double feedForward(double setPoint, double error) {
-                if(Math.abs(error) < RampdownConstants.finishedThreshold || Math.abs(error) > .25){
-                    return 0;
-                }
-                return RampdownConstants.minPower * Math.signum(error);
+                return 0;
             }
         }, 0,0,3);
 
         //todo find stability threshold
-        rampdownController.setStabilityThreshold(0.001);
+        rampdownController.setStabilityThreshold(0.01);
 
         //turn PID
         PIDFConfig pidfConfig = new PIDFConfig() {
@@ -142,8 +141,9 @@ public class WestCoast {
         turnController.setStabilityThreshold(.005);
     }
 
-    private double getAvgRotations(){
-        return (leftMotor.getRotations() + rightMotor.getRotations()) / 2.0;
+    private double getAvgDistance(){
+        double avgRotations = (leftMotor.getRotations() + rightMotor.getRotations()) / 2.0;
+        return avgRotations * INCHES_PER_ROTATION;
     }
 
     public void resetEncoders(){
@@ -215,14 +215,14 @@ public class WestCoast {
         mode = Mode.DRIVER_CONTROL;
     }
 
-    public void startDriveStraight(double power, double targetRotations){
+    public void startDriveStraight(double power, double targetDistance){
         driveStraightPower = power;
-        driveStraightRotations = targetRotations;
+        driveStraightDistance = targetDistance;
         resetEncoders();
         initalDriveHeading = imu.getHeading();
         straightController.reset(initalDriveHeading, initalDriveHeading);
 
-        rampdownController.reset(getAvgRotations(), driveStraightRotations);
+        rampdownController.reset(getAvgDistance(), driveStraightDistance);
 
         mode = Mode.DRIVE_STRAIGHT;
     }
@@ -252,6 +252,7 @@ public class WestCoast {
             case IDLE:
                 break;
             case POINT_TURN:
+                //todo implement a better system for minPower (see drive straight)
                 double imuHeading = imu.getHeading();
                 double angleError = targetAngle - imuHeading;
 
@@ -259,7 +260,6 @@ public class WestCoast {
                     FTCUtilities.addData("heading", imuHeading);
                     FTCUtilities.addData("Target Heading", targetAngle);
                     FTCUtilities.updateTelemetry();
-
                 }
 
                 if(turnController.isStable() && Math.abs(angleError) < TurnConstants.finishedThreshold){
@@ -274,15 +274,15 @@ public class WestCoast {
 
                 break;
             case DRIVE_STRAIGHT:
-                double avgRotations = getAvgRotations();
-                double distanceError = driveStraightRotations - avgRotations;
-                double rampdownPower = rampdownController.getOutput(avgRotations);
+                double avgDistance = getAvgDistance();
+                double distanceError = driveStraightDistance - avgDistance;
+                double rampdownPower = rampdownController.getOutput(avgDistance);
 
                 double heading = imu.getHeading();
                 double turnCorrection = straightController.getOutput(heading);
 
                 if(FTCUtilities.isDashboardMode()){
-                    dashboardTelemetry.addData("rotations", avgRotations);
+                    dashboardTelemetry.addData("distance", avgDistance);
                     dashboardTelemetry.addData("drive straight power", driveStraightPower);
                     dashboardTelemetry.addData("Heading", heading);
                 }
@@ -294,8 +294,13 @@ public class WestCoast {
                 }
 
                 //take closest to zero between the default driving power and the PID rampdown power
-                double motorPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
-                setTankPower(motorPower-turnCorrection, motorPower+turnCorrection);
+                double controlPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
+
+                //implement a minimum power by taking the furthest from zero between the minPower and the controlPower
+                //account for direction with distanceError
+                double finalPower = FTCMath.furthestFromZero(RampdownConstants.minPower * Math.signum(distanceError), controlPower);
+
+                setTankPower(finalPower - turnCorrection, finalPower + turnCorrection);
                 break;
             case DRIVER_CONTROL:
                 arcadeDrive(-driverGamepad.left_stick_y, -driverGamepad.right_stick_x);

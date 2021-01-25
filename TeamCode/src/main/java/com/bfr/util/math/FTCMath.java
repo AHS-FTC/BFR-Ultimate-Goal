@@ -64,5 +64,12 @@ public class FTCMath {
         return b;
     }
 
+    public static double furthestFromZero(double a, double b){
+        if (abs(a) > abs(b)){
+            return a;
+        }
+        return b;
+    }
+
     private FTCMath(){}
 }
