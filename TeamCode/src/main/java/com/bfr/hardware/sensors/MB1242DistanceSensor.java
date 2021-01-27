@@ -33,18 +33,13 @@ public class MB1242DistanceSensor extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         return "MB1242 Distance Sensor";
     }
 
-    public int getDistance(){
+    public void pingDistance(){
         deviceClient.write8(0, 81);
+    }
 
-        try {
-            Thread.sleep(80);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+    public int readDistance(){
         //read two bytes from the sensor (see docs)
         byte[] bytes = deviceClient.read(0, 2);
-
 
         //java bytes are naturally in signed form, yet the sensor gives unsigned data. convert to unsigned byte.
         int highByte = bytes[0] & 0xFF;
@@ -58,10 +53,6 @@ public class MB1242DistanceSensor extends I2cDeviceSynchDevice<I2cDeviceSynch> {
         //format the two bytes into a 16 bit number
 
         int distance = (highByte * 256) + lowByte;
-
-        System.out.println(highByte);
-        System.out.println(lowByte);
-        System.out.println("---");
 
         return distance;
     }

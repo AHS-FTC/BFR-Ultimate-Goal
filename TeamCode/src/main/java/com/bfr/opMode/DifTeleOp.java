@@ -36,6 +36,9 @@ public class DifTeleOp extends OpMode {
         Shooter shooter = robot.getShooter();
         controller1.setAction(A, shooter::runIndexerServos);
 
+        controller1.setAction(B, () -> robot.nextCycleState());
+
+
         controller1.setAction(Y, () -> {
             if (shooter.isRunning()){
                 shooter.stopShooter();

@@ -6,9 +6,10 @@ import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.VisionUtil;
 import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.sensors.IMU;
+import com.bfr.hardware.sensors.MB1242System;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.math.Point;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.sony.SonyGamepadPS4;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Mat;
@@ -19,24 +20,50 @@ public class Robot {
     private WestCoast westCoast;
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
+    private MB1242System mb1242System;
     private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
+
+    private static final Point shootingPosition = new Point(39,64);
+    private static final Point intakingPosition = new Point(39,27);
 
     //vision stuff
     private Cam cam;
     private Backboard backboard = new Backboard();
     private Mat latestFrame = new Mat();
 
+    private Point currentPosition = new Point(0,0);
+
+    private boolean nextCycleState = false;
+
     private List<LynxModule> hubs;
+    private State state = State.FREE;
+    private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
+
+    private enum State {
+        FREE,
+        AUTO_CYCLE
+    }
+
+    private enum CycleState {
+        TURNING_TO_INTAKE,
+        INTAKING,
+        TURNING_BACK,
+        DRIVING_BACK,
+        AIMING,
+        TURNING_FORWARD,
+        DRIVING_FORWARD;
+    }
 
     public Robot() {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
-        imu = new IMU("imu", true);
+        imu = new IMU("imu", true, -Math.PI/2);
         westCoast = new WestCoast(imu);
         cam = new Cam("Webcam 1");
         cam.start();
 
+        mb1242System = new MB1242System();
 
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -64,6 +91,11 @@ public class Robot {
         westCoast.arcadeDrive(forward, turn);
     }
 
+    /**
+     * Blocking drive straight method for auto only
+     * @param power
+     * @param targetRotations
+     */
     public void driveStraight(double power, double targetRotations){
         westCoast.startDriveStraight(power, targetRotations);
 
@@ -89,6 +121,10 @@ public class Robot {
         cam.setOutputMat(backboard.binaryCropped);
     }
 
+    /**
+     * Blocking global turn method for auto only
+     * @param globalAngle
+     */
     public void turnGlobal(double globalAngle){
         westCoast.startTurnGlobal(globalAngle);
 
@@ -111,6 +147,10 @@ public class Robot {
         intake.changeState(Intake.State.STOPPED);
     }
 
+    public void nextCycleState(){
+        nextCycleState = true;
+    }
+
     /**
      * The update() method contains maintenance stuff
      * it should be called every iteration in any blocking method.
@@ -125,6 +165,68 @@ public class Robot {
 
         long nanosAfter = System.nanoTime();
         long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
+
+        if(state.equals(State.AUTO_CYCLE)){
+            switch (cycleState){
+                case TURNING_TO_INTAKE:
+                    if(westCoast.isInDefaultMode()){
+                        mb1242System.doPings();
+
+                        try {
+                            Thread.sleep(80);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        intake.changeState(Intake.State.IN);
+
+                        currentPosition = mb1242System.doReads();
+                        cycleState = CycleState.INTAKING;
+                    }
+                    break;
+                case INTAKING:
+                    if(nextCycleState){
+                        intake.changeState(Intake.State.STOPPED);
+
+                        nextCycleState = false;
+
+                        //calculate the angle and distance to our target point
+                        //For the angle, keep in mind the robot is moving backwards
+
+                        double angle = shootingPosition.angleTo(currentPosition);
+
+                        westCoast.startTurnGlobal(angle);
+                        cycleState = CycleState.TURNING_BACK;
+                    }
+                    break;
+                case TURNING_BACK:
+                    if (nextCycleState && westCoast.isInDefaultMode()){
+                        double distance = shootingPosition.distanceTo(currentPosition);
+
+                        westCoast.startDriveStraight(-.4, -distance);
+                        nextCycleState = false;
+                        cycleState = CycleState.DRIVING_BACK;
+                    }
+                    break;
+                case DRIVING_BACK:
+                    if (nextCycleState && westCoast.isInDefaultMode()){
+
+                        //todo make work for other side
+                        westCoast.startTurnGlobal(Math.toRadians(-80));
+                        nextCycleState = false;
+                        cycleState = CycleState.AIMING;
+                    }
+                    break;
+                case AIMING:
+                    if (nextCycleState && westCoast.isInDefaultMode()){
+
+                        westCoast.startTurnGlobal(-Math.PI);
+                        nextCycleState = false;
+                        cycleState = CycleState.TURNING_BACK;
+                    }
+                    break;
+            }
+        }
 
         shooter.update(bulkReadTimestamp);
         westCoast.update();

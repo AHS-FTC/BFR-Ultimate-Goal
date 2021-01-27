@@ -42,6 +42,12 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     private static long mockTime = 0;
 
+    private static AllianceColor allianceColor = AllianceColor.BLUE;
+
+    public static AllianceColor getAllianceColor(){
+        return allianceColor;
+    }
+
     public static String getLogDirectory() {
         if (testMode) {
             return System.getProperty("user.home") + "/Desktop/";

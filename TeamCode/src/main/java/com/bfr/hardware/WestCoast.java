@@ -151,6 +151,10 @@ public class WestCoast {
         rightMotor.zeroDistance();
     }
 
+    public boolean isInDefaultMode(){
+        return mode.equals(defaultMode);
+    }
+
     /**
      * (prototype) drive protocol for comfy and powerful WCD control
      * @param forward A component that drives in a straight line
