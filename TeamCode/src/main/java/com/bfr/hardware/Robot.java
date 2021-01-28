@@ -8,6 +8,7 @@ import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.MB1242System;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Point;
 import com.qualcomm.hardware.lynx.LynxModule;
 
@@ -24,8 +25,8 @@ public class Robot {
     private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
-    private static final Point shootingPosition = new Point(39,64);
-    private static final Point intakingPosition = new Point(39,27);
+    private static final Point shootingPosition = new Point(-39,64);
+    private static final Point intakingPosition = new Point(-39,20);
 
     //vision stuff
     private Cam cam;
@@ -40,7 +41,7 @@ public class Robot {
     private State state = State.FREE;
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
 
-    private enum State {
+    public enum State {
         FREE,
         AUTO_CYCLE
     }
@@ -86,6 +87,15 @@ public class Robot {
     public Intake getIntake(){return intake;}
 
     public Shooter getShooter(){return shooter;}
+
+    public void setState(State state){
+        this.state = state;
+
+        if(state.equals(State.AUTO_CYCLE)){
+            westCoast.startTurnGlobal(-Math.PI / 2);
+            cycleState = CycleState.TURNING_TO_INTAKE;
+        }
+    }
 
     public void drive(double forward, double turn){
         westCoast.arcadeDrive(forward, turn);
@@ -147,6 +157,19 @@ public class Robot {
         intake.changeState(Intake.State.STOPPED);
     }
 
+    /**
+     * Handles manual state changes in state machines.
+     * State machines may only advance when nextCycleState was set to true in the current control loop.
+     * Otherwise, nextCycleState is reset back to false.
+     */
+    private boolean checkNextCycleState(){
+        if(nextCycleState){
+            nextCycleState = false;
+            return true;
+        }
+        return false;
+    }
+
     public void nextCycleState(){
         nextCycleState = true;
     }
@@ -181,48 +204,59 @@ public class Robot {
                         intake.changeState(Intake.State.IN);
 
                         currentPosition = mb1242System.doReads();
+                        dashboardTelemetry.addData("x", currentPosition.x);
+                        dashboardTelemetry.addData("y", currentPosition.y);
+
                         cycleState = CycleState.INTAKING;
                     }
                     break;
                 case INTAKING:
-                    if(nextCycleState){
+                    if(checkNextCycleState()){
                         intake.changeState(Intake.State.STOPPED);
-
-                        nextCycleState = false;
 
                         //calculate the angle and distance to our target point
                         //For the angle, keep in mind the robot is moving backwards
 
                         double angle = shootingPosition.angleTo(currentPosition);
+                        angle = FTCMath.ensureIdealAngle(angle, imu.getHeading());
 
                         westCoast.startTurnGlobal(angle);
                         cycleState = CycleState.TURNING_BACK;
                     }
                     break;
                 case TURNING_BACK:
-                    if (nextCycleState && westCoast.isInDefaultMode()){
+                    if (westCoast.isInDefaultMode()){
                         double distance = shootingPosition.distanceTo(currentPosition);
 
-                        westCoast.startDriveStraight(-.4, -distance);
-                        nextCycleState = false;
+                        westCoast.startDriveStraight(-.7, -distance);
                         cycleState = CycleState.DRIVING_BACK;
                     }
                     break;
                 case DRIVING_BACK:
-                    if (nextCycleState && westCoast.isInDefaultMode()){
+                    if (westCoast.isInDefaultMode()){
 
                         //todo make work for other side
-                        westCoast.startTurnGlobal(Math.toRadians(-80));
-                        nextCycleState = false;
+                        westCoast.startTurnGlobal(Math.toRadians(-83));
                         cycleState = CycleState.AIMING;
                     }
                     break;
                 case AIMING:
-                    if (nextCycleState && westCoast.isInDefaultMode()){
-
-                        westCoast.startTurnGlobal(-Math.PI);
-                        nextCycleState = false;
-                        cycleState = CycleState.TURNING_BACK;
+                    if (checkNextCycleState() && westCoast.isInDefaultMode()){
+                        westCoast.startTurnGlobal(-Math.PI / 2.0);
+                        cycleState = CycleState.TURNING_FORWARD;
+                    }
+                    break;
+                case TURNING_FORWARD:
+                    if (westCoast.isInDefaultMode()){
+                        double distance = shootingPosition.distanceTo(intakingPosition);
+                        westCoast.startDriveStraight(0.7, distance);
+                        cycleState = CycleState.DRIVING_FORWARD;
+                    }
+                    break;
+                case DRIVING_FORWARD:
+                    if(westCoast.isInDefaultMode()){
+                        westCoast.startTurnGlobal(-Math.PI / 2.0);
+                        cycleState = CycleState.TURNING_TO_INTAKE;
                     }
                     break;
             }

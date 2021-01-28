@@ -16,7 +16,8 @@ public class Controller {
 
     public enum Input {
         A, B, X, Y,
-        L_BUMPER, R_BUMPER;
+        L_BUMPER, R_BUMPER,
+        DPAD_UP, DPAD_DN, DPAD_L, DPAD_R;
     }
 
     public Controller(Gamepad gamepad){
@@ -28,6 +29,10 @@ public class Controller {
         buttons.put(Y, new Button(() -> gamepad.y));
         buttons.put(L_BUMPER, new Button(() -> gamepad.left_bumper));
         buttons.put(R_BUMPER, new Button(() -> gamepad.right_bumper));
+        buttons.put(DPAD_UP, new Button(() -> gamepad.dpad_up));
+        buttons.put(DPAD_DN, new Button(() -> gamepad.dpad_down));
+        buttons.put(DPAD_L, new Button(() -> gamepad.dpad_left));
+        buttons.put(DPAD_R, new Button(() -> gamepad.dpad_right));
     }
 
     public static void update(){

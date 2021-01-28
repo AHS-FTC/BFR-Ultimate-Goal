@@ -138,7 +138,7 @@ public class WestCoast {
 
         //constants dont matter
         turnController = new PIDFController(pidfConfig, 0, 0,3);
-        turnController.setStabilityThreshold(.005);
+        turnController.setStabilityThreshold(0.00008);
     }
 
     private double getAvgDistance(){
@@ -261,8 +261,12 @@ public class WestCoast {
                 double angleError = targetAngle - imuHeading;
 
                 if(FTCUtilities.isDashboardMode()){
-                    FTCUtilities.addData("heading", imuHeading);
-                    FTCUtilities.addData("Target Heading", targetAngle);
+                    dashboardTelemetry.addData("heading", imuHeading);
+                    dashboardTelemetry.addData("Target Heading", targetAngle);
+                    dashboardTelemetry.addData("isStable: ", turnController.isStable());
+                    System.out.println("heading: " + imuHeading);
+                    System.out.println("target heading: " + targetAngle);
+
                     FTCUtilities.updateTelemetry();
                 }
 

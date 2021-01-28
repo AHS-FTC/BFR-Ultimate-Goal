@@ -40,7 +40,7 @@ public class DifOdomOp extends OpMode {
 
         logger = FtcDashboard.getInstance().getTelemetry();
 
-        imu = new IMU("imu", true);
+        imu = new IMU("imu", true, 0);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
 

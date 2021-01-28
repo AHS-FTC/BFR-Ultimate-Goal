@@ -1,5 +1,6 @@
 package com.bfr.hardware.sensors;
 
+import com.bfr.util.AllianceColor;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Point;
 
@@ -28,6 +29,10 @@ public class MB1242System {
     public Point doReads(){
         double front = frontSensor.readDistance() * INCHES_PER_CM + FRONT_OFFSET;
         double left = leftSensor.readDistance() * INCHES_PER_CM + LEFT_OFFSET;
+
+        if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
+            left *= -1;
+        }
 
         return new Point(left, front);
     }
