@@ -1,9 +1,10 @@
 package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.bfr.control.pidf.FastRampdownConstants;
 import com.bfr.control.pidf.PIDFConfig;
 import com.bfr.control.pidf.PIDFController;
-import com.bfr.control.pidf.RampdownConstants;
+import com.bfr.control.pidf.AccurateRampdownConstants;
 import com.bfr.control.pidf.StraightConstants;
 import com.bfr.control.pidf.TurnConstants;
 import com.bfr.hardware.sensors.IMU;
@@ -41,15 +42,26 @@ public class WestCoast {
 
     private final IMU imu;
 
-    private PIDFController rampdownController, turnController, straightController ;
+    private PIDFController rampdownController, turnController, straightController;
 
-    private static Mode defaultMode = Mode.IDLE;
+    private Mode defaultMode = Mode.IDLE;
+    private RampdownMode rampdownMode = RampdownMode.ACCURATE;
+
+    //adds a slight wait after a drive straight (and maybe turn???)
+    private boolean waitingState = false;
+    private long waitingStartTime = FTCUtilities.getCurrentTimeMillis();
+    private static final long WAIT_TIME = 100;
 
     public enum Mode {
         IDLE,
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
         POINT_TURN,
+    }
+
+    public enum RampdownMode {
+        ACCURATE,
+        FAST;
     }
 
     public WestCoast(IMU imu) {
@@ -83,22 +95,21 @@ public class WestCoast {
             }
         },0,0,3);
 
-
-        //initial values sorta don't matter here. we update them in driveStraight().
+        //initial values don't matter
         rampdownController = new PIDFController(new PIDFConfig() {
             @Override
             public double kP() {
-                return RampdownConstants.kP;
+                return AccurateRampdownConstants.kP;
             }
 
             @Override
             public double kI() {
-                return RampdownConstants.kI;
+                return AccurateRampdownConstants.kI;
             }
 
             @Override
             public double kD() {
-                return RampdownConstants.kD;
+                return AccurateRampdownConstants.kD;
             }
 
             @Override
@@ -106,9 +117,6 @@ public class WestCoast {
                 return 0;
             }
         }, 0,0,3);
-
-        //todo find stability threshold
-        rampdownController.setStabilityThreshold(0.01);
 
         //turn PID
         PIDFConfig pidfConfig = new PIDFConfig() {
@@ -247,8 +255,15 @@ public class WestCoast {
         return mode;
     }
 
-    public static void setDefaultMode(Mode defaultMode){
-        WestCoast.defaultMode = defaultMode;
+    public void setDefaultMode(Mode defaultMode){
+        this.defaultMode = defaultMode;
+    }
+
+    /**
+     * The rampdown controller is tuned to be fast in TeleOp and accurate in Auto. This method switches controllers.
+     */
+    public void setRampdownMode(RampdownMode rampdownMode){
+        this.rampdownMode = rampdownMode;
     }
 
     public void update(){
@@ -282,6 +297,15 @@ public class WestCoast {
 
                 break;
             case DRIVE_STRAIGHT:
+
+                if(waitingState){
+                    if (FTCUtilities.getCurrentTimeMillis() - waitingStartTime > WAIT_TIME) {
+                        mode = defaultMode;
+                        waitingState = false;
+                    }
+                    break;
+                }
+
                 double avgDistance = getAvgDistance();
                 double distanceError = driveStraightDistance - avgDistance;
                 double rampdownPower = rampdownController.getOutput(avgDistance);
@@ -291,22 +315,41 @@ public class WestCoast {
 
                 if(FTCUtilities.isDashboardMode()){
                     dashboardTelemetry.addData("distance", avgDistance);
-                    dashboardTelemetry.addData("drive straight power", driveStraightPower);
                     dashboardTelemetry.addData("Heading", heading);
                 }
 
-                if(rampdownController.isStable() && Math.abs(distanceError) < RampdownConstants.finishedThreshold){
-                    mode = defaultMode;
+                //determine the motor power, finished threshold, etc. depending on the control mode
+                double finalPower;
+                double finishedThreshold;
+                boolean finishedCondition;
+
+                if(rampdownMode.equals(RampdownMode.ACCURATE)){
+                    //take closest to zero between the default driving power and the PID rampdown power
+                    double controlPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
+
+                    //implement a minimum power by taking the furthest from zero between the minPower and the controlPower
+                    //account for direction with distanceError
+                    finalPower = FTCMath.furthestFromZero(AccurateRampdownConstants.minPower * Math.signum(distanceError), controlPower);
+
+                    finishedThreshold = AccurateRampdownConstants.finishedThreshold;
+                    finishedCondition = rampdownController.isStable();
+                } else { //RampDownMode.FAST
+                    if(Math.abs(distanceError) < FastRampdownConstants.distanceThreshold){
+                        finalPower = FastRampdownConstants.brakePower * Math.signum(distanceError);
+                    } else {
+                        finalPower = driveStraightPower;
+                    }
+
+                    finishedThreshold = FastRampdownConstants.finishedThreshold;
+                    finishedCondition = true;
+                }
+
+                if(finishedCondition && Math.abs(distanceError) < finishedThreshold){
+                    waitingState = true;
+                    waitingStartTime = FTCUtilities.getCurrentTimeMillis();
                     brakeMotors();
                     break;
                 }
-
-                //take closest to zero between the default driving power and the PID rampdown power
-                double controlPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
-
-                //implement a minimum power by taking the furthest from zero between the minPower and the controlPower
-                //account for direction with distanceError
-                double finalPower = FTCMath.furthestFromZero(RampdownConstants.minPower * Math.signum(distanceError), controlPower);
 
                 setTankPower(finalPower - turnCorrection, finalPower + turnCorrection);
                 break;

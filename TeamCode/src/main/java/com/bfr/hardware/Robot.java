@@ -40,7 +40,6 @@ public class Robot {
     private List<LynxModule> hubs;
     private State state = State.FREE;
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
-
     public enum State {
         FREE,
         AUTO_CYCLE
@@ -52,8 +51,9 @@ public class Robot {
         TURNING_BACK,
         DRIVING_BACK,
         AIMING,
+        SHOOTING,
         TURNING_FORWARD,
-        DRIVING_FORWARD;
+        DRIVING_FORWARD,
     }
 
     public Robot() {
@@ -92,6 +92,7 @@ public class Robot {
         this.state = state;
 
         if(state.equals(State.AUTO_CYCLE)){
+            westCoast.setRampdownMode(WestCoast.RampdownMode.FAST);
             westCoast.startTurnGlobal(-Math.PI / 2);
             cycleState = CycleState.TURNING_TO_INTAKE;
         }
@@ -104,10 +105,10 @@ public class Robot {
     /**
      * Blocking drive straight method for auto only
      * @param power
-     * @param targetRotations
+     * @param targetDistance in inches
      */
-    public void driveStraight(double power, double targetRotations){
-        westCoast.startDriveStraight(power, targetRotations);
+    public void driveStraight(double power, double targetDistance){
+        westCoast.startDriveStraight(power, targetDistance);
 
         while (westCoast.getMode() == WestCoast.Mode.DRIVE_STRAIGHT && FTCUtilities.opModeIsActive()){
             update();
@@ -228,7 +229,7 @@ public class Robot {
                     if (westCoast.isInDefaultMode()){
                         double distance = shootingPosition.distanceTo(currentPosition);
 
-                        westCoast.startDriveStraight(-.7, -distance);
+                        westCoast.startDriveStraight(-.9, -distance);
                         cycleState = CycleState.DRIVING_BACK;
                     }
                     break;
@@ -241,7 +242,13 @@ public class Robot {
                     }
                     break;
                 case AIMING:
-                    if (checkNextCycleState() && westCoast.isInDefaultMode()){
+                    if (westCoast.isInDefaultMode()){
+                        shooter.runIndexerServos();
+                        cycleState = CycleState.SHOOTING;
+                    }
+                    break;
+                case SHOOTING:
+                    if(shooter.isResting()){
                         westCoast.startTurnGlobal(-Math.PI / 2.0);
                         cycleState = CycleState.TURNING_FORWARD;
                     }
@@ -249,7 +256,7 @@ public class Robot {
                 case TURNING_FORWARD:
                     if (westCoast.isInDefaultMode()){
                         double distance = shootingPosition.distanceTo(intakingPosition);
-                        westCoast.startDriveStraight(0.7, distance);
+                        westCoast.startDriveStraight(.9, distance);
                         cycleState = CycleState.DRIVING_FORWARD;
                     }
                     break;

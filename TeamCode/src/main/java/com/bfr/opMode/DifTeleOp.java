@@ -17,6 +17,7 @@ import static com.bfr.util.Controller.Input.*;
 public class DifTeleOp extends OpMode {
     private Robot robot;
     private WestCoast westCoast;
+    private Shooter shooter;
 
     //adb connect 192.168.43.1:5555
 
@@ -27,13 +28,12 @@ public class DifTeleOp extends OpMode {
         Controller controller1 = FTCUtilities.getController1();
         Controller controller2 = FTCUtilities.getController2();
 
-        WestCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
-
         robot = new Robot();
         Intake intake = robot.getIntake();
         westCoast = robot.getWestCoast();
+        westCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
 
-        Shooter shooter = robot.getShooter();
+        shooter = robot.getShooter();
         controller1.setAction(A, shooter::runIndexerServos);
 
         controller1.setAction(B, () -> robot.nextCycleState());
@@ -77,6 +77,7 @@ public class DifTeleOp extends OpMode {
     @Override
     public void start() {
         westCoast.startDriverControl();
+        shooter.runShooter();
     }
 
     @Override

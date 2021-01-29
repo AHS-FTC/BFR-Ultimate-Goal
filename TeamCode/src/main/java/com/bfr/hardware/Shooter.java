@@ -33,7 +33,7 @@ public class Shooter {
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
-    private final static long WAIT_TIME = 175;
+    private final static long WAIT_TIME = 120; //175
 
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
@@ -163,6 +163,10 @@ public class Shooter {
         shooterState = ShooterState.RESTING;
         setPower(0);
         updateShooterState();
+    }
+
+    public boolean isResting(){
+        return servoState.equals(IndexerState.RESTING);
     }
 
 //    public void shootPowerShots(){
