@@ -15,11 +15,12 @@ public class AutoOp extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         Robot robot = new Robot();
-        robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
+        //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
 
         waitForStart();
 
-        robot.driveStraight(-0.9, -48.0);
+        robot.turnLocal(Math.toRadians(10));
+        //robot.driveStraight(-0.9, -48.0);
 
     }
 }

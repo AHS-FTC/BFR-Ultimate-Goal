@@ -7,6 +7,7 @@ import com.bfr.control.vision.VisionSystem2;
 import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.Robot;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -15,7 +16,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 @TeleOp(name = "Turn to Goal OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class TurnToGoalOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

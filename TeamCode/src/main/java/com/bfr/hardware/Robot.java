@@ -25,8 +25,8 @@ public class Robot {
     private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
-    private static final Point shootingPosition = new Point(-39,64);
-    private static final Point intakingPosition = new Point(-39,20);
+    private static final Point shootingPosition = new Point(-42,64);
+    private static final Point intakingPosition = new Point(-42,20);
 
     //vision stuff
     private Cam cam;
@@ -54,6 +54,14 @@ public class Robot {
         SHOOTING,
         TURNING_FORWARD,
         DRIVING_FORWARD,
+
+        //powershot modes
+        TURN_TO_SHOT_1,
+        PSHOT_1,
+        TURN_TO_SHOT_2,
+        PSHOT_2,
+        TURN_TO_SHOT_3,
+        PSHOT_3,
     }
 
     public Robot() {
@@ -205,6 +213,10 @@ public class Robot {
                         intake.changeState(Intake.State.IN);
 
                         currentPosition = mb1242System.doReads();
+                        System.out.println("read heading (degs): "+ Math.toDegrees(imu.getHeading()));
+                        System.out.println("x: "+ currentPosition.x);
+                        System.out.println("y: "+ currentPosition.y);
+
                         dashboardTelemetry.addData("x", currentPosition.x);
                         dashboardTelemetry.addData("y", currentPosition.y);
 
@@ -235,10 +247,14 @@ public class Robot {
                     break;
                 case DRIVING_BACK:
                     if (westCoast.isInDefaultMode()){
-
-                        //todo make work for other side
-                        westCoast.startTurnGlobal(Math.toRadians(-83));
-                        cycleState = CycleState.AIMING;
+                        if(shooter.isPowershotMode()){
+                            westCoast.startTurnGlobal(Math.toRadians(-93));
+                            cycleState = CycleState.TURN_TO_SHOT_1;
+                        } else {
+                            //todo make work for other side
+                            westCoast.startTurnGlobal(Math.toRadians(-81));
+                            cycleState = CycleState.AIMING;
+                        }
                     }
                     break;
                 case AIMING:
@@ -248,6 +264,7 @@ public class Robot {
                     }
                     break;
                 case SHOOTING:
+                case PSHOT_3:
                     if(shooter.isResting()){
                         westCoast.startTurnGlobal(-Math.PI / 2.0);
                         cycleState = CycleState.TURNING_FORWARD;
@@ -266,6 +283,40 @@ public class Robot {
                         cycleState = CycleState.TURNING_TO_INTAKE;
                     }
                     break;
+                //powershot states
+                case TURN_TO_SHOT_1:
+                    if(westCoast.isInDefaultMode()){
+                        shooter.runIndexerServos();
+                        cycleState = CycleState.PSHOT_1;
+                    }
+                    break;
+                case PSHOT_1:
+                    if(shooter.isResting()){
+                        westCoast.startTurnGlobal(Math.toRadians(-98));
+                        cycleState = CycleState.TURN_TO_SHOT_2;
+                    }
+                    break;
+                case TURN_TO_SHOT_2:
+                    if(westCoast.isInDefaultMode()){
+                        shooter.runIndexerServos();
+                        cycleState = CycleState.PSHOT_2;
+                    }
+                    break;
+                case PSHOT_2:
+                    if(shooter.isResting()){
+                        westCoast.startTurnGlobal(Math.toRadians(-103));
+                        cycleState = CycleState.TURN_TO_SHOT_3;
+                    }
+                    break;
+                case TURN_TO_SHOT_3:
+                    if(westCoast.isInDefaultMode()){
+                        shooter.runIndexerServos();
+                        cycleState = CycleState.PSHOT_3;
+                        shooter.setPowershotMode(false);
+                    }
+                    break;
+                    //powershot 3 merged with SHOOTING state
+
             }
         }
 

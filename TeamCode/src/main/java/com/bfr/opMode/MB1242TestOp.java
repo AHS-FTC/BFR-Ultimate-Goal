@@ -5,11 +5,12 @@ import com.bfr.hardware.sensors.MB1242DistanceSensor;
 import com.bfr.hardware.sensors.MB1242System;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Point;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "MB1242 OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class MB1242TestOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

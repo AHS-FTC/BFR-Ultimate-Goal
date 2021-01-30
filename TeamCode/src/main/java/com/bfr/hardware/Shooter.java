@@ -6,8 +6,6 @@ import com.bfr.control.pidf.ShooterConstants;
 import com.bfr.control.pidf.PIDFConfig;
 import com.bfr.control.pidf.PIDFController;
 import com.bfr.util.FTCUtilities;
-import com.bfr.util.Toggle;
-import com.bfr.util.math.RunningAvg;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -21,7 +19,6 @@ public class Shooter {
 
     private SerialServo indexerServo, holderServo;
 
-    private long lastBulkReadTimeStamp = System.nanoTime();
     private double lastRotations;
     private static final double minsPerNano = 1.6666667E-11;
     private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
@@ -34,6 +31,8 @@ public class Shooter {
     private ShooterState shooterState = ShooterState.RESTING;
     private long startTime, elapsedTime;
     private final static long WAIT_TIME = 120; //175
+
+    private boolean powershotMode = false;
 
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
@@ -71,12 +70,15 @@ public class Shooter {
             //todo make more sophisticated feedforward model.
             @Override
             public double feedForward(double setPoint, double error) {
-                return 0.8;
-
+                if(setPoint == ShooterConstants.standardRPM){
+                    return ShooterConstants.standardFeedforward;
+                } else if(setPoint == ShooterConstants.powerShotRPM){
+                    return ShooterConstants.powerShotFeedforward;
+                } else return 0.0;
             }
         };
 
-        controller = new PIDFController(pidfConfig, 3000, lastRotations, 3);
+        controller = new PIDFController(pidfConfig, ShooterConstants.standardRPM, lastRotations, 3);
     }
 
     public void setPower(double power){
@@ -104,6 +106,9 @@ public class Shooter {
         RUNNING
     }
 
+    /**
+     * In powershot mode, this only indexes one shot.
+     */
     public void runIndexerServos(){
         startTime = FTCUtilities.getCurrentTimeMillis();
         indexerServo.setPosition(1);
@@ -127,8 +132,13 @@ public class Shooter {
                 break;
             case RETRACTING1:
                 if (nextState) {
-                    indexerServo.setPosition(1);
-                    servoState = IndexerState.PUSHING2;
+                    if(powershotMode){
+                        holderServo.setPosition(1);
+                        servoState = IndexerState.RESTING;
+                    } else {
+                        indexerServo.setPosition(1);
+                        servoState = IndexerState.PUSHING2;
+                    }
                 }
                 break;
             case PUSHING2:
@@ -157,6 +167,19 @@ public class Shooter {
     public void runShooter(){
         shooterState = ShooterState.RUNNING;
         updateShooterState();
+    }
+
+    public void setPowershotMode(boolean powershotMode){
+        this.powershotMode = powershotMode;
+        if(powershotMode){
+            controller.setSetPoint(ShooterConstants.powerShotRPM);
+        } else {
+            controller.setSetPoint(ShooterConstants.standardRPM);
+        }
+    }
+
+    public boolean isPowershotMode(){
+        return powershotMode;
     }
 
     public void stopShooter(){
@@ -195,6 +218,9 @@ public class Shooter {
         }
     }
 
+    /**
+     * Unifies encoder readings with their timestamps
+     */
     private class DataPoint{
         final double rotations;
         final long time;
@@ -230,7 +256,6 @@ public class Shooter {
 //        setPower(controller.getOutput(rpm));
 
         lastRotations = shooterMotor1.getRotations();
-        lastBulkReadTimeStamp = bulkReadTimestamp;
 
         updateIndexerServos();
         updateShooterState();

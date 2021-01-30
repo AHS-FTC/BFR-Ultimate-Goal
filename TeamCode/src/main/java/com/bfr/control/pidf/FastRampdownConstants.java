@@ -5,7 +5,7 @@ import com.bfr.hardware.WestCoast;
 
 @Config
 public class FastRampdownConstants {
-    public static double distanceThreshold = 8;
+    public static double distanceThreshold = 12;
     public static double brakePower = 0.15;
 
     public static double finishedThreshold = 1;

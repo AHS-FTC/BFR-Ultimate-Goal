@@ -63,6 +63,10 @@ public class DifTeleOp extends OpMode {
             }
         });
 
+        controller1.setAction(DPAD_L, () -> {
+            shooter.setPowershotMode(true);
+        });
+
         controller1.setAction(X, () -> {
             robot.autoAim();
         });

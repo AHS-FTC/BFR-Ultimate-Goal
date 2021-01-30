@@ -144,7 +144,7 @@ public class WestCoast {
             }
         };
 
-        //constants dont matter
+        //initial val doesnt matter
         turnController = new PIDFController(pidfConfig, 0, 0,3);
         turnController.setStabilityThreshold(0.00008);
     }
@@ -278,9 +278,9 @@ public class WestCoast {
                 if(FTCUtilities.isDashboardMode()){
                     dashboardTelemetry.addData("heading", imuHeading);
                     dashboardTelemetry.addData("Target Heading", targetAngle);
+                    dashboardTelemetry.addData("degrees error", Math.toDegrees(angleError));
+
                     dashboardTelemetry.addData("isStable: ", turnController.isStable());
-                    System.out.println("heading: " + imuHeading);
-                    System.out.println("target heading: " + targetAngle);
 
                     FTCUtilities.updateTelemetry();
                 }
