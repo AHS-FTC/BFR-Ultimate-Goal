@@ -2,11 +2,12 @@ package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.pidf.FastRampdownConstants;
+import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.control.pidf.PIDFConfig;
 import com.bfr.control.pidf.PIDFController;
 import com.bfr.control.pidf.AccurateRampdownConstants;
 import com.bfr.control.pidf.StraightConstants;
-import com.bfr.control.pidf.TurnConstants;
+import com.bfr.control.pidf.AccurateTurnConstants;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Circle;
@@ -45,7 +46,8 @@ public class WestCoast {
     private PIDFController rampdownController, turnController, straightController;
 
     private Mode defaultMode = Mode.IDLE;
-    private RampdownMode rampdownMode = RampdownMode.ACCURATE;
+    private MovementMode rampdownMode = MovementMode.ACCURATE;
+    private MovementMode turnMode = MovementMode.ACCURATE;
 
     //adds a slight wait after a drive straight (and maybe turn???)
     private boolean waitingState = false;
@@ -59,7 +61,7 @@ public class WestCoast {
         POINT_TURN,
     }
 
-    public enum RampdownMode {
+    public enum MovementMode {
         ACCURATE,
         FAST;
     }
@@ -122,25 +124,31 @@ public class WestCoast {
         PIDFConfig pidfConfig = new PIDFConfig() {
             @Override
             public double kP() {
-                return TurnConstants.kP;
+                if (turnMode.equals(MovementMode.ACCURATE)){
+                    return AccurateTurnConstants.kP;
+                }
+                return FastTurnConstants.kP;
             }
 
             @Override
             public double kI() {
-                return TurnConstants.kI;
+                if (turnMode.equals(MovementMode.ACCURATE)) {
+                    return AccurateTurnConstants.kI;
+                }
+                return FastTurnConstants.kI;
             }
 
             @Override
             public double kD() {
-                return TurnConstants.kD;
+                if (turnMode.equals(MovementMode.ACCURATE)) {
+                    return AccurateTurnConstants.kD;
+                }
+                return FastTurnConstants.kD;
             }
 
             @Override
             public double feedForward(double setPoint, double error) {
-                if(Math.abs(error) < TurnConstants.finishedThreshold || Math.abs(error) > 20){
-                    return 0;
-                }
-                return TurnConstants.minPower * Math.signum(error);
+                return 0;
             }
         };
 
@@ -262,8 +270,12 @@ public class WestCoast {
     /**
      * The rampdown controller is tuned to be fast in TeleOp and accurate in Auto. This method switches controllers.
      */
-    public void setRampdownMode(RampdownMode rampdownMode){
+    public void setRampdownMode(MovementMode rampdownMode){
         this.rampdownMode = rampdownMode;
+    }
+
+    public void setTurnMode(MovementMode turnMode){
+        this.turnMode = turnMode;
     }
 
     public void update(){
@@ -271,7 +283,6 @@ public class WestCoast {
             case IDLE:
                 break;
             case POINT_TURN:
-                //todo implement a better system for minPower (see drive straight)
                 double imuHeading = imu.getHeading();
                 double angleError = targetAngle - imuHeading;
 
@@ -285,15 +296,33 @@ public class WestCoast {
                     FTCUtilities.updateTelemetry();
                 }
 
-                if(turnController.isStable() && Math.abs(angleError) < TurnConstants.finishedThreshold){
+                double turnFinishedThreshold;
+                if (turnMode.equals(MovementMode.ACCURATE)){
+                    turnFinishedThreshold = AccurateTurnConstants.finishedThreshold;
+                } else {
+                    turnFinishedThreshold = FastTurnConstants.finishedThreshold;
+                }
+
+                if(turnController.isStable() && Math.abs(angleError) < turnFinishedThreshold){
                     mode = defaultMode;
                     brakeMotors();
                     break;
                 }
 
                 double turnPower = turnController.getOutput(imuHeading);
+                double turnMinPower;
+                double turnMaxPower;
+                if (turnMode.equals(MovementMode.ACCURATE)){
+                    turnMinPower = AccurateTurnConstants.minPower;
+                    turnMaxPower = AccurateTurnConstants.maxPower;
+                } else {
+                    turnMinPower = FastTurnConstants.minPower;
+                    turnMaxPower = FastTurnConstants.maxPower;
+                }
+                double finalMaxTurnPower = FTCMath.nearestToZero(turnPower, turnMaxPower);
+                double turnFinalPower = FTCMath.furthestFromZero(finalMaxTurnPower, turnMinPower * Math.signum(angleError));
 
-                setTankPower(-turnPower, turnPower);
+                setTankPower(-turnFinalPower, turnFinalPower);
 
                 break;
             case DRIVE_STRAIGHT:
@@ -323,7 +352,7 @@ public class WestCoast {
                 double finishedThreshold;
                 boolean finishedCondition;
 
-                if(rampdownMode.equals(RampdownMode.ACCURATE)){
+                if(rampdownMode.equals(MovementMode.ACCURATE)){
                     //take closest to zero between the default driving power and the PID rampdown power
                     double controlPower = FTCMath.nearestToZero(driveStraightPower, rampdownPower);
 

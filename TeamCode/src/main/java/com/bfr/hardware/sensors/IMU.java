@@ -28,7 +28,7 @@ public class IMU {
         initialHeadingOffset = initialHeading;
 
         parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
 
@@ -36,7 +36,7 @@ public class IMU {
     }
 
     /**
-     * Gets the IMU Heading. Oversteps the internal IMU behavior that returns radians between PI and -PI, meaning this method can return beyond 2PI and -2PI
+     * Gets the IMU Heading. Oversteps the internal IMU behavior that returns radians between PI and Math.toDegrees(-PI, meaning this method can return beyond 2PI and -2PI
      * @return Heading in radians
      */
     public double getHeading(){
@@ -68,8 +68,8 @@ public class IMU {
     }
 
     private double getRawHeading() {
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS); //ZYX
-        return angles.firstAngle;
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES); //ZYX
+        return Math.toRadians(angles.firstAngle);
     }
 
     public boolean isCalibrated (){

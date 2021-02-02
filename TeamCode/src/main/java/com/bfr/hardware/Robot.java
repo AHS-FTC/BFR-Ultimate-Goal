@@ -22,7 +22,7 @@ public class Robot {
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
     private MB1242System mb1242System;
-    private IMU imu;
+    private IMU imu, extraImu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private static final Point shootingPosition = new Point(-42,64);
@@ -67,7 +67,8 @@ public class Robot {
     public Robot() {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
-        imu = new IMU("imu", true, -Math.PI/2);
+        extraImu = new IMU("imu", true, -Math.PI/2);
+        imu = new IMU("imu_ch", true, -Math.PI/2);
         westCoast = new WestCoast(imu);
         cam = new Cam("Webcam 1");
         cam.start();
@@ -100,7 +101,7 @@ public class Robot {
         this.state = state;
 
         if(state.equals(State.AUTO_CYCLE)){
-            westCoast.setRampdownMode(WestCoast.RampdownMode.FAST);
+            westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
             westCoast.startTurnGlobal(-Math.PI / 2);
             cycleState = CycleState.TURNING_TO_INTAKE;
         }
@@ -197,6 +198,8 @@ public class Robot {
 
         long nanosAfter = System.nanoTime();
         long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
+
+        shooter.update(bulkReadTimestamp);
 
         if(state.equals(State.AUTO_CYCLE)){
             switch (cycleState){
@@ -320,10 +323,16 @@ public class Robot {
             }
         }
 
-        shooter.update(bulkReadTimestamp);
         westCoast.update();
 
+        //todo delete
+        double imuReading = imu.getHeading();
+        double extraReading = extraImu.getHeading();
+
         if(FTCUtilities.isDashboardMode()){
+            dashboardTelemetry.addData("main imu reading", Math.toDegrees(imuReading));
+            dashboardTelemetry.addData("aux imu reading", Math.toDegrees(extraReading));
+
             dashboardTelemetry.update();
         }
         //todo track loop times
