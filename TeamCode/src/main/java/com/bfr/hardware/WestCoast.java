@@ -155,6 +155,8 @@ public class WestCoast {
         //initial val doesnt matter
         turnController = new PIDFController(pidfConfig, 0, 0,3);
         turnController.setStabilityThreshold(0.00008);
+
+        rampdownController.setStabilityThreshold(0.005);
     }
 
     private double getAvgDistance(){
@@ -362,6 +364,7 @@ public class WestCoast {
 
                     finishedThreshold = AccurateRampdownConstants.finishedThreshold;
                     finishedCondition = rampdownController.isStable();
+                    dashboardTelemetry.addData("isStable", finishedCondition);
                 } else { //RampDownMode.FAST
                     if(Math.abs(distanceError) < FastRampdownConstants.distanceThreshold){
                         finalPower = FastRampdownConstants.brakePower * Math.signum(distanceError);

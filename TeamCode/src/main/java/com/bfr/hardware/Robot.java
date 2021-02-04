@@ -21,6 +21,8 @@ public class Robot {
     private WestCoast westCoast;
     private Shooter shooter = new Shooter();
     private Intake intake = new Intake();
+    private WobbleArm wobbleArm = new WobbleArm();
+
     private MB1242System mb1242System;
     private IMU imu, extraImu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
@@ -67,11 +69,12 @@ public class Robot {
     public Robot() {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
-        extraImu = new IMU("imu", true, -Math.PI/2);
-        imu = new IMU("imu_ch", true, -Math.PI/2);
+        imu = new IMU("imu_ch", true, Math.PI/2);
         westCoast = new WestCoast(imu);
-        cam = new Cam("Webcam 1");
-        cam.start();
+//        cam = new Cam("Webcam 1");
+//        cam.start();
+
+        wobbleArm.setState(WobbleArm.State.STORED);
 
         mb1242System = new MB1242System();
 
@@ -79,18 +82,23 @@ public class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        //calibrate vision
-        cam.copyFrameTo(latestFrame);
-//        FTCUtilities.saveImage(latestFrame, "yote.png");
-        double avgHue = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.HUE);
-        double sat = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.SATURATION);
-        double val = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.VALUE);
+        //call getHeading just to initialize stuff and make sure robot doesnt shit itself
+        imu.getHeading();
+        imu.getHeading();
+        imu.getHeading();
 
-        System.out.println("calibration hue: " + avgHue);
-        System.out.println("calibration sat: " + sat);
-        System.out.println("calibration val: " + val);
-
-        backboard.calibrate(avgHue, sat, val);
+//        //calibrate vision
+//        cam.copyFrameTo(latestFrame);
+////        FTCUtilities.saveImage(latestFrame, "yote.png");
+//        double avgHue = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.HUE);
+//        double sat = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.SATURATION);
+//        double val = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.VALUE);
+//
+//        System.out.println("calibration hue: " + avgHue);
+//        System.out.println("calibration sat: " + sat);
+//        System.out.println("calibration val: " + val);
+//
+//        backboard.calibrate(avgHue, sat, val);
     }
 
     public Intake getIntake(){return intake;}
@@ -159,6 +167,10 @@ public class Robot {
 
     public WestCoast getWestCoast() {
         return westCoast;
+    }
+
+    public WobbleArm getWobbleArm() {
+        return wobbleArm;
     }
 
     public void stopAll(){
@@ -325,13 +337,7 @@ public class Robot {
 
         westCoast.update();
 
-        //todo delete
-        double imuReading = imu.getHeading();
-        double extraReading = extraImu.getHeading();
-
         if(FTCUtilities.isDashboardMode()){
-            dashboardTelemetry.addData("main imu reading", Math.toDegrees(imuReading));
-            dashboardTelemetry.addData("aux imu reading", Math.toDegrees(extraReading));
 
             dashboardTelemetry.update();
         }
