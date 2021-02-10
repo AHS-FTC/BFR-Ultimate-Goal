@@ -8,7 +8,7 @@ public class AccurateTurnConstants {
     public static double kP = .011 * CONVERSION_CONSTANT;
     public static double kI = 0.0;
     public static double kD = 1.0 * CONVERSION_CONSTANT;
-    public static double finishedThreshold = 1.5/CONVERSION_CONSTANT; //The maximum size of the error in which the turn is considered finished
-    public static double minPower = 0.13; //The minimum power
+    public static double finishedThreshold = 2/CONVERSION_CONSTANT; //The maximum size of the error in which the turn is considered finished
+    public static double minPower = 0.17; //The minimum power
     public static double maxPower = .4;
 }

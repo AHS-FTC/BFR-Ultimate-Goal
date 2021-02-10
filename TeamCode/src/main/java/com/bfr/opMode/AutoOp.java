@@ -7,8 +7,9 @@ import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@Autonomous(name="BFR Auto", group="Linear OpMode")
+@TeleOp(name="Testing OpMode", group="Linear OpMode")
 @Disabled
 public class AutoOp extends LinearOpMode {
 
@@ -23,8 +24,7 @@ public class AutoOp extends LinearOpMode {
 
         waitForStart();
 
-        robot.turnLocal(2*Math.PI);
-        //robot.driveStraight(-0.9, -48.0);
+        //robot.driveStraight();
 
     }
 }

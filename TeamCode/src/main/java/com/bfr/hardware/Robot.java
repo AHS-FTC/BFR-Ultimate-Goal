@@ -1,5 +1,6 @@
 package com.bfr.hardware;
 
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.vision.Cam;
 import com.bfr.control.vision.VisionException;
@@ -81,11 +82,6 @@ public class Robot {
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-
-        //call getHeading just to initialize stuff and make sure robot doesnt shit itself
-        imu.getHeading();
-        imu.getHeading();
-        imu.getHeading();
 
 //        //calibrate vision
 //        cam.copyFrameTo(latestFrame);
@@ -336,9 +332,10 @@ public class Robot {
         }
 
         westCoast.update();
+        wobbleArm.update();
 
         if(FTCUtilities.isDashboardMode()){
-
+            dashboardTelemetry.addData("imu", Math.toDegrees(imu.getHeading()));
             dashboardTelemetry.update();
         }
         //todo track loop times

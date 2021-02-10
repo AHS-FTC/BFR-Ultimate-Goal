@@ -321,7 +321,7 @@ public class WestCoast {
                     turnMinPower = FastTurnConstants.minPower;
                     turnMaxPower = FastTurnConstants.maxPower;
                 }
-                double finalMaxTurnPower = FTCMath.nearestToZero(turnPower, turnMaxPower);
+                double finalMaxTurnPower = FTCMath.nearestToZero(turnPower, turnMaxPower * Math.signum(angleError));
                 double turnFinalPower = FTCMath.furthestFromZero(finalMaxTurnPower, turnMinPower * Math.signum(angleError));
 
                 setTankPower(-turnFinalPower, turnFinalPower);

@@ -10,7 +10,8 @@ public class Intake {
     public enum State {
         STOPPED(0),
         IN(1.0),
-        OUT(-.8);
+        OUT(-.8),
+        STARTER_STACK(-.1);
 
         public final double power;
 

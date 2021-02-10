@@ -27,12 +27,15 @@ public class IMU {
         flip = flipped ? 1:-1;
         initialHeadingOffset = initialHeading;
 
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
 
         imu.initialize(parameters);
+
+        while (!isCalibrated()){
+            //wait
+        }
     }
 
     /**
@@ -68,8 +71,8 @@ public class IMU {
     }
 
     private double getRawHeading() {
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES); //ZYX
-        return Math.toRadians(angles.firstAngle);
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS); //ZYX
+        return angles.firstAngle;
     }
 
     public boolean isCalibrated (){
