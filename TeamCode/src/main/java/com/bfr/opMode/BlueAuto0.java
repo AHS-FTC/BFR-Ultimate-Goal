@@ -5,9 +5,14 @@ import com.bfr.hardware.Robot;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WobbleArm;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @Autonomous(name="Blue Auto 0", group="Linear OpMode")
 //@Disabled
@@ -15,6 +20,8 @@ public class BlueAuto0 extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
+        NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
+
         FTCUtilities.setOpMode(this);
 
         Robot robot = new Robot();
