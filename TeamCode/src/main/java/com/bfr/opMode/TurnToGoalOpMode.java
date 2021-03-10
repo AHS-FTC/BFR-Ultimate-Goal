@@ -1,19 +1,22 @@
 package com.bfr.opMode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.vision.Cam;
 import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.VisionSystem2;
 import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.Robot;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.R;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 @TeleOp(name = "Turn to Goal OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class TurnToGoalOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,27 +25,30 @@ public class TurnToGoalOpMode extends LinearOpMode {
         Cam cam = new Cam("Webcam 1");
         cam.start();
 
-        Robot robot = new Robot();
-
         waitForStart();
+
         Backboard backboard = new Backboard();
         Mat mat = new Mat();
 
         while (opModeIsActive()){
             cam.copyFrameTo(mat);
-            if(gamepad1.a){
-                try {
-                    backboard.make(mat);
-                    double targetX = backboard.getMiddleX();
-                    double angleToTarget = Cam.getAngleFromX(targetX);
-                    robot.turnLocal(angleToTarget);
-                } catch (VisionException e){
-                    e.printStackTrace();
-                    System.out.println("frick");
-                    backboard.dump();
-                }
+            try {
+                backboard.make(mat);
+                double targetX = backboard.getMiddleX();
+                double angleToTarget = Cam.getAngleFromX(targetX);
+
+                FtcDashboard.getInstance().getTelemetry().addData("target x", targetX);
+                FtcDashboard.getInstance().getTelemetry().addData("angle to target", angleToTarget);
+                FtcDashboard.getInstance().getTelemetry().update();
+
+                backboard.dump();
+
+            } catch (VisionException e){
+                System.out.println("frick");
+                e.printStackTrace();
             }
-            cam.setOutputMat(mat);
+
+            cam.setOutputMat(backboard.binaryCropped);
         }
     }
 }

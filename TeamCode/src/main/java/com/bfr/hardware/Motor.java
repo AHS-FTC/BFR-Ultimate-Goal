@@ -14,6 +14,9 @@ public class Motor {
     private double previousMotorPower = 0;
     private double ticksPerRotation;
 
+    //sometimes the encoder disagrees with the motor.
+    private int encoderFlip = 1;
+
     public Motor(String deviceName, double ticksPerRotation, boolean flipped) {
         this.flipped = flipped;
         this.deviceName = deviceName;
@@ -47,8 +50,12 @@ public class Motor {
         motor.setZeroPowerBehavior(behavior);
     }
 
+    public void flipEncoder(){
+        encoderFlip = -1;
+    }
+
     public double getRotations() {
-        return (motor.getCurrentPosition()/ticksPerRotation);
+        return encoderFlip * (motor.getCurrentPosition() / ticksPerRotation);
     }
 
 }

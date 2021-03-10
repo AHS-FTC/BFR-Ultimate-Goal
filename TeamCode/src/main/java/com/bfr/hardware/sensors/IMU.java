@@ -16,28 +16,31 @@ public class IMU {
     private Orientation lastAngles = new Orientation();
     private BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     private double lastAngle;
-    private double offset = 0;
+    private double wrappingOffset = 0;
     private double initial = 0;
     private boolean firstTime = true;
     private int flip = 1;
+    private final double initialHeadingOffset;
 
-    public IMU(String deviceName, boolean flipped) {
+    public IMU(String deviceName, boolean flipped, double initialHeading) {
         imu = FTCUtilities.getHardwareMap().get(BNO055IMU.class, deviceName);
         flip = flipped ? 1:-1;
+        initialHeadingOffset = initialHeading;
 
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.loggingEnabled = false;
 
         imu.initialize(parameters);
 
-
+        while (!isCalibrated()){
+            //wait
+        }
     }
 
     /**
-     * Gets the IMU Heading. Oversteps the internal IMU behavior that returns degrees between 180 and -180, meaning this method can return beyond 360 and -360
-     * @return Heading in degrees
+     * Gets the IMU Heading. Oversteps the internal IMU behavior that returns radians between PI and Math.toDegrees(-PI, meaning this method can return beyond 2PI and -2PI
+     * @return Heading in radians
      */
     public double getHeading(){
         if (firstTime){
@@ -51,10 +54,10 @@ public class IMU {
         double deltaAngle = rawAngle - lastAngle;
         lastAngle = rawAngle;
 
-        if (deltaAngle < -180){
-            offset+=360;
-        } else if (deltaAngle>180){
-            offset -=360;
+        if (deltaAngle < -Math.PI){
+            wrappingOffset += 2*Math.PI;
+        } else if (deltaAngle> Math.PI){
+            wrappingOffset -= 2*Math.PI;
         }
 
 //        System.out.println("initial " + initial);
@@ -62,13 +65,13 @@ public class IMU {
 //        System.out.println("rawAngle " + rawAngle);
 //        System.out.println("last " + lastAngle);
 
-        double heading = rawAngle + offset - initial;
+        double heading = rawAngle + wrappingOffset - initial;
 
-        return heading * flip;
+        return heading * flip + initialHeadingOffset;
     }
 
     private double getRawHeading() {
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES); //ZYX
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS); //ZYX
         return angles.firstAngle;
     }
 

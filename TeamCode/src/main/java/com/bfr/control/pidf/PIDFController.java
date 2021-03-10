@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.util.FTCUtilities;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
 
 public class PIDFController {
     private final PIDFConfig constants;
@@ -52,10 +51,7 @@ public class PIDFController {
                         return 0;
                     }
                 },
-                setPoint,
-                initialValue,
-                1);
-
+                setPoint, initialValue, 1);
     }
 
     /**
@@ -94,9 +90,11 @@ public class PIDFController {
         double iCorrection = constants.kI() * errorSum;
         double dCorrection = constants.kD() * derivative;
 
-        dashboardTelemetry.addData("pcorr", pCorrection);
-        dashboardTelemetry.addData("icorr", iCorrection);
-        dashboardTelemetry.addData("dcorr", dCorrection);
+        if(FTCUtilities.isDashboardMode()){
+            dashboardTelemetry.addData("pcorr", pCorrection);
+            dashboardTelemetry.addData("icorr", iCorrection);
+            dashboardTelemetry.addData("dcorr", dCorrection);
+        }
 
         return pCorrection + iCorrection + dCorrection + constants.feedForward(setPoint, error);
     }
@@ -106,7 +104,6 @@ public class PIDFController {
     }
 
     public boolean isStable(){
-        System.out.println("derivative " + derivative);
         return (Math.abs(derivative) < stabilityThreshold);
     }
 
@@ -115,6 +112,15 @@ public class PIDFController {
         initialValue = currentValue;
         lastError = setPoint - currentValue;
         lastTime = FTCUtilities.getCurrentTimeMillis();
+    }
+
+    public void reset(double currentValue, double newSetPoint){
+        setSetPoint(newSetPoint);
+        reset(currentValue);
+    }
+
+    public void setSetPoint(double setPoint){
+        this.setPoint = setPoint;
     }
 
 }

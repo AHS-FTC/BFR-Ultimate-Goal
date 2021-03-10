@@ -1,6 +1,7 @@
 package com.bfr.util.math;
 
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 
 /**
  * Contains useful static math methods for general FTC use.
@@ -54,6 +55,20 @@ public class FTCMath {
 
         retAngle = referenceAngle - angleDifference;//derived from definition of angleDifference
         return retAngle;
+    }
+
+    public static double nearestToZero(double a, double b){
+        if (abs(a) < abs(b)){
+            return a;
+        }
+        return b;
+    }
+
+    public static double furthestFromZero(double a, double b){
+        if (abs(a) > abs(b)){
+            return a;
+        }
+        return b;
     }
 
     private FTCMath(){}

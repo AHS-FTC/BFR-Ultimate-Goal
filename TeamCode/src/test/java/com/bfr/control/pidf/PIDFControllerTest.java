@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PIDFControllerTest {
-
     @BeforeEach
     void setUp() {
         FTCUtilities.startTestMode();
@@ -37,6 +36,7 @@ class PIDFControllerTest {
 
     @Test
     void testDerivative() {
+        //note initial value = 0
         PIDFController controller = new PIDFController(0,0,1,10,0);
 
         //derivative = (0 - 5) / delta time * kD, should be negative

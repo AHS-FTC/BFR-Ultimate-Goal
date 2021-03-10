@@ -1,30 +1,34 @@
 package com.bfr.opMode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name="Testing OpMode", group="Linear OpMode")
-@Disabled
-public class AutoOp extends LinearOpMode {
+@Autonomous(name="IMU Op", group="Linear OpMode")
+//@Disabled
+public class ImuOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot();
-        WestCoast westCoast = robot.getWestCoast();
-        westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        telemetry = FtcDashboard.getInstance().getTelemetry();
+
+        IMU imu = new IMU("imu_ch", true, -Math.PI/2);
         //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
 
         waitForStart();
+        while(opModeIsActive()){
+            telemetry.addData("heading", Math.toDegrees(imu.getHeading()));
+            telemetry.update();
+        }
 
-        //robot.driveStraight();
+
+        //robot.driveStraight(-0.9, -48.0);
 
     }
 }

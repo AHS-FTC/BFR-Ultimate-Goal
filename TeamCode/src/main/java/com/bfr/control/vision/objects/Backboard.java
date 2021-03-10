@@ -18,11 +18,11 @@ import java.util.List;
 
 public class Backboard extends VisionObject {
 
-    private Scalar min = new Scalar(100, 50, 0);
+    private Scalar min = new Scalar(100, 100, 50);
     private Scalar max = new Scalar(120, 255, 255);
 
     private static final double HUE_RANGE = 10;
-    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2));
     private static final double heightRatio = 2.0 / 3.0;
 
     private final Mat blurred = new Mat();
@@ -80,11 +80,11 @@ public class Backboard extends VisionObject {
     }
 
     /**
-     * Tune the accepted hue range for backboard thresholding.
+     * Tune the accepted ranges for backboard thresholding.
      */
-    public void setHue(double middleHueVal) {
-        min.set(new double[] {middleHueVal - HUE_RANGE, 50, 0});
-        max.set(new double[] {middleHueVal + HUE_RANGE, 255, 255});
+    public void calibrate(double middleHue, double saturation, double value) {
+        min = new Scalar(middleHue - HUE_RANGE, saturation - 100, value - 100);
+        max = new Scalar(middleHue + HUE_RANGE, 255, 255);
     }
 
     @Override
