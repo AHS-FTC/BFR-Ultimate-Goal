@@ -1,7 +1,6 @@
 package com.bfr.util.math;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 
 /**
  * Contains useful static math methods for general FTC use.
@@ -69,6 +68,10 @@ public class FTCMath {
             return a;
         }
         return b;
+    }
+
+    public static Vector magnitudeDirectionVector(double mag, double dir){
+        return new Vector(cos(dir) * mag, sin(dir) * mag);
     }
 
     private FTCMath(){}

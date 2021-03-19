@@ -1,5 +1,6 @@
 package com.bfr.opMode;
 
+import com.bfr.control.path.Position;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.Shooter;
@@ -19,7 +20,7 @@ public class BlueAuto4 extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot();
+        Robot robot = new Robot(new Position(0, 0, Math.toRadians(-90)));
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
@@ -30,7 +31,7 @@ public class BlueAuto4 extends LinearOpMode {
 
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
-        robot.driveStraight(-0.7, -109);
+        robot.driveStraight(0.7, 109, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
@@ -41,7 +42,7 @@ public class BlueAuto4 extends LinearOpMode {
         sleep(500);
 
         robot.turnGlobal(Math.toRadians(90));
-        robot.driveStraight(0.7, 50);
+        robot.driveStraight(0.7, 50, WestCoast.Direction.FORWARDS);
 
         robot.turnGlobal(Math.toRadians(256));
 
@@ -55,13 +56,13 @@ public class BlueAuto4 extends LinearOpMode {
 
         robot.turnGlobal(Math.toRadians(270));
 
-        robot.driveStraight(-0.7, -24);
+        robot.driveStraight(0.7, 24, WestCoast.Direction.REVERSE);
 
         robot.turnGlobal(Math.toRadians(310));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
 
-        robot.driveStraight(-0.7, -18);
+        robot.driveStraight(0.7, 18, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
@@ -71,6 +72,6 @@ public class BlueAuto4 extends LinearOpMode {
         robot.turnGlobal(Math.toRadians(270));
         intake.changeState(Intake.State.STARTER_STACK);
 
-        robot.driveStraight(0.3, 12);
+        robot.driveStraight(0.3, 12, WestCoast.Direction.FORWARDS);
     }
 }

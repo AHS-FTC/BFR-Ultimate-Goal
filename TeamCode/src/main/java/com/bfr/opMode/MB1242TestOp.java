@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "MB1242 OpMode", group = "Iterative Opmode")
-@Disabled
+//@Disabled
 public class MB1242TestOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
@@ -18,7 +18,6 @@ public class MB1242TestOp extends LinearOpMode {
 
         telemetry = FtcDashboard.getInstance().getTelemetry();
 
-//        MB1242DistanceSensor mb = hardwareMap.get(MB1242DistanceSensor.class, "mb");
         MB1242System mb1242System = new MB1242System();
 
         waitForStart();

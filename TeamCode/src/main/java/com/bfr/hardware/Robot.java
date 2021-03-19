@@ -2,12 +2,17 @@ package com.bfr.hardware;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.roadrunner.drive.TankDrive;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.bfr.control.path.Position;
 import com.bfr.control.vision.Cam;
 import com.bfr.control.vision.VisionException;
-import com.bfr.control.vision.VisionUtil;
 import com.bfr.control.vision.objects.Backboard;
+import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.MB1242System;
+import com.bfr.hardware.sensors.OdometerImpl;
+import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Point;
@@ -25,24 +30,26 @@ public class Robot {
     private WobbleArm wobbleArm = new WobbleArm();
 
     private MB1242System mb1242System;
-    private IMU imu, extraImu;
+    private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
+    private Odometry odometry;
     private static final Point shootingPosition = new Point(-42,64);
-    private static final Point intakingPosition = new Point(-42,20);
+    private static final Point intakingPosition = new Point(-42,30);
 
     //vision stuff
     private Cam cam;
     private Backboard backboard = new Backboard();
     private Mat latestFrame = new Mat();
 
-    private Point currentPosition = new Point(0,0);
+    private Point curPosMb1242 = new Point(0,0);
 
     private boolean nextCycleState = false;
 
     private List<LynxModule> hubs;
     private State state = State.FREE;
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
+
     public enum State {
         FREE,
         AUTO_CYCLE
@@ -67,17 +74,26 @@ public class Robot {
         PSHOT_3,
     }
 
-    public Robot() {
+    public Robot(Position startingPosition) {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
 
         imu = new IMU("imu_ch", true, Math.PI/2);
-        westCoast = new WestCoast(imu);
 //        cam = new Cam("Webcam 1");
 //        cam.start();
 
         wobbleArm.setState(WobbleArm.State.STORED);
 
         mb1242System = new MB1242System();
+
+        odometry = new DifOdometry(
+                new OdometerImpl("l_odo", 1.885, true, 1440.0),
+                new OdometerImpl("r_odo", 1.89, false, 1440.0),
+                startingPosition, 15.6
+        );
+
+        westCoast = new WestCoast(imu, odometry);
+
+        odometry.start();
 
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -95,6 +111,7 @@ public class Robot {
 //        System.out.println("calibration val: " + val);
 //
 //        backboard.calibrate(avgHue, sat, val);
+
     }
 
     public Intake getIntake(){return intake;}
@@ -120,12 +137,14 @@ public class Robot {
      * @param power
      * @param targetDistance in inches
      */
-    public void driveStraight(double power, double targetDistance){
-        westCoast.startDriveStraight(power, targetDistance);
+    public void driveStraight(double power, double targetDistance, WestCoast.Direction direction){
+        westCoast.startDriveStraight(power, targetDistance, direction);
 
-        while (westCoast.getMode() == WestCoast.Mode.DRIVE_STRAIGHT && FTCUtilities.opModeIsActive()){
+        while (westCoast.getMode().equals(WestCoast.Mode.DRIVE_STRAIGHT) && FTCUtilities.opModeIsActive()){
             update();
         }
+        System.out.println("ds: " + westCoast.getMode().equals(WestCoast.Mode.DRIVE_STRAIGHT));
+        System.out.println("active: " + FTCUtilities.opModeIsActive());
     }
 
     public void autoAim(){
@@ -158,7 +177,7 @@ public class Robot {
     }
 
     public void turnLocal(double angle){
-        turnGlobal(imu.getHeading() + angle);
+        turnGlobal(odometry.getPosition().heading + angle);
     }
 
     public WestCoast getWestCoast() {
@@ -193,6 +212,18 @@ public class Robot {
     }
 
     /**
+     * Blocks for a fixed amount of time, while still updating the robot every control loop
+     * @param ms how long to wait (in ms)
+     */
+    public void sleep(long ms){
+        long startTime = FTCUtilities.getCurrentTimeMillis();
+
+        while (FTCUtilities.getCurrentTimeMillis() - startTime < ms){
+            update();
+        }
+    }
+
+    /**
      * The update() method contains maintenance stuff
      * it should be called every iteration in any blocking method.
      */
@@ -207,6 +238,7 @@ public class Robot {
         long nanosAfter = System.nanoTime();
         long bulkReadTimestamp = (nanosBefore + nanosAfter) / 2;
 
+        odometry.update();
         shooter.update(bulkReadTimestamp);
 
         if(state.equals(State.AUTO_CYCLE)){
@@ -223,13 +255,13 @@ public class Robot {
 
                         intake.changeState(Intake.State.IN);
 
-                        currentPosition = mb1242System.doReads();
-                        System.out.println("read heading (degs): "+ Math.toDegrees(imu.getHeading()));
-                        System.out.println("x: "+ currentPosition.x);
-                        System.out.println("y: "+ currentPosition.y);
+                        curPosMb1242 = mb1242System.doReads();
+                        System.out.println("read heading (degs): "+ Math.toDegrees(odometry.getPosition().heading));
+                        System.out.println("x: "+ curPosMb1242.x);
+                        System.out.println("y: "+ curPosMb1242.y);
 
-                        dashboardTelemetry.addData("x", currentPosition.x);
-                        dashboardTelemetry.addData("y", currentPosition.y);
+                        dashboardTelemetry.addData("x", curPosMb1242.x);
+                        dashboardTelemetry.addData("y", curPosMb1242.y);
 
                         cycleState = CycleState.INTAKING;
                     }
@@ -241,8 +273,8 @@ public class Robot {
                         //calculate the angle and distance to our target point
                         //For the angle, keep in mind the robot is moving backwards
 
-                        double angle = shootingPosition.angleTo(currentPosition);
-                        angle = FTCMath.ensureIdealAngle(angle, imu.getHeading());
+                        double angle = shootingPosition.angleTo(curPosMb1242);
+                        angle = FTCMath.ensureIdealAngle(angle, odometry.getPosition().heading);
 
                         westCoast.startTurnGlobal(angle);
                         cycleState = CycleState.TURNING_BACK;
@@ -250,9 +282,9 @@ public class Robot {
                     break;
                 case TURNING_BACK:
                     if (westCoast.isInDefaultMode()){
-                        double distance = shootingPosition.distanceTo(currentPosition);
+                        double distance = shootingPosition.distanceTo(curPosMb1242);
 
-                        westCoast.startDriveStraight(-.9, -distance);
+                        westCoast.startDriveStraight(.9, distance, WestCoast.Direction.REVERSE);
                         cycleState = CycleState.DRIVING_BACK;
                     }
                     break;
@@ -284,7 +316,7 @@ public class Robot {
                 case TURNING_FORWARD:
                     if (westCoast.isInDefaultMode()){
                         double distance = shootingPosition.distanceTo(intakingPosition);
-                        westCoast.startDriveStraight(.9, distance);
+                        westCoast.startDriveStraight(.9, distance, WestCoast.Direction.FORWARDS);
                         cycleState = CycleState.DRIVING_FORWARD;
                     }
                     break;
@@ -335,7 +367,6 @@ public class Robot {
         wobbleArm.update();
 
         if(FTCUtilities.isDashboardMode()){
-            dashboardTelemetry.addData("imu", Math.toDegrees(imu.getHeading()));
             dashboardTelemetry.update();
         }
         //todo track loop times

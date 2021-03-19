@@ -1,5 +1,6 @@
 package com.bfr.opMode;
 
+import com.bfr.control.path.Position;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.Shooter;
@@ -31,7 +32,7 @@ public class DTTeleOp extends OpMode {
         Controller controller1 = FTCUtilities.getController1();
         Controller controller2 = FTCUtilities.getController2();
 
-        robot = new Robot();
+        robot = new Robot(new Position(0, 0, Math.toRadians(-90)));
         Intake intake = robot.getIntake();
         westCoast = robot.getWestCoast();
         westCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);

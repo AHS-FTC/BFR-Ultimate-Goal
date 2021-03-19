@@ -11,7 +11,7 @@ public class MB1242System {
     private MB1242DistanceSensor frontSensor, leftSensor;
 
     private static final double INCHES_PER_CM = 0.393701;
-    private static final double FRONT_OFFSET = -1.5, LEFT_OFFSET = .75;
+    private static final double FRONT_OFFSET = -3.7, LEFT_OFFSET = .75;
 
     public MB1242System() {
         frontSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front");

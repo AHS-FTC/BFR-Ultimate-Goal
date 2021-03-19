@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.WestCoast;
 import com.bfr.util.FTCUtilities;
+import com.kauailabs.navx.ftc.AHRS;
 import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -23,13 +24,22 @@ public class NavXOp extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
+        AHRS ahrs = AHRS.getInstance(navx, AHRS.DeviceDataType.kProcessedData);
 
         telemetry = FtcDashboard.getInstance().getTelemetry();
 
+        while (ahrs.isCalibrating()){
+            telemetry.addLine("Calibrating NavX...");
+            telemetry.update();
+        }
+        telemetry.addLine("finished");
+        telemetry.update();
+
         waitForStart();
+        ahrs.zeroYaw();
 
         while (opModeIsActive()){
-            double heading = navx.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES).firstAngle;
+            double heading = ahrs.getYaw();
 
 
             telemetry.addData("heading", heading);

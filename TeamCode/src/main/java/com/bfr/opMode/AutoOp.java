@@ -1,5 +1,8 @@
 package com.bfr.opMode;
 
+import android.graphics.Rect;
+
+import com.bfr.control.path.Position;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.sensors.IMU;
@@ -10,16 +13,18 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name="Testing OpMode", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class AutoOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot();
+        Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
         westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+
+        robot.turnGlobal(Math.toRadians(-720));
         //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
 
         waitForStart();
