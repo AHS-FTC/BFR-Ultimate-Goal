@@ -7,6 +7,8 @@ public class Intake {
     private Motor intakeMotor;
     private State state = State.STOPPED;
 
+    private SerialServo actuator;
+
     public enum State {
         STOPPED(0),
         IN(1.0),
@@ -22,6 +24,12 @@ public class Intake {
 
     public Intake() {
         intakeMotor = new Motor("intake", 103.6,true);
+        actuator = new SerialServo("intake_actuator", true);
+        actuator.setPosition(0);
+    }
+
+    public void extend(){
+        actuator.setPosition(.9);
     }
 
     public void setPower(double power){

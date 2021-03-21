@@ -8,6 +8,7 @@ import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.WobbleArm;
 import com.bfr.util.Controller;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.loggers.ControlCenter;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -82,6 +83,9 @@ public class DTTeleOp extends OpMode {
         controller2.setAction(X, () -> wobbleArm.setState(WobbleArm.State.HOLDING));
         controller2.setAction(A, () -> wobbleArm.setState(WobbleArm.State.STORED));
 
+        controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
+        controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
+
     }
 
     @Override
@@ -92,12 +96,14 @@ public class DTTeleOp extends OpMode {
     public void start() {
         westCoast.startDriverControl();
         shooter.runShooter();
+        robot.getIntake().extend();
     }
 
     @Override
     public void loop() {
         Controller.update();
         robot.update();
+        ControlCenter.update();
     }
 
     @Override

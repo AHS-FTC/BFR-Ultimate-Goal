@@ -84,6 +84,10 @@ public class DifOdometry extends Odometry{
         }
     }
 
+    public void incrementHeading(double increment){
+        position.heading += increment;
+    }
+
 
     @Override
     public void start() {

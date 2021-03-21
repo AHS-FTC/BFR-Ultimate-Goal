@@ -14,6 +14,7 @@ import com.bfr.hardware.sensors.MB1242System;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.loggers.ControlCenter;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Point;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -90,6 +91,8 @@ public class Robot {
                 new OdometerImpl("r_odo", 1.89, false, 1440.0),
                 startingPosition, 15.6
         );
+
+        ControlCenter.setDifOdometry((DifOdometry) odometry);
 
         westCoast = new WestCoast(imu, odometry);
 
@@ -241,34 +244,26 @@ public class Robot {
         odometry.update();
         shooter.update(bulkReadTimestamp);
 
+        ControlCenter.setPosition(odometry.getPosition());
+
         if(state.equals(State.AUTO_CYCLE)){
             switch (cycleState){
                 case TURNING_TO_INTAKE:
                     if(westCoast.isInDefaultMode()){
-                        mb1242System.doPings();
-
-                        try {
-                            Thread.sleep(80);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
                         intake.changeState(Intake.State.IN);
-
-                        curPosMb1242 = mb1242System.doReads();
-                        System.out.println("read heading (degs): "+ Math.toDegrees(odometry.getPosition().heading));
-                        System.out.println("x: "+ curPosMb1242.x);
-                        System.out.println("y: "+ curPosMb1242.y);
-
-                        dashboardTelemetry.addData("x", curPosMb1242.x);
-                        dashboardTelemetry.addData("y", curPosMb1242.y);
 
                         cycleState = CycleState.INTAKING;
                     }
                     break;
                 case INTAKING:
                     if(checkNextCycleState()){
-                        intake.changeState(Intake.State.STOPPED);
+
+                        mb1242System.doPings();
+                        FTCUtilities.sleep(80);
+                        curPosMb1242 = mb1242System.doReads();
+
+                        dashboardTelemetry.addData("x", curPosMb1242.x);
+                        dashboardTelemetry.addData("y", curPosMb1242.y);
 
                         //calculate the angle and distance to our target point
                         //For the angle, keep in mind the robot is moving backwards
@@ -290,6 +285,7 @@ public class Robot {
                     break;
                 case DRIVING_BACK:
                     if (westCoast.isInDefaultMode()){
+                        intake.changeState(Intake.State.STOPPED);
                         if(shooter.isPowershotMode()){
                             westCoast.startTurnGlobal(Math.toRadians(-93));
                             cycleState = CycleState.TURN_TO_SHOT_1;
@@ -315,6 +311,8 @@ public class Robot {
                     break;
                 case TURNING_FORWARD:
                     if (westCoast.isInDefaultMode()){
+                        intake.changeState(Intake.State.IN);
+
                         double distance = shootingPosition.distanceTo(intakingPosition);
                         westCoast.startDriveStraight(.9, distance, WestCoast.Direction.FORWARDS);
                         cycleState = CycleState.DRIVING_FORWARD;

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 
 import com.bfr.hardware.sensors.OdometerImpl;
+import com.bfr.util.loggers.ControlCenter;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -78,6 +79,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
         controller1 = new Controller(opMode.gamepad1);
         controller2 = new Controller(opMode.gamepad2);
+
+        ControlCenter.setTelemetry(opMode.telemetry);
 
         dashboardMode = true;
     }

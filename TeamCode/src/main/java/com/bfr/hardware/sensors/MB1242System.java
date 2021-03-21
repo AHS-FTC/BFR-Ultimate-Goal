@@ -13,6 +13,8 @@ public class MB1242System {
     private static final double INCHES_PER_CM = 0.393701;
     private static final double FRONT_OFFSET = -3.7, LEFT_OFFSET = .75;
 
+    private Point lastPoint;
+
     public MB1242System() {
         frontSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front");
         leftSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left");
@@ -27,13 +29,21 @@ public class MB1242System {
      * @return point on the field, relative to walls
      */
     public Point doReads(){
-        double front = frontSensor.readDistance() * INCHES_PER_CM + FRONT_OFFSET;
-        double left = leftSensor.readDistance() * INCHES_PER_CM + LEFT_OFFSET;
+        int frontRaw = frontSensor.readDistance();
+        int leftRaw = leftSensor.readDistance();
+
+        if(frontRaw < 5.0 || leftRaw < 5.0){
+            System.out.println("detected mb1242 anomaly");
+            return lastPoint;
+        }
+        double front = frontRaw * INCHES_PER_CM + FRONT_OFFSET;
+        double left = leftRaw * INCHES_PER_CM + LEFT_OFFSET;
 
         if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
             left *= -1;
         }
 
-        return new Point(left, front);
+        lastPoint = new Point(left, front);
+        return lastPoint;
     }
 }
