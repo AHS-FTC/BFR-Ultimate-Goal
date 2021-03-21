@@ -2,8 +2,6 @@ package com.bfr.hardware;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.roadrunner.drive.TankDrive;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.bfr.control.path.Position;
 import com.bfr.control.vision.Cam;
 import com.bfr.control.vision.VisionException;
@@ -36,19 +34,20 @@ public class Robot {
 
     private Odometry odometry;
     private static final Point shootingPosition = new Point(-42,64);
-    private static final Point intakingPosition = new Point(-42,30);
+
+    private static final Point intakingPosition = new Point(-42,27);
 
     //vision stuff
     private Cam cam;
     private Backboard backboard = new Backboard();
     private Mat latestFrame = new Mat();
 
-    private Point curPosMb1242 = new Point(0,0);
+    private Position position;
 
     private boolean nextCycleState = false;
 
     private List<LynxModule> hubs;
-    private State state = State.FREE;
+    private State state = Robot.State.FREE;
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
 
     public enum State {
@@ -77,6 +76,7 @@ public class Robot {
 
     public Robot(Position startingPosition) {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
+        position = startingPosition;
 
         imu = new IMU("imu_ch", true, Math.PI/2);
 //        cam = new Cam("Webcam 1");
@@ -84,13 +84,13 @@ public class Robot {
 
         wobbleArm.setState(WobbleArm.State.STORED);
 
-        mb1242System = new MB1242System();
-
         odometry = new DifOdometry(
                 new OdometerImpl("l_odo", 1.885, true, 1440.0),
                 new OdometerImpl("r_odo", 1.89, false, 1440.0),
                 startingPosition, 15.6
         );
+
+        mb1242System = new MB1242System(odometry);
 
         ControlCenter.setDifOdometry((DifOdometry) odometry);
 
@@ -102,7 +102,7 @@ public class Robot {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-//        //calibrate vision
+//        //calinew Position(0,0, 0);brate vision
 //        cam.copyFrameTo(latestFrame);
 ////        FTCUtilities.saveImage(latestFrame, "yote.png");
 //        double avgHue = VisionUtil.findAvgOfRegion(latestFrame, 350,190,10,17, VisionUtil.HSVChannel.HUE);
@@ -121,10 +121,14 @@ public class Robot {
 
     public Shooter getShooter(){return shooter;}
 
+    public static Point getIntakingPoint() {
+        return intakingPosition;
+    }
+
     public void setState(State state){
         this.state = state;
 
-        if(state.equals(State.AUTO_CYCLE)){
+        if(state.equals(Robot.State.AUTO_CYCLE)){
             westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
             westCoast.startTurnGlobal(-Math.PI / 2);
             cycleState = CycleState.TURNING_TO_INTAKE;
@@ -143,10 +147,10 @@ public class Robot {
     public void driveStraight(double power, double targetDistance, WestCoast.Direction direction){
         westCoast.startDriveStraight(power, targetDistance, direction);
 
-        while (westCoast.getMode().equals(WestCoast.Mode.DRIVE_STRAIGHT) && FTCUtilities.opModeIsActive()){
+        while (westCoast.getState().equals(WestCoast.State.DRIVE_STRAIGHT) && FTCUtilities.opModeIsActive()){
             update();
         }
-        System.out.println("ds: " + westCoast.getMode().equals(WestCoast.Mode.DRIVE_STRAIGHT));
+        System.out.println("ds: " + westCoast.getState().equals(WestCoast.State.DRIVE_STRAIGHT));
         System.out.println("active: " + FTCUtilities.opModeIsActive());
     }
 
@@ -174,7 +178,7 @@ public class Robot {
     public void turnGlobal(double globalAngle){
         westCoast.startTurnGlobal(globalAngle);
 
-        while (westCoast.getMode() == WestCoast.Mode.POINT_TURN && FTCUtilities.opModeIsActive()){
+        while (westCoast.getState() == WestCoast.State.POINT_TURN && FTCUtilities.opModeIsActive()){
             update();
         }
     }
@@ -246,7 +250,12 @@ public class Robot {
 
         ControlCenter.setPosition(odometry.getPosition());
 
-        if(state.equals(State.AUTO_CYCLE)){
+        if(state.equals(Robot.State.AUTO_CYCLE)){
+            if (FTCUtilities.getController1().areSticksNonZero() && !cycleState.equals(CycleState.INTAKING)){
+                state = Robot.State.FREE;
+                westCoast.setState(WestCoast.State.DRIVER_CONTROL);
+            }
+
             switch (cycleState){
                 case TURNING_TO_INTAKE:
                     if(westCoast.isInDefaultMode()){
@@ -260,15 +269,18 @@ public class Robot {
 
                         mb1242System.doPings();
                         FTCUtilities.sleep(80);
-                        curPosMb1242 = mb1242System.doReads();
+                        mb1242System.doReads();
 
-                        dashboardTelemetry.addData("x", curPosMb1242.x);
-                        dashboardTelemetry.addData("y", curPosMb1242.y);
+                        //update position, because the mb1242 system updates the odometry;
+                        position = odometry.getPosition();
+
+                        dashboardTelemetry.addData("x", position.x);
+                        dashboardTelemetry.addData("y", position.y);
 
                         //calculate the angle and distance to our target point
                         //For the angle, keep in mind the robot is moving backwards
 
-                        double angle = shootingPosition.angleTo(curPosMb1242);
+                        double angle = shootingPosition.angleTo(position.getAsPoint());
                         angle = FTCMath.ensureIdealAngle(angle, odometry.getPosition().heading);
 
                         westCoast.startTurnGlobal(angle);
@@ -277,7 +289,7 @@ public class Robot {
                     break;
                 case TURNING_BACK:
                     if (westCoast.isInDefaultMode()){
-                        double distance = shootingPosition.distanceTo(curPosMb1242);
+                        double distance = shootingPosition.distanceTo(position);
 
                         westCoast.startDriveStraight(.9, distance, WestCoast.Direction.REVERSE);
                         cycleState = CycleState.DRIVING_BACK;

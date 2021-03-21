@@ -11,7 +11,6 @@ import com.bfr.util.FTCUtilities;
 import com.bfr.util.loggers.ControlCenter;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import static com.bfr.hardware.Intake.State.*;
 import static com.bfr.util.Controller.Input.*;
@@ -36,7 +35,10 @@ public class DTTeleOp extends OpMode {
         robot = new Robot(new Position(0, 0, Math.toRadians(-90)));
         Intake intake = robot.getIntake();
         westCoast = robot.getWestCoast();
-        westCoast.setDefaultMode(WestCoast.Mode.DRIVER_CONTROL);
+        westCoast.setDefaultState(WestCoast.State.DRIVER_CONTROL);
+        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
+        westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
+
         wobbleArm = robot.getWobbleArm();
 
         shooter = robot.getShooter();
@@ -86,6 +88,8 @@ public class DTTeleOp extends OpMode {
         controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
         controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
 
+        controller2.setAction(DPAD_UP, () -> Robot.getIntakingPoint().y += 1.0);
+        controller2.setAction(DPAD_DN, () -> Robot.getIntakingPoint().y -= 1.0);
     }
 
     @Override

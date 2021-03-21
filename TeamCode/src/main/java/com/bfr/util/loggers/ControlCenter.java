@@ -3,7 +3,10 @@ package com.bfr.util.loggers;
 import android.annotation.SuppressLint;
 
 import com.bfr.control.path.Position;
+import com.bfr.hardware.Robot;
 import com.bfr.hardware.sensors.DifOdometry;
+import com.bfr.util.FTCUtilities;
+import com.bfr.util.math.Point;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -21,15 +24,24 @@ public class ControlCenter {
     private static Position position = new Position(0,0,0);
     private static List<String> notices = new ArrayList<>();
 
+    private static Point intakingPoint = Robot.getIntakingPoint();
+
+    private static long lastTime = FTCUtilities.getCurrentTimeMillis();
+
     public static void setTelemetry(Telemetry telemetry){
         ControlCenter.telemetry = telemetry;
     }
 
     @SuppressLint("DefaultLocale")
     public static void update(){
-        telemetry.addLine(String.format("Heading Offset: %.2f", Math.toDegrees(offset)));
-        telemetry.addLine(String.format("x: %1$.2f | y: %2$.2f | h: %3$.2f", position.x, position.y, Math.toDegrees(position.heading)));
+        long currentTime = FTCUtilities.getCurrentTimeMillis();
+        long loopTime = currentTime - lastTime;
+        lastTime = currentTime;
 
+        telemetry.addLine(String.format("Heading Offset: %.2f", Math.toDegrees(offset)));
+        telemetry.addLine(String.format("Intaking Depth: %.2fin", intakingPoint.y));
+        telemetry.addLine(String.format("x: %1$.2f | y: %2$.2f | h: %3$.2f", position.x, position.y, Math.toDegrees(position.heading)));
+        telemetry.addLine(String.format("Loop Time: %oms", loopTime));
 
         for (String notice : notices) {
             telemetry.addLine(notice);
@@ -46,6 +58,10 @@ public class ControlCenter {
         offset += increment;
 
         difOdometry.incrementHeading(increment);
+    }
+
+    public static void incrementIntakingDepth(double increment){
+        intakingPoint.y += increment;
     }
 
     public static void setPosition(Position position) {

@@ -1,6 +1,7 @@
 package com.bfr.control.vision;
 
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(name = "Camera Calibration OpMode", group = "Linear Opmode")
-//@Disabled
+@Disabled
 public class CameraCalibOpMode extends LinearOpMode {
 
     //todo tune these

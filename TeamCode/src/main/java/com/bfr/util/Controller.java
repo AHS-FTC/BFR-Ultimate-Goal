@@ -11,6 +11,7 @@ import static com.bfr.util.Controller.Input.*;
 
 public class Controller {
     private Map<Input, Button> buttons = new HashMap<>();
+    private Gamepad gamepad;
 
     private static List<Controller> instances = new ArrayList<>();
 
@@ -22,6 +23,7 @@ public class Controller {
 
     public Controller(Gamepad gamepad){
         instances.add(this);
+        this.gamepad = gamepad;
 
         buttons.put(A, new Button(() -> gamepad.a));
         buttons.put(B, new Button(() -> gamepad.b));
@@ -33,6 +35,10 @@ public class Controller {
         buttons.put(DPAD_DN, new Button(() -> gamepad.dpad_down));
         buttons.put(DPAD_L, new Button(() -> gamepad.dpad_left));
         buttons.put(DPAD_R, new Button(() -> gamepad.dpad_right));
+    }
+
+    public boolean areSticksNonZero(){
+        return (gamepad.left_stick_y != 0.0 || gamepad.right_stick_x != 0.0);
     }
 
     public static void update(){
@@ -61,6 +67,7 @@ public class Controller {
 
         }
     }
+
 
     /**
      * Specify the gamepad attribute to check for this Button.

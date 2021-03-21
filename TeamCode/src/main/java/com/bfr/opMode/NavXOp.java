@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp(name="NavX OpMode", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class NavXOp extends LinearOpMode {
 
     @Override

@@ -29,7 +29,7 @@ public class Intake {
     }
 
     public void extend(){
-        actuator.setPosition(.9);
+        actuator.setPosition(.85);
     }
 
     public void setPower(double power){

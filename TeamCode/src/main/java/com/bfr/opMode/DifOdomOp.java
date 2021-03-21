@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.List;
 
 @TeleOp(name="Dif Odometry Logger", group="Iterative Opmode")
-//@Disabled
+@Disabled
 public class DifOdomOp extends OpMode {
     private List<LynxModule> allHubs;
 

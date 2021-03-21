@@ -33,7 +33,7 @@ public class WestCoast {
 
     public static final double INCHES_PER_ROTATION = 12.2;
 
-    private Mode mode = Mode.IDLE;
+    private State state = State.IDLE;
     private final Gamepad driverGamepad;
 
     private double driveStraightPower = 0.0;
@@ -49,7 +49,7 @@ public class WestCoast {
 
     private PIDFController rampdownController, turnController, straightController;
 
-    private Mode defaultMode = Mode.IDLE;
+    private State defaultState = State.IDLE;
     private MovementMode rampdownMode = MovementMode.ACCURATE;
     private MovementMode turnMode = MovementMode.ACCURATE;
 
@@ -60,7 +60,7 @@ public class WestCoast {
 
     private Direction direction;
 
-    public enum Mode {
+    public enum State {
         IDLE,
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
@@ -71,6 +71,8 @@ public class WestCoast {
         ACCURATE,
         FAST;
     }
+
+
 
     public enum Direction {
         FORWARDS(1),
@@ -190,7 +192,7 @@ public class WestCoast {
     }
 
     public boolean isInDefaultMode(){
-        return mode.equals(defaultMode);
+        return state.equals(defaultState);
     }
 
     /**
@@ -237,6 +239,10 @@ public class WestCoast {
         leftMotor.setPower(leftPower);
         rightMotor.setPower(rightPower);
     }
+    
+    public void setState(State state){
+        this.state = state;
+    }
 
     public void setTankPower(double l, double r){
         leftMotor.setPower(l);
@@ -254,7 +260,7 @@ public class WestCoast {
     }
 
     public void startDriverControl(){
-        mode = Mode.DRIVER_CONTROL;
+        state = State.DRIVER_CONTROL;
     }
 
     public void startDriveStraight(double power, double targetDistance, Direction direction){
@@ -269,14 +275,14 @@ public class WestCoast {
 
         rampdownController.reset(getDistance(), driveStraightDistance);
 
-        mode = Mode.DRIVE_STRAIGHT;
+        state = State.DRIVE_STRAIGHT;
     }
 
     public void startTurnGlobal(double globalAngle){
         targetAngle = globalAngle;
 
         turnController.reset(odometry.getPosition().heading, globalAngle);
-        mode = Mode.POINT_TURN;
+        state = State.POINT_TURN;
 
     }
 
@@ -284,12 +290,12 @@ public class WestCoast {
         startTurnGlobal(odometry.getPosition().heading + globalAngle);
     }
 
-    public Mode getMode() {
-        return mode;
+    public State getState() {
+        return state;
     }
 
-    public void setDefaultMode(Mode defaultMode){
-        this.defaultMode = defaultMode;
+    public void setDefaultState(State defaultState){
+        this.defaultState = defaultState;
     }
 
     /**
@@ -304,7 +310,7 @@ public class WestCoast {
     }
 
     public void update(){
-        switch (mode){
+        switch (state){
             case IDLE:
                 break;
             case POINT_TURN:
@@ -329,7 +335,7 @@ public class WestCoast {
                 }
 
                 if(turnController.isStable() && Math.abs(angleError) < turnFinishedThreshold){
-                    mode = defaultMode;
+                    state = defaultState;
                     brakeMotors();
                     break;
                 }
@@ -354,7 +360,7 @@ public class WestCoast {
 
                 if(waitingState){
                     if (FTCUtilities.getCurrentTimeMillis() - waitingStartTime > WAIT_TIME) {
-                        mode = defaultMode;
+                        state = defaultState;
                         waitingState = false;
                     }
                     break;
