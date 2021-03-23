@@ -20,7 +20,7 @@ public class BlueAuto1 extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot(new Position(0, 0, -Math.toRadians(90)));
+        Robot robot = new Robot(new Position(0, 0,Math.toRadians(90)));
         WestCoast westCoast = robot.getWestCoast();
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();

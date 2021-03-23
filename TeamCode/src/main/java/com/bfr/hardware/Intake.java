@@ -1,19 +1,21 @@
 package com.bfr.hardware;
 
 /**
- * Shooter
+ * bfr is rartded
+ *
+ * @author alex and andie
  */
 public class Intake {
     private Motor intakeMotor;
     private State state = State.STOPPED;
 
-    private SerialServo actuator;
+    private SerialServo nineTails;
 
     public enum State {
         STOPPED(0),
         IN(1.0),
         OUT(-.8),
-        STARTER_STACK(-.1);
+        STARTER_STACK(-1.0);
 
         public final double power;
 
@@ -22,14 +24,26 @@ public class Intake {
         }
     }
 
-    public Intake() {
-        intakeMotor = new Motor("intake", 103.6,true);
-        actuator = new SerialServo("intake_actuator", true);
-        actuator.setPosition(0);
+    public enum NineTailsState {
+        STORED(0),
+        DEPLOYED(.85),
+        RING_4(1.0);
+
+        public final double position;
+
+        NineTailsState(double position) {
+            this.position = position;
+        }
     }
 
-    public void extend(){
-        actuator.setPosition(.85);
+    public Intake() {
+        intakeMotor = new Motor("intake", 103.6,true);
+        nineTails = new SerialServo("intake_actuator", true);
+        setNineTailsState(NineTailsState.STORED);
+    }
+
+    public void setNineTailsState(NineTailsState state){
+        nineTails.setPosition(state.position);
     }
 
     public void setPower(double power){

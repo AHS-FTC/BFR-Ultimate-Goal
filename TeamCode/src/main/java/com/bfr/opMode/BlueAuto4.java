@@ -20,11 +20,11 @@ public class BlueAuto4 extends LinearOpMode {
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot(new Position(0, 0, Math.toRadians(-90)));
+        Robot robot = new Robot(new Position(-8, 123.5, Math.toRadians(90)));
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
-        //westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        robot.getWestCoast().setTurnMode(WestCoast.MovementMode.ACCURATE);
 
 
         waitForStart();
@@ -32,6 +32,8 @@ public class BlueAuto4 extends LinearOpMode {
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
         robot.driveStraight(0.7, 109, WestCoast.Direction.REVERSE);
+
+        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
@@ -44,7 +46,7 @@ public class BlueAuto4 extends LinearOpMode {
         robot.turnGlobal(Math.toRadians(90));
         robot.driveStraight(0.7, 50, WestCoast.Direction.FORWARDS);
 
-        robot.turnGlobal(Math.toRadians(256));
+        robot.turnGlobal(Math.toRadians(254));
 
         shooter.runIndexerServos();
 
@@ -58,20 +60,49 @@ public class BlueAuto4 extends LinearOpMode {
 
         robot.driveStraight(0.7, 24, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(310));
+        robot.turnGlobal(Math.toRadians(302));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
+        intake.setNineTailsState(Intake.NineTailsState.RING_4);
 
-        robot.driveStraight(0.7, 18, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 20, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
         wobbleArm.setState(WobbleArm.State.HOLDING);
         sleep(500);
 
-        robot.turnGlobal(Math.toRadians(270));
+        robot.turnGlobal(Math.toRadians(255));
         intake.changeState(Intake.State.STARTER_STACK);
 
-        robot.driveStraight(0.3, 12, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(0.5, 10, WestCoast.Direction.FORWARDS);
+
+        intake.changeState(Intake.State.IN);
+        shooter.runShooter();
+        robot.driveStraight(0.5, 25, WestCoast.Direction.FORWARDS);
+
+        robot.turnGlobal(Math.toRadians(272));
+
+        robot.sleep(500);
+
+        shooter.runIndexerServos();
+
+        while (!shooter.isResting()){
+            robot.update();
+            //wait until indexing is finished
+        }
+        shooter.stopShooter();
+
+        robot.turnGlobal(Math.toRadians(275));
+
+        robot.driveStraight(0.8, 60, WestCoast.Direction.FORWARDS);
+
+        robot.turnGlobal(Math.toRadians(90));
+
+        wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
+
+        robot.sleep(500);
+
+        robot.driveStraight(0.8, 36, WestCoast.Direction.FORWARDS);
     }
 }

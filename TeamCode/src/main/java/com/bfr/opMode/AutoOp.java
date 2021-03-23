@@ -22,8 +22,8 @@ public class AutoOp extends LinearOpMode {
 
         Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
-        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
-        westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
+        westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
 
         //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
 

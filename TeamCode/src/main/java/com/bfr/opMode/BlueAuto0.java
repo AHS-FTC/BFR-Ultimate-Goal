@@ -22,11 +22,9 @@ public class BlueAuto0 extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
-        NavxMicroNavigationSensor navx = hardwareMap.get(NavxMicroNavigationSensor.class, "navx");
-
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot(new Position(0, 0, -Math.toRadians(90)));
+        Robot robot = new Robot(new Position(0, 0, Math.toRadians(90)));
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
@@ -36,6 +34,8 @@ public class BlueAuto0 extends LinearOpMode {
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
         robot.driveStraight(0.7, 58, WestCoast.Direction.REVERSE);
+
+        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);

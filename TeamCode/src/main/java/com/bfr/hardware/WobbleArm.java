@@ -6,8 +6,8 @@ public class WobbleArm {
     private SerialServo gripper;
     private SerialServo arm;
 
-    private static final double DEPLOYED = 0.85;
-    private static final double STORED = 0.03;
+    private static final double DEPLOYED = 1.0;
+    private static final double STORED = 0.0;
     private static final double HOLDING = 0.35;
 
     private long lastStateChange;
@@ -24,8 +24,10 @@ public class WobbleArm {
 
     public WobbleArm() {
         gripper = new SerialServo("gripper", false);
-        arm = new SerialServo("arm", false);
+        arm = new SerialServo("arm", true);
         lastStateChange = FTCUtilities.getCurrentTimeMillis();
+
+        setState(State.STORED);
     }
 
     public void setState(State state){
