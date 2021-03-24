@@ -78,7 +78,7 @@ public class Robot {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
         position = startingPosition;
 
-        imu = new IMU("imu_ch", true, Math.PI/2);
+        imu = new IMU("imu", true, Math.PI/2);
 //        cam = new Cam("Webcam 1");
 //        cam.start();
 

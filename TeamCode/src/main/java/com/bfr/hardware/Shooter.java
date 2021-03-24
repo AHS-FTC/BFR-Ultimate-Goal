@@ -29,7 +29,7 @@ public class Shooter {
 
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
-    private long startTime, elapsedTime;
+    private long startTime, elapsedTime, repeatStartTime;
     private final static long WAIT_TIME = 120; //175
 
     private boolean powershotMode = false;
@@ -92,7 +92,11 @@ public class Shooter {
         PUSHING2(3*WAIT_TIME),
         RETRACTING2(4*WAIT_TIME),
         PUSHING3(5*WAIT_TIME),
-        RESTING(6*WAIT_TIME+100);
+        RESTING(6*WAIT_TIME+100),
+
+        //repetitive indexing
+        REPEAT_PUSH(0),
+        REPEAT_RETRACT(0);
 
         public final long endTime;
 
@@ -160,8 +164,29 @@ public class Shooter {
                     servoState = IndexerState.RESTING;
                 }
                 break;
+            case REPEAT_PUSH:
+                if(FTCUtilities.getCurrentTimeMillis() - startTime > WAIT_TIME){
+                    servoState = IndexerState.REPEAT_RETRACT;
+                    indexerServo.setPosition(0);
+                    startTime = FTCUtilities.getCurrentTimeMillis();
+                }
+                break;
+            case REPEAT_RETRACT:
+                if(FTCUtilities.getCurrentTimeMillis() - startTime > WAIT_TIME) {
+                    servoState = IndexerState.REPEAT_PUSH;
+                    indexerServo.setPosition(1);
+                    startTime = FTCUtilities.getCurrentTimeMillis();
+                }
+                break;
         }
 
+    }
+
+    public void repetitiveIndexing(){
+        holderServo.setPosition(0);
+
+        indexerServo.setPosition(1);
+        servoState = IndexerState.REPEAT_PUSH;
     }
 
     public void runShooter(){

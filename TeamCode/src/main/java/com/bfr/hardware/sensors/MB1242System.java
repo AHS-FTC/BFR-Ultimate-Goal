@@ -18,8 +18,8 @@ public class MB1242System {
     private static final double FRONT_OFFSET = -3.7, LEFT_OFFSET = .75;
 
     public MB1242System(Odometry odometry) {
-        frontSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front");
-        leftSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left");
+        frontSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front_1");
+        leftSensor = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_1");
 
         this.odometry = odometry;
     }

@@ -28,14 +28,11 @@ public class AutoOp extends LinearOpMode {
         //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
 
         waitForStart();
-
-        robot.driveStraight(.9, 60, WestCoast.Direction.FORWARDS);
-
-        robot.turnGlobal(Math.toRadians(-10));
+        robot.turnGlobal(Math.toRadians(-25));
 
         sleep(1000);
 
-        robot.turnGlobal(Math.toRadians(-40));
+        robot.turnLocal(Math.toRadians(-180));
 
     }
 }
