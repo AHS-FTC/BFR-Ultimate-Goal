@@ -15,7 +15,6 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  */
 public class Shooter {
     private Motor shooterMotor1, shooterMotor2;
-    private double rpm = 0;
 
     private SerialServo indexerServo, holderServo;
 
@@ -74,6 +73,8 @@ public class Shooter {
                     return ShooterConstants.standardFeedforward;
                 } else if(setPoint == ShooterConstants.powerShotRPM){
                     return ShooterConstants.powerShotFeedforward;
+                } else if (setPoint == ShooterConstants.farRPM){
+                    return ShooterConstants.farFeedForward;
                 } else return 0.0;
             }
         };
@@ -105,9 +106,11 @@ public class Shooter {
         }
     }
 
-    private enum ShooterState {
+    public enum ShooterState {
         RESTING,
-        RUNNING
+        STANDARD,
+        POWERSHOT,
+        FAR
     }
 
     /**
@@ -118,7 +121,6 @@ public class Shooter {
         indexerServo.setPosition(1);
         holderServo.setPosition(0);
         servoState = IndexerState.PUSHING1;
-        updateIndexerServos();
     }
 
     private void updateIndexerServos(){
@@ -189,59 +191,35 @@ public class Shooter {
         servoState = IndexerState.REPEAT_PUSH;
     }
 
-    public void runShooter(){
-        shooterState = ShooterState.RUNNING;
-        updateShooterState();
-    }
-
-    public void setPowershotMode(boolean powershotMode){
-        this.powershotMode = powershotMode;
-        if(powershotMode){
-            controller.setSetPoint(ShooterConstants.powerShotRPM);
-        } else {
-            controller.setSetPoint(ShooterConstants.standardRPM);
-        }
-    }
-
-    public boolean isPowershotMode(){
-        return powershotMode;
-    }
-
-    public void stopShooter(){
-        shooterState = ShooterState.RESTING;
-        setPower(0);
-        updateShooterState();
-    }
-
-    public boolean isResting(){
-        return servoState.equals(IndexerState.RESTING);
-    }
-
-//    public void shootPowerShots(){
-//        powerShotToggle.canFlip();
-//        updateShooterSpeed();
-//        updateShooterState();
-//    }
-
-//    private void updateShooterSpeed(){
-//        if (powerShotToggle.isEnabled()){
-//            controller.setKf(.6);
-//            controller.setSetPoint(2600);
-//        } else {
-//            controller.setKf(.8);
-//            controller.setSetPoint(3000);
-//        }
-//    }
-
-    private void updateShooterState(){
-        switch (shooterState){
+    public void setState(ShooterState state){
+        shooterState = state;
+        switch (state){
             case RESTING:
-                return;
-            case RUNNING:
-                setPower(controller.getOutput(rpm));
+                servoState = IndexerState.RESTING;
+                holderServo.setPosition(1);
+                indexerServo.setPosition(0);
+                setPower(0);
+                break;
+            case STANDARD:
+                controller.setSetPoint(ShooterConstants.standardRPM);
+                break;
+            case POWERSHOT:
+                controller.setSetPoint(ShooterConstants.powerShotRPM);
+                break;
+            case FAR:
+                controller.setSetPoint(ShooterConstants.farRPM);
                 break;
         }
     }
+
+    public boolean isState(ShooterState state){
+        return shooterState.equals(state);
+    }
+
+    public boolean areIndexerServosResting(){
+        return servoState.equals(IndexerState.RESTING);
+    }
+
 
     /**
      * Unifies encoder readings with their timestamps
@@ -256,13 +234,6 @@ public class Shooter {
         }
     }
 
-    public boolean isRunning(){
-        if(shooterState == ShooterState.RUNNING){
-            return true;
-        }
-        return false;
-    }
-
     public void update(long bulkReadTimestamp){
 
         DataPoint current = new DataPoint(shooterMotor1.getRotations(), bulkReadTimestamp);
@@ -274,15 +245,16 @@ public class Shooter {
         double deltaTime = (current.time - last.time) * minsPerNano;
 
 
-        rpm = deltaRotations / deltaTime;
+        double rpm = deltaRotations / deltaTime;
 
         dashboardTelemetry.addData("Shooter RPM", rpm);
-
-//        setPower(controller.getOutput(rpm));
 
         lastRotations = shooterMotor1.getRotations();
 
         updateIndexerServos();
-        updateShooterState();
+
+        if(!isState(ShooterState.RESTING)){
+            setPower(controller.getOutput(rpm));
+        }
     }
 }

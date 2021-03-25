@@ -1,10 +1,8 @@
 package com.bfr.opMode;
 
 import com.bfr.control.path.Position;
-import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
-import com.bfr.hardware.SerialServo;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.WobbleArm;
@@ -25,7 +23,7 @@ public class BlueAuto1 extends LinearOpMode {
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
-        westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
 
 
         waitForStart();
@@ -33,11 +31,13 @@ public class BlueAuto1 extends LinearOpMode {
 
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
-        robot.driveStraight(0.7, 58, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 56, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(65));
+        robot.turnGlobal(Math.toRadians(60));
 
-        robot.driveStraight(0.7, 26, WestCoast.Direction.REVERSE);
+        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
+
+        robot.driveStraight(0.7, 30, WestCoast.Direction.REVERSE);
 
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
@@ -45,55 +45,56 @@ public class BlueAuto1 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
         sleep(100);
         wobbleArm.setState(WobbleArm.State.RETRACTING);
-
+        shooter.setState(Shooter.ShooterState.STANDARD);
         sleep(500);
 
-        robot.driveStraight(0.7, 26, WestCoast.Direction.FORWARDS);
-        shooter.runShooter();
-        robot.turnGlobal(Math.toRadians(-103));
+        robot.driveStraight(0.7, 30, WestCoast.Direction.FORWARDS);
+
+        robot.turnGlobal(Math.toRadians(-102));
 
         shooter.runIndexerServos();
 
-        while (!shooter.isResting()){
+        while (!shooter.areIndexerServosResting()){
             robot.update();
             //wait until indexing is finished
         }
-        shooter.stopShooter();
+        shooter.setState(Shooter.ShooterState.RESTING);
 
         robot.turnGlobal(Math.toRadians(-90));
 
         robot.driveStraight(0.7, 28, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(-40));
+        robot.turnGlobal(Math.toRadians(-45));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
-        robot.driveStraight(0.5, 16, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.5, 18, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
-        wobbleArm.setState(WobbleArm.State.HOLDING);
-        sleep(500);
+        wobbleArm.setState(WobbleArm.State.STORED);
+        sleep(700);
 
         robot.turnGlobal(Math.toRadians(-110));
 
         intake.changeState(Intake.State.IN);
-        robot.driveStraight(0.7, 40, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(0.7, 38, WestCoast.Direction.FORWARDS);
         intake.changeState(Intake.State.STOPPED);
+        wobbleArm.setState(WobbleArm.State.HOLDING);
 
-        shooter.runShooter();
+        shooter.setState(Shooter.ShooterState.STANDARD);
         robot.turnGlobal(Math.toRadians(-85));
 
         shooter.runIndexerServos();
 
-        while (!shooter.isResting()){
+        while (!shooter.areIndexerServosResting()){
             robot.update();
             //wait until indexing is finished
         }
-        shooter.stopShooter();
+        shooter.setState(Shooter.ShooterState.RESTING);
 
-        robot.turnGlobal(Math.toRadians(95));
+        robot.turnGlobal(Math.toRadians(90));
 
-        robot.driveStraight(0.7, 20, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 27, WestCoast.Direction.REVERSE);
 
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);

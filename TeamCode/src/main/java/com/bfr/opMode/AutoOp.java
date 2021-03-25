@@ -3,7 +3,9 @@ package com.bfr.opMode;
 import android.graphics.Rect;
 
 import com.bfr.control.path.Position;
+import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
+import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
@@ -12,7 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name="Testing OpMode", group="Linear OpMode")
+@Autonomous(name="Testing OpMode", group="Linear OpMode")
 //@Disabled
 public class AutoOp extends LinearOpMode {
 
@@ -22,17 +24,15 @@ public class AutoOp extends LinearOpMode {
 
         Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
-        westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
         westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
-
-        //robot.getWestCoast().setRampdownMode(WestCoast.RampdownMode.FAST);
+        Intake intake = robot.getIntake();
+        robot.getShooter().setState(Shooter.ShooterState.RESTING);
 
         waitForStart();
-        robot.turnGlobal(Math.toRadians(-25));
 
-        sleep(1000);
+        robot.getShooter().setState(Shooter.ShooterState.STANDARD);
 
-        robot.turnLocal(Math.toRadians(-180));
-
+        robot.sleep(5000);
     }
 }

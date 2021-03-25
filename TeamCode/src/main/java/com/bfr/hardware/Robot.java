@@ -197,7 +197,7 @@ public class Robot {
 
     public void stopAll(){
         westCoast.brakeMotors();
-        shooter.stopShooter();
+        shooter.setState(Shooter.ShooterState.RESTING);
         intake.changeState(Intake.State.STOPPED);
     }
 
@@ -298,7 +298,7 @@ public class Robot {
                 case DRIVING_BACK:
                     if (westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.STOPPED);
-                        if(shooter.isPowershotMode()){
+                        if(shooter.isState(Shooter.ShooterState.POWERSHOT)){
                             westCoast.startTurnGlobal(Math.toRadians(-93));
                             cycleState = CycleState.TURN_TO_SHOT_1;
                         } else {
@@ -316,7 +316,7 @@ public class Robot {
                     break;
                 case SHOOTING:
                 case PSHOT_3:
-                    if(shooter.isResting()){
+                    if(shooter.areIndexerServosResting()){
                         westCoast.startTurnGlobal(-Math.PI / 2.0);
                         cycleState = CycleState.TURNING_FORWARD;
                     }
@@ -344,7 +344,7 @@ public class Robot {
                     }
                     break;
                 case PSHOT_1:
-                    if(shooter.isResting()){
+                    if(shooter.areIndexerServosResting()){
                         westCoast.startTurnGlobal(Math.toRadians(-98));
                         cycleState = CycleState.TURN_TO_SHOT_2;
                     }
@@ -356,7 +356,7 @@ public class Robot {
                     }
                     break;
                 case PSHOT_2:
-                    if(shooter.isResting()){
+                    if(shooter.areIndexerServosResting()){
                         westCoast.startTurnGlobal(Math.toRadians(-103));
                         cycleState = CycleState.TURN_TO_SHOT_3;
                     }
@@ -365,7 +365,7 @@ public class Robot {
                     if(westCoast.isInDefaultMode()){
                         shooter.runIndexerServos();
                         cycleState = CycleState.PSHOT_3;
-                        shooter.setPowershotMode(false);
+                        shooter.setState(Shooter.ShooterState.POWERSHOT);
                     }
                     break;
                     //powershot 3 merged with SHOOTING state

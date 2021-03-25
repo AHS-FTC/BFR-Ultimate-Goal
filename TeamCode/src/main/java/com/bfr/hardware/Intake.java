@@ -15,7 +15,7 @@ public class Intake {
         STOPPED(0),
         IN(1.0),
         OUT(-.8),
-        STARTER_STACK(-.6);
+        STARTER_STACK(-.3);
 
         public final double power;
 

@@ -47,10 +47,10 @@ public class DTTeleOp extends OpMode {
         controller1.setAction(B, () -> robot.nextCycleState());
 
         controller1.setAction(Y, () -> {
-            if (shooter.isRunning()){
-                shooter.stopShooter();
+            if (!shooter.isState(Shooter.ShooterState.RESTING)){
+                shooter.setState(Shooter.ShooterState.RESTING);
             } else {
-                shooter.runShooter();
+                shooter.setState(Shooter.ShooterState.STANDARD);
             }
         });
 
@@ -71,7 +71,7 @@ public class DTTeleOp extends OpMode {
         });
 
         controller1.setAction(DPAD_L, () -> {
-            shooter.setPowershotMode(true);
+            shooter.setState(Shooter.ShooterState.POWERSHOT);
         });
 
         controller1.setAction(X, () -> {
@@ -99,7 +99,7 @@ public class DTTeleOp extends OpMode {
     @Override
     public void start() {
         westCoast.startDriverControl();
-        shooter.runShooter();
+        shooter.setState(Shooter.ShooterState.STANDARD);
         robot.getIntake().setNineTailsState(Intake.NineTailsState.DEPLOYED);
     }
 

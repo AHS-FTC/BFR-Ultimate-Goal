@@ -7,14 +7,8 @@ import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.WobbleArm;
 import com.bfr.util.FTCUtilities;
-import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @Autonomous(name="Blue Auto 0", group="Linear OpMode")
 //@Disabled
@@ -33,7 +27,7 @@ public class BlueAuto0 extends LinearOpMode {
         waitForStart();
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
-        robot.driveStraight(0.7, 58, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 64, WestCoast.Direction.REVERSE);
 
         intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
 
@@ -42,22 +36,22 @@ public class BlueAuto0 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
         sleep(100);
         wobbleArm.setState(WobbleArm.State.RETRACTING);
-        shooter.runShooter();
+        shooter.setState(Shooter.ShooterState.STANDARD);
         sleep(500);
 
-        robot.driveStraight(0.7, 5, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(0.7, 12, WestCoast.Direction.FORWARDS);
 
-        robot.turnGlobal(Math.toRadians(256));
+        robot.turnGlobal(Math.toRadians(254.5));
 
         shooter.runIndexerServos();
 
-        while (!shooter.isResting()){
+        while (!shooter.areIndexerServosResting()){
             robot.update();
             //wait until indexing is finished
         }
-        shooter.stopShooter();
+        shooter.setState(Shooter.ShooterState.RESTING);
 
-        robot.turnGlobal(Math.toRadians(300));
+        robot.turnGlobal(Math.toRadians(292.5));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
         robot.driveStraight(0.5, 32, WestCoast.Direction.REVERSE);
@@ -67,8 +61,8 @@ public class BlueAuto0 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
         sleep(500);
 
-        robot.turnGlobal(Math.toRadians(470));
-        robot.driveStraight(0.7, 32, WestCoast.Direction.REVERSE);
+        robot.turnGlobal(Math.toRadians(463));
+        robot.driveStraight(0.7, 36, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
