@@ -103,7 +103,7 @@ public class BlueAuto4 extends LinearOpMode {
 
 
 
-        robot.turnGlobal(Math.toRadians(125));
+        robot.turnGlobal(Math.toRadians(130));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
 

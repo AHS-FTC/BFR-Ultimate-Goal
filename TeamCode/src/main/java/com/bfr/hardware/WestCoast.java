@@ -16,6 +16,7 @@ import com.bfr.util.math.Circle;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Line;
 import com.bfr.util.math.Point;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;

@@ -29,6 +29,7 @@ public class Robot {
     private WobbleArm wobbleArm = new WobbleArm();
 
     private MB1242System mb1242System;
+    private SerialServo brolafActuator;
     private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
@@ -58,6 +59,7 @@ public class Robot {
     private enum CycleState {
         TURNING_TO_INTAKE,
         INTAKING,
+        WAITING_FOR_SENSORS,
         TURNING_BACK,
         DRIVING_BACK,
         AIMING,
@@ -78,6 +80,9 @@ public class Robot {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
         position = startingPosition;
 
+        brolafActuator = new SerialServo("brolaf", false);
+        brolafActuator.mapPosition(.7, 1);
+        brolafActuator.setPosition(0);
         imu = new IMU("imu", true, Math.PI/2);
 //        cam = new Cam("Webcam 1");
 //        cam.start();
@@ -261,15 +266,20 @@ public class Robot {
                     if(westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.IN);
 
+                        brolafActuator.setPosition(1);
                         cycleState = CycleState.INTAKING;
                     }
                     break;
                 case INTAKING:
                     if(checkNextCycleState()){
 
-                        mb1242System.doPings();
-                        FTCUtilities.sleep(80);
-                        mb1242System.doReads();
+                        mb1242System.runSystem();
+
+                        cycleState = CycleState.WAITING_FOR_SENSORS;
+                    }
+                    break;
+                case WAITING_FOR_SENSORS:
+                    if (mb1242System.isResting()){
 
                         //update position, because the mb1242 system updates the odometry;
                         position = odometry.getPosition();
@@ -284,6 +294,9 @@ public class Robot {
                         angle = FTCMath.ensureIdealAngle(angle, odometry.getPosition().heading);
 
                         westCoast.startTurnGlobal(angle);
+
+                        brolafActuator.setPosition(0);
+
                         cycleState = CycleState.TURNING_BACK;
                     }
                     break;
@@ -364,8 +377,8 @@ public class Robot {
                 case TURN_TO_SHOT_3:
                     if(westCoast.isInDefaultMode()){
                         shooter.runIndexerServos();
-                        cycleState = CycleState.PSHOT_3;
                         shooter.setState(Shooter.ShooterState.POWERSHOT);
+                        cycleState = CycleState.PSHOT_3;
                     }
                     break;
                     //powershot 3 merged with SHOOTING state
@@ -375,6 +388,7 @@ public class Robot {
 
         westCoast.update();
         wobbleArm.update();
+        mb1242System.update();
 
         if(FTCUtilities.isDashboardMode()){
             dashboardTelemetry.update();

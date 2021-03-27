@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import com.bfr.control.path.Position;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
+import com.bfr.hardware.SerialServo;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.sensors.IMU;
@@ -31,8 +32,7 @@ public class AutoOp extends LinearOpMode {
 
         waitForStart();
 
-        robot.getShooter().setState(Shooter.ShooterState.STANDARD);
+        robot.driveStraight(.9,60, WestCoast.Direction.FORWARDS);
 
-        robot.sleep(5000);
     }
 }

@@ -23,6 +23,7 @@ public class ControlCenter {
     private static DifOdometry difOdometry;
     private static Position position = new Position(0,0,0);
     private static List<String> notices = new ArrayList<>();
+    private static int susSensorReads = 0;
 
     private static Point intakingPoint = Robot.getIntakingPoint();
 
@@ -42,6 +43,7 @@ public class ControlCenter {
         telemetry.addLine(String.format("Intaking Depth: %.2fin", intakingPoint.y));
         telemetry.addLine(String.format("x: %1$.2f | y: %2$.2f | h: %3$.2f", position.x, position.y, Math.toDegrees(position.heading)));
         telemetry.addLine(String.format("Loop Time: %oms", loopTime));
+        telemetry.addLine(String.format("Sus Sensor Reads: %o", susSensorReads));
 
         for (String notice : notices) {
             telemetry.addLine(notice);
@@ -58,6 +60,10 @@ public class ControlCenter {
         offset += increment;
 
         difOdometry.incrementHeading(increment);
+    }
+
+    public static void incrementSusSensorReads(double increment){
+        susSensorReads += increment;
     }
 
     public static void incrementIntakingDepth(double increment){
