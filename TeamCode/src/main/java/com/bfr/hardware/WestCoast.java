@@ -52,7 +52,7 @@ public class WestCoast {
 
     private State defaultState = State.IDLE;
     private MovementMode rampdownMode = MovementMode.ACCURATE;
-    private MovementMode turnMode = MovementMode.ACCURATE;
+    private MovementMode turnMode = MovementMode.FAST;
 
     //adds a slight wait after a drive straight (and maybe turn???)
     private boolean waitingState = false;

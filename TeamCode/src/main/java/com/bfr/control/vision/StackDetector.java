@@ -56,11 +56,11 @@ public class StackDetector {
 
         cam.start(OpenCvCameraRotation.UPRIGHT);
 
-        Mat temp = new Mat();
-        cam.copyFrameTo(temp);
-
-        FTCUtilities.saveImage(temp, "stack.png");
-        temp.release();
+//        Mat temp = new Mat();
+//        cam.copyFrameTo(temp);
+//
+//        FTCUtilities.saveImage(temp, "stack.png");
+//        temp.release();
     }
 
     public FieldConfiguration getFieldConfiguration(){
@@ -91,7 +91,7 @@ public class StackDetector {
             }
         }
 
-        System.out.println(largestArea);
+        //System.out.println(largestArea);
 
         if(largestArea <  zeroRingAreaMax) {
             return FieldConfiguration.ZERO;

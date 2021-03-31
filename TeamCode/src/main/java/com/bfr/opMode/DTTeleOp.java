@@ -7,11 +7,14 @@ import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.WobbleArm;
 import com.bfr.util.AllianceColor;
+import com.bfr.util.AutoTransitioner;
 import com.bfr.util.Controller;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.loggers.ControlCenter;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import java.io.IOException;
 
 import static com.bfr.hardware.Intake.State.*;
 import static com.bfr.util.Controller.Input.*;
@@ -29,6 +32,13 @@ public class DTTeleOp extends OpMode {
     @Override
     public void init() {
         FTCUtilities.setOpMode(this);
+        Position startPosition = new Position(0,0, Math.toRadians(-90));
+        try {
+            startPosition = AutoTransitioner.readJSON();
+        } catch (IOException e) {
+            e.printStackTrace();
+            ControlCenter.addNotice("Failed to read JSON");
+        }
 
         if (gamepad2.x){
             FTCUtilities.setAllianceColor(AllianceColor.BLUE);
@@ -41,7 +51,7 @@ public class DTTeleOp extends OpMode {
         Controller controller1 = FTCUtilities.getController1();
         Controller controller2 = FTCUtilities.getController2();
 
-        robot = new Robot(new Position(0, 0, Math.toRadians(-90)));
+        robot = new Robot(startPosition);
         Intake intake = robot.getIntake();
         westCoast = robot.getWestCoast();
         westCoast.setDefaultState(WestCoast.State.DRIVER_CONTROL);

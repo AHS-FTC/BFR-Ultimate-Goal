@@ -4,6 +4,7 @@ package com.bfr.hardware;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
 import com.bfr.control.vision.Cam;
+import com.bfr.control.vision.StackDetector;
 import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.objects.Backboard;
 import com.bfr.hardware.sensors.DifOdometry;
@@ -43,6 +44,9 @@ public class Robot {
     private Cam cam;
     private Backboard backboard = new Backboard();
     private Mat latestFrame = new Mat();
+    private StackDetector stackDetector;
+    private StackDetector.FieldConfiguration fieldConfiguration;
+    private long stackDetectorStartTime;
 
     private Position position;
 
@@ -57,7 +61,8 @@ public class Robot {
         FREE,
         AUTO_CYCLE,
         TURN_TO_SHOOT,
-        GO_TO_HOME
+        GO_TO_HOME,
+        DETECTING_STACK
     }
 
     private enum GoToHomeState {
@@ -118,6 +123,8 @@ public class Robot {
 
         odometry.start();
 
+        stackDetector = new StackDetector();
+
         for (LynxModule hub : hubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
@@ -137,6 +144,8 @@ public class Robot {
 
     }
 
+    public Odometry getOdometry(){return odometry;}
+
     public Intake getIntake(){return intake;}
 
     public Shooter getShooter(){return shooter;}
@@ -150,6 +159,10 @@ public class Robot {
     }
 
     public SerialServo getBrolafActuator(){return brolafActuator;}
+
+    public StackDetector.FieldConfiguration getFieldConfiguration() {
+        return fieldConfiguration;
+    }
 
     public void setState(State state){
         this.state = state;
@@ -173,7 +186,10 @@ public class Robot {
                 westCoast.startTurnGlobal(angle);
                 homeState = GoToHomeState.TURNING_TO_HOME;
                 break;
-
+            case DETECTING_STACK:
+                 fieldConfiguration = stackDetector.getFieldConfiguration();
+                 stackDetectorStartTime = FTCUtilities.getCurrentTimeMillis();
+                 break;
         }
 
     }
@@ -448,6 +464,13 @@ public class Robot {
                         cycleState = CycleState.DRIVING_FORWARD;
                     }
                     break;
+            }
+        }
+
+        if (state.equals(State.DETECTING_STACK)){
+            if (FTCUtilities.getCurrentTimeMillis() - stackDetectorStartTime > 250){
+                fieldConfiguration = stackDetector.getFieldConfiguration();
+                stackDetectorStartTime = FTCUtilities.getCurrentTimeMillis();
             }
         }
 
