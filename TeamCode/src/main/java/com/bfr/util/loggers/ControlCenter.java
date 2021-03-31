@@ -23,13 +23,16 @@ public class ControlCenter {
     private static DifOdometry difOdometry;
     private static Position position = new Position(0,0,0);
     private static List<String> notices = new ArrayList<>();
-
-    private static Point intakingPoint = Robot.getIntakingPoint();
+    private static int susSensorReads = 0;
+    private static Point intakingPoint;
 
     private static long lastTime = FTCUtilities.getCurrentTimeMillis();
 
     public static void setTelemetry(Telemetry telemetry){
         ControlCenter.telemetry = telemetry;
+    }
+
+    public static void setIntakingPoint(Point intakingPoint){ControlCenter.intakingPoint = intakingPoint;
     }
 
     @SuppressLint("DefaultLocale")
@@ -42,6 +45,8 @@ public class ControlCenter {
         telemetry.addLine(String.format("Intaking Depth: %.2fin", intakingPoint.y));
         telemetry.addLine(String.format("x: %1$.2f | y: %2$.2f | h: %3$.2f", position.x, position.y, Math.toDegrees(position.heading)));
         telemetry.addLine(String.format("Loop Time: %oms", loopTime));
+        telemetry.addLine(String.format("Sus Sensor Reads: %o", susSensorReads));
+        telemetry.addLine("Alliance Color: " + FTCUtilities.getAllianceColor());
 
         for (String notice : notices) {
             telemetry.addLine(notice);
@@ -56,12 +61,12 @@ public class ControlCenter {
 
     public static void incrementOffset(double increment){
         offset += increment;
-
+        System.out.println(increment);
         difOdometry.incrementHeading(increment);
     }
 
-    public static void incrementIntakingDepth(double increment){
-        intakingPoint.y += increment;
+    public static void incrementSusSensorReads(double increment){
+        susSensorReads += increment;
     }
 
     public static void setPosition(Position position) {

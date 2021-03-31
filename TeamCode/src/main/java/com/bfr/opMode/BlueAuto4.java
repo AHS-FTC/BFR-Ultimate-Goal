@@ -31,7 +31,7 @@ public class BlueAuto4 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
         robot.driveStraight(0.7, 109, WestCoast.Direction.REVERSE);
 
-        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
+//        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         robot.sleep(500);
@@ -61,7 +61,7 @@ public class BlueAuto4 extends LinearOpMode {
         robot.turnGlobal(Math.toRadians(300));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
-        intake.setNineTailsState(Intake.NineTailsState.RING_4);
+//        intake.setNineTailsState(Intake.NineTailsState.RING_4);
 
         robot.driveStraight(0.7, 20, WestCoast.Direction.REVERSE);
 
@@ -103,7 +103,7 @@ public class BlueAuto4 extends LinearOpMode {
 
 
 
-        robot.turnGlobal(Math.toRadians(125));
+        robot.turnGlobal(Math.toRadians(130));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
 

@@ -11,6 +11,7 @@ import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.MB1242System;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.hardware.sensors.Odometry;
+import com.bfr.util.AllianceColor;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.loggers.ControlCenter;
 import com.bfr.util.math.FTCMath;
@@ -29,13 +30,14 @@ public class Robot {
     private WobbleArm wobbleArm = new WobbleArm();
 
     private MB1242System mb1242System;
+    private SerialServo brolafActuator;
     private IMU imu;
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private Odometry odometry;
-    private static final Point shootingPosition = new Point(-42,64);
 
-    private static final Point intakingPosition = new Point(-42,27);
+    private Point shootingPoint = new Point(-42,66); //BLUE
+    private Point intakingPoint = new Point(-42,20); //BLUE
 
     //vision stuff
     private Cam cam;
@@ -49,15 +51,23 @@ public class Robot {
     private List<LynxModule> hubs;
     private State state = Robot.State.FREE;
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
+    private GoToHomeState homeState = GoToHomeState.TURNING_TO_HOME;
 
     public enum State {
         FREE,
-        AUTO_CYCLE
+        AUTO_CYCLE,
+        TURN_TO_SHOOT,
+        GO_TO_HOME
+    }
+
+    private enum GoToHomeState {
+        TURNING_TO_HOME,
     }
 
     private enum CycleState {
         TURNING_TO_INTAKE,
         INTAKING,
+        WAITING_FOR_SENSORS,
         TURNING_BACK,
         DRIVING_BACK,
         AIMING,
@@ -78,6 +88,16 @@ public class Robot {
         hubs = FTCUtilities.getHardwareMap().getAll(LynxModule.class);
         position = startingPosition;
 
+        if (FTCUtilities.getAllianceColor().equals(AllianceColor.RED)){
+            shootingPoint = new Point(42,66);
+            intakingPoint = new Point(42,20);
+        }
+
+        ControlCenter.setIntakingPoint(intakingPoint);
+
+        brolafActuator = new SerialServo("brolaf", false);
+        brolafActuator.mapPosition(.7, 1);
+        brolafActuator.setPosition(0);
         imu = new IMU("imu", true, Math.PI/2);
 //        cam = new Cam("Webcam 1");
 //        cam.start();
@@ -121,18 +141,41 @@ public class Robot {
 
     public Shooter getShooter(){return shooter;}
 
-    public static Point getIntakingPoint() {
-        return intakingPosition;
+    public Point getIntakingPoint() {
+        return intakingPoint;
     }
+
+    public MB1242System getMb1242System(){
+        return mb1242System;
+    }
+
+    public SerialServo getBrolafActuator(){return brolafActuator;}
 
     public void setState(State state){
         this.state = state;
 
-        if(state.equals(Robot.State.AUTO_CYCLE)){
-            westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
-            westCoast.startTurnGlobal(-Math.PI / 2);
-            cycleState = CycleState.TURNING_TO_INTAKE;
+        switch(state){
+            case FREE:
+                return;
+            case AUTO_CYCLE:
+                westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
+                westCoast.startTurnGlobal(-Math.PI / 2);
+                cycleState = CycleState.TURNING_TO_INTAKE;
+                break;
+            case TURN_TO_SHOOT:
+//                Point
+//                double globalAngle = FTCMath.ensureIdealAngle(odometry.getPosition().getAsPoint().angleTo(FTCUtilities.getGoalPoint()));
+//                westCoast.startTurnGlobal(globalAngle);
+                break;
+            case GO_TO_HOME:
+                Position position = odometry.getPosition();
+                double angle = FTCMath.ensureIdealAngle(position.getAsPoint().angleTo(intakingPoint), position.heading);
+                westCoast.startTurnGlobal(angle);
+                homeState = GoToHomeState.TURNING_TO_HOME;
+                break;
+
         }
+
     }
 
     public void drive(double forward, double turn){
@@ -261,15 +304,20 @@ public class Robot {
                     if(westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.IN);
 
+                        brolafActuator.setPosition(1);
                         cycleState = CycleState.INTAKING;
                     }
                     break;
                 case INTAKING:
                     if(checkNextCycleState()){
 
-                        mb1242System.doPings();
-                        FTCUtilities.sleep(80);
-                        mb1242System.doReads();
+                        mb1242System.runSystem();
+
+                        cycleState = CycleState.WAITING_FOR_SENSORS;
+                    }
+                    break;
+                case WAITING_FOR_SENSORS:
+                    if (mb1242System.isResting()){
 
                         //update position, because the mb1242 system updates the odometry;
                         position = odometry.getPosition();
@@ -280,16 +328,19 @@ public class Robot {
                         //calculate the angle and distance to our target point
                         //For the angle, keep in mind the robot is moving backwards
 
-                        double angle = shootingPosition.angleTo(position.getAsPoint());
+                        double angle = shootingPoint.angleTo(position.getAsPoint());
                         angle = FTCMath.ensureIdealAngle(angle, odometry.getPosition().heading);
 
                         westCoast.startTurnGlobal(angle);
+
+                        brolafActuator.setPosition(0);
+
                         cycleState = CycleState.TURNING_BACK;
                     }
                     break;
                 case TURNING_BACK:
                     if (westCoast.isInDefaultMode()){
-                        double distance = shootingPosition.distanceTo(position);
+                        double distance = shootingPoint.distanceTo(position);
 
                         westCoast.startDriveStraight(.9, distance, WestCoast.Direction.REVERSE);
                         cycleState = CycleState.DRIVING_BACK;
@@ -299,11 +350,15 @@ public class Robot {
                     if (westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.STOPPED);
                         if(shooter.isState(Shooter.ShooterState.POWERSHOT)){
+                            //todo make work for other side
                             westCoast.startTurnGlobal(Math.toRadians(-93));
                             cycleState = CycleState.TURN_TO_SHOT_1;
                         } else {
-                            //todo make work for other side
-                            westCoast.startTurnGlobal(Math.toRadians(-81));
+                            if (FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
+                                westCoast.startTurnGlobal(Math.toRadians(-82));
+                            } else {
+                                westCoast.startTurnGlobal(Math.toRadians(-101));
+                            }
                             cycleState = CycleState.AIMING;
                         }
                     }
@@ -325,7 +380,7 @@ public class Robot {
                     if (westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.IN);
 
-                        double distance = shootingPosition.distanceTo(intakingPosition);
+                        double distance = shootingPoint.distanceTo(intakingPoint);
                         westCoast.startDriveStraight(.9, distance, WestCoast.Direction.FORWARDS);
                         cycleState = CycleState.DRIVING_FORWARD;
                     }
@@ -364,8 +419,8 @@ public class Robot {
                 case TURN_TO_SHOT_3:
                     if(westCoast.isInDefaultMode()){
                         shooter.runIndexerServos();
-                        cycleState = CycleState.PSHOT_3;
                         shooter.setState(Shooter.ShooterState.POWERSHOT);
+                        cycleState = CycleState.PSHOT_3;
                     }
                     break;
                     //powershot 3 merged with SHOOTING state
@@ -373,8 +428,32 @@ public class Robot {
             }
         }
 
+        if (state.equals(State.TURN_TO_SHOOT)){
+            if (westCoast.isInDefaultMode()){
+                shooter.runIndexerServos();
+                setState(State.FREE);
+            }
+        }
+
+        if (state.equals(State.GO_TO_HOME)){
+            switch (homeState){
+                case TURNING_TO_HOME:
+                    if (westCoast.isInDefaultMode()){
+                        intake.changeState(Intake.State.IN);
+
+                        double distance = intakingPoint.distanceTo(odometry.getPosition());
+                        westCoast.startDriveStraight(.9, distance, WestCoast.Direction.FORWARDS);
+
+                        state = State.AUTO_CYCLE;
+                        cycleState = CycleState.DRIVING_FORWARD;
+                    }
+                    break;
+            }
+        }
+
         westCoast.update();
         wobbleArm.update();
+        mb1242System.update();
 
         if(FTCUtilities.isDashboardMode()){
             dashboardTelemetry.update();

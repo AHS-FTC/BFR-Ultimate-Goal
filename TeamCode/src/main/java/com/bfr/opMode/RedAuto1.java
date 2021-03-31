@@ -10,26 +10,35 @@ import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name="Blue Auto 0", group="Linear OpMode")
+@Autonomous(name="Red Auto 1", group="Linear OpMode")
 //@Disabled
-public class BlueAuto0 extends LinearOpMode {
+public class RedAuto1 extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
         FTCUtilities.setOpMode(this);
 
-        Robot robot = new Robot(new Position(0, 0, Math.toRadians(90)));
+        Robot robot = new Robot(new Position(0, 0,Math.toRadians(90)));
+        WestCoast westCoast = robot.getWestCoast();
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
-        //westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
+
 
         waitForStart();
 
+
+
         wobbleArm.setState(WobbleArm.State.HOLDING);
-        robot.driveStraight(0.7, 64, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 56, WestCoast.Direction.REVERSE);
+
+        robot.turnGlobal(Math.toRadians(120));
 
 //        intake.setNineTailsState(Intake.NineTailsState.DEPLOYED);
+
+        robot.driveStraight(0.7, 32, WestCoast.Direction.REVERSE);
+
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
@@ -39,9 +48,9 @@ public class BlueAuto0 extends LinearOpMode {
         shooter.setState(Shooter.ShooterState.STANDARD);
         sleep(500);
 
-        robot.driveStraight(0.7, 12, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(0.7, 32, WestCoast.Direction.FORWARDS);
 
-        robot.turnGlobal(Math.toRadians(254.5));
+        robot.turnGlobal(Math.toRadians(280));
 
         shooter.runIndexerServos();
 
@@ -51,30 +60,54 @@ public class BlueAuto0 extends LinearOpMode {
         }
         shooter.setState(Shooter.ShooterState.RESTING);
 
-        robot.turnGlobal(Math.toRadians(292.5));
+        robot.turnGlobal(Math.toRadians(270));
+
+        robot.driveStraight(0.7, 28, WestCoast.Direction.REVERSE);
+
+        robot.turnGlobal(Math.toRadians(225));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
-        robot.driveStraight(0.5, 32, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.5, 18, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
-        wobbleArm.setState(WobbleArm.State.HOLDING);
-        sleep(500);
+        wobbleArm.setState(WobbleArm.State.STORED);
+        sleep(700);
 
-        robot.turnGlobal(Math.toRadians(463));
-        robot.driveStraight(0.7, 36, WestCoast.Direction.REVERSE);
+        robot.turnGlobal(Math.toRadians(290));
+
+        intake.changeState(Intake.State.IN);
+        robot.driveStraight(0.7, 38, WestCoast.Direction.FORWARDS);
+        intake.changeState(Intake.State.STOPPED);
+        wobbleArm.setState(WobbleArm.State.HOLDING);
+
+        shooter.setState(Shooter.ShooterState.STANDARD);
+        robot.turnGlobal(Math.toRadians(263));
+
+        shooter.runIndexerServos();
+
+        while (!shooter.areIndexerServosResting()){
+            robot.update();
+            //wait until indexing is finished
+        }
+        shooter.setState(Shooter.ShooterState.RESTING);
+
+        robot.turnGlobal(Math.toRadians(90));
+
+        robot.driveStraight(0.7, 27, WestCoast.Direction.REVERSE);
+
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         sleep(500);
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
         sleep(100);
         wobbleArm.setState(WobbleArm.State.RETRACTING);
-        sleep(500);
+        sleep(1000);
+        wobbleArm.setState(WobbleArm.State.STORED);
 
-        robot.turnGlobal(Math.toRadians(400));
-        robot.driveStraight(0.5, 24, WestCoast.Direction.REVERSE);
+        robot.turnGlobal(Math.toRadians(-90));
 
-        robot.turnGlobal(Math.toRadians(270));
+        robot.driveStraight(.5, 10, WestCoast.Direction.REVERSE);
 
     }
 }

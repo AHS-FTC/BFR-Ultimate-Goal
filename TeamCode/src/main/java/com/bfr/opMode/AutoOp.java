@@ -5,8 +5,10 @@ import android.graphics.Rect;
 import com.bfr.control.path.Position;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
+import com.bfr.hardware.SerialServo;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
+import com.bfr.hardware.WobbleArm;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -29,10 +31,14 @@ public class AutoOp extends LinearOpMode {
         Intake intake = robot.getIntake();
         robot.getShooter().setState(Shooter.ShooterState.RESTING);
 
+        WobbleArm wobbleArm = new WobbleArm();
+
+        wobbleArm.setState(WobbleArm.State.STORED);
+
         waitForStart();
 
-        robot.getShooter().setState(Shooter.ShooterState.STANDARD);
+        wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
 
-        robot.sleep(5000);
+        sleep(1000);
     }
 }

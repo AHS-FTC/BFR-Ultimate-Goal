@@ -6,6 +6,7 @@ import com.bfr.hardware.Robot;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.WobbleArm;
+import com.bfr.util.AllianceColor;
 import com.bfr.util.Controller;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.loggers.ControlCenter;
@@ -29,6 +30,14 @@ public class DTTeleOp extends OpMode {
     public void init() {
         FTCUtilities.setOpMode(this);
 
+        if (gamepad2.x){
+            FTCUtilities.setAllianceColor(AllianceColor.BLUE);
+        }
+
+        if (gamepad2.b){
+            FTCUtilities.setAllianceColor(AllianceColor.RED);
+        }
+
         Controller controller1 = FTCUtilities.getController1();
         Controller controller2 = FTCUtilities.getController2();
 
@@ -41,8 +50,10 @@ public class DTTeleOp extends OpMode {
 
         wobbleArm = robot.getWobbleArm();
 
+        wobbleArm.setState(WobbleArm.State.HOLDING);
+
         shooter = robot.getShooter();
-        controller1.setAction(A, shooter::runIndexerServos);
+        controller1.setAction(A, () -> shooter.runIndexerServos());
 
         controller1.setAction(B, () -> robot.nextCycleState());
 
@@ -78,18 +89,22 @@ public class DTTeleOp extends OpMode {
             robot.autoAim();
         });
 
-        controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.AUTO_CYCLE));
+        controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
 
-        controller2.setAction(B, () -> wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN));
+
+        //controller2.setAction(B, () ->);
+
         controller2.setAction(Y, () -> wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED));
-        controller2.setAction(X, () -> wobbleArm.setState(WobbleArm.State.HOLDING));
-        controller2.setAction(A, () -> wobbleArm.setState(WobbleArm.State.STORED));
+
+        controller2.setAction(X, () -> robot.getBrolafActuator().setPosition(1));
+
+        controller2.setAction(A, () -> robot.getMb1242System().runSystem());
 
         controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
         controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
 
-        controller2.setAction(DPAD_UP, () -> Robot.getIntakingPoint().y += 1.0);
-        controller2.setAction(DPAD_DN, () -> Robot.getIntakingPoint().y -= 1.0);
+        controller2.setAction(DPAD_UP, () -> robot.getIntakingPoint().y += 1.0);
+        controller2.setAction(DPAD_DN, () -> robot.getIntakingPoint().y -= 1.0);
     }
 
     @Override
@@ -100,7 +115,7 @@ public class DTTeleOp extends OpMode {
     public void start() {
         westCoast.startDriverControl();
         shooter.setState(Shooter.ShooterState.STANDARD);
-        robot.getIntake().setNineTailsState(Intake.NineTailsState.DEPLOYED);
+//        robot.getIntake().setNineTailsState(Intake.NineTailsState.DEPLOYED);
     }
 
     @Override
