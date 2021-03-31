@@ -11,6 +11,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ public class VisionSystem2 {
 
         this.streamMode = streamMode;
 
-        cam.start();
+        cam.start(OpenCvCameraRotation.UPSIDE_DOWN);
 
         Mat initMat = new Mat();
         cam.copyFrameTo(initMat);

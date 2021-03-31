@@ -13,6 +13,7 @@ import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class CameraCalibOpMode extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         Cam cam = new Cam(deviceName);
-        cam.start();
+        cam.start(OpenCvCameraRotation.UPSIDE_DOWN);
 
         waitForStart();
 

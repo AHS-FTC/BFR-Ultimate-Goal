@@ -19,8 +19,8 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
-    public static final int RES_WIDTH = 640;
-    public static final int RES_HEIGHT = 360;
+    public static final int RES_WIDTH = 1920;
+    public static final int RES_HEIGHT = 1080;
     public static final double MIDDLE_X = RES_WIDTH / 2.0;
 
     public static final double FOV_H = Math.toRadians(87.0);
@@ -42,9 +42,9 @@ public class Cam {
     /**
      * Initializes the camera and blocks until it starts running values into the frameEjector
      */
-    public void start(){
+    public void start(OpenCvCameraRotation rot){
         openCvCamera.openCameraDeviceAsync(() -> {
-            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, OpenCvCameraRotation.UPSIDE_DOWN);
+            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, rot);
         });
 
         //wait for the camera to initialize
@@ -68,8 +68,13 @@ public class Cam {
         return distanceFromCenter * degreesPerPixel;
     }
 
+    public void stop(){
+        openCvCamera.stopStreaming();
+    }
+
     /**
      * Echos frameEjector.copyFrameTo()
+     * Returns HSV Mat.
      */
     public void copyFrameTo(Mat mat){
         Mat hsv = new Mat();
