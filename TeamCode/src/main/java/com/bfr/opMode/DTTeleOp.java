@@ -50,6 +50,8 @@ public class DTTeleOp extends OpMode {
 
         wobbleArm = robot.getWobbleArm();
 
+        wobbleArm.setState(WobbleArm.State.HOLDING);
+
         shooter = robot.getShooter();
         controller1.setAction(A, () -> shooter.runIndexerServos());
 
