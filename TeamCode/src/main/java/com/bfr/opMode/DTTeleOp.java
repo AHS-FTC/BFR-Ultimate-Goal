@@ -101,6 +101,7 @@ public class DTTeleOp extends OpMode {
 
         controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
 
+        controller1.setAction(DPAD_UP, () -> robot.setState(Robot.State.SQUARE_UP));
 
         //controller2.setAction(B, () ->);
 

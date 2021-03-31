@@ -62,7 +62,8 @@ public class Robot {
         AUTO_CYCLE,
         TURN_TO_SHOOT,
         GO_TO_HOME,
-        DETECTING_STACK
+        DETECTING_STACK,
+        SQUARE_UP
     }
 
     private enum GoToHomeState {
@@ -187,9 +188,15 @@ public class Robot {
                 homeState = GoToHomeState.TURNING_TO_HOME;
                 break;
             case DETECTING_STACK:
-                 fieldConfiguration = stackDetector.getFieldConfiguration();
-                 stackDetectorStartTime = FTCUtilities.getCurrentTimeMillis();
-                 break;
+                fieldConfiguration = stackDetector.getFieldConfiguration();
+                stackDetectorStartTime = FTCUtilities.getCurrentTimeMillis();
+                break;
+            case SQUARE_UP:
+                double squareUpAngle = FTCMath.ensureIdealAngle(Math.toRadians(-90), odometry.getPosition().heading);
+                westCoast.startTurnGlobal(squareUpAngle);
+                brolafActuator.setPosition(1);
+                cycleState = CycleState.INTAKING;
+                break;
         }
 
     }
@@ -308,6 +315,10 @@ public class Robot {
         shooter.update(bulkReadTimestamp);
 
         ControlCenter.setPosition(odometry.getPosition());
+
+        if (state.equals(State.SQUARE_UP)){
+            state = State.AUTO_CYCLE;
+        }
 
         if(state.equals(Robot.State.AUTO_CYCLE)){
             if (FTCUtilities.getController1().areSticksNonZero() && !cycleState.equals(CycleState.INTAKING)){
