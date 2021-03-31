@@ -3,8 +3,10 @@ package com.bfr.util;
 import android.graphics.Bitmap;
 import android.os.Environment;
 
+import com.bfr.control.path.Position;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.util.loggers.ControlCenter;
+import com.bfr.util.math.Point;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -45,8 +47,15 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     private static AllianceColor allianceColor = AllianceColor.BLUE;
 
+    private static final Point blueGoal = new Point(-36, 0);
+    private static final Point redGoal = new Point(36, 0);
+
     public static AllianceColor getAllianceColor(){
         return allianceColor;
+    }
+
+    public static void setAllianceColor(AllianceColor color){
+        allianceColor = color;
     }
 
     public static String getLogDirectory() {
@@ -54,6 +63,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
             return System.getProperty("user.home") + "/Desktop/";
         } else {
             return (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/");
+        }
+    }
+
+    public static Point getGoalPoint(){
+        if (allianceColor.equals(AllianceColor.BLUE)) {
+            return blueGoal;
+        } else {
+            return redGoal;
         }
     }
 
@@ -76,6 +93,8 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     public static void setOpMode(OpMode opMode) {
         FTCUtilities.opMode = opMode;
         FTCUtilities.hardwareMap = opMode.hardwareMap;
+
+        Controller.deleteInstances();
 
         controller1 = new Controller(opMode.gamepad1);
         controller2 = new Controller(opMode.gamepad2);

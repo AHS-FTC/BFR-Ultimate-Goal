@@ -6,7 +6,7 @@ package com.bfr.hardware;
  * @author alex and andie
  */
 public class Intake {
-    private Motor intakeMotor;
+    private Motor intakeMotor1, intakeMotor2;
     private State state = State.STOPPED;
 
     private SerialServo nineTails;
@@ -24,30 +24,31 @@ public class Intake {
         }
     }
 
-    public enum NineTailsState {
-        STORED(0),
-        DEPLOYED(.85),
-        RING_4(1.0);
-
-        public final double position;
-
-        NineTailsState(double position) {
-            this.position = position;
-        }
-    }
+//    public enum NineTailsState {
+//        STORED(0),
+//        DEPLOYED(1.0),
+//        RING_4(1.0);
+//
+//        public final double position;
+//
+//        NineTailsState(double position) {
+//            this.position = position;
+//        }
+//    }
 
     public Intake() {
-        intakeMotor = new Motor("intake", 103.6,true);
-        nineTails = new SerialServo("intake_actuator", true);
-        setNineTailsState(NineTailsState.STORED);
+        intakeMotor1 = new Motor("intake_1", 103.6,true);
+        intakeMotor2 = new Motor("intake_2", 103.6, true);
+
     }
 
-    public void setNineTailsState(NineTailsState state){
-        nineTails.setPosition(state.position);
-    }
+//    public void setNineTailsState(NineTailsState state){
+//        nineTails.setPosition(state.position);
+//    }
 
     public void setPower(double power){
-        intakeMotor.setPower(power);
+        intakeMotor1.setPower(power);
+        intakeMotor2.setPower(power);
     }
 
     public State getState() {

@@ -37,6 +37,10 @@ public class Controller {
         buttons.put(DPAD_R, new Button(() -> gamepad.dpad_right));
     }
 
+    public static void deleteInstances(){
+        instances.clear();
+    }
+
     public boolean areSticksNonZero(){
         return (gamepad.left_stick_y != 0.0 || gamepad.right_stick_x != 0.0);
     }

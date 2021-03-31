@@ -10,9 +10,9 @@ import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@Autonomous(name="Blue Auto 0", group="Linear OpMode")
+@Autonomous(name="Red Auto 0", group="Linear OpMode")
 //@Disabled
-public class BlueAuto0 extends LinearOpMode {
+public class RedAuto0 extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException{
@@ -22,7 +22,7 @@ public class BlueAuto0 extends LinearOpMode {
         WobbleArm wobbleArm = robot.getWobbleArm();
         Shooter shooter = robot.getShooter();
         Intake intake = robot.getIntake();
-        //westCoast.setTurnMode(WestCoast.MovementMode.ACCURATE);
+        robot.getWestCoast().setTurnMode(WestCoast.MovementMode.FAST);
 
         waitForStart();
 
@@ -41,7 +41,7 @@ public class BlueAuto0 extends LinearOpMode {
 
         robot.driveStraight(0.7, 12, WestCoast.Direction.FORWARDS);
 
-        robot.turnGlobal(Math.toRadians(254.5));
+        robot.turnGlobal(Math.toRadians(-76));
 
         shooter.runIndexerServos();
 
@@ -51,7 +51,7 @@ public class BlueAuto0 extends LinearOpMode {
         }
         shooter.setState(Shooter.ShooterState.RESTING);
 
-        robot.turnGlobal(Math.toRadians(292.5));
+        robot.turnGlobal(Math.toRadians(-112.5));
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
         robot.driveStraight(0.5, 32, WestCoast.Direction.REVERSE);
@@ -61,7 +61,7 @@ public class BlueAuto0 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
         sleep(500);
 
-        robot.turnGlobal(Math.toRadians(463));
+        robot.turnGlobal(Math.toRadians(-283));
         robot.driveStraight(0.7, 36, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
@@ -71,10 +71,10 @@ public class BlueAuto0 extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.RETRACTING);
         sleep(500);
 
-        robot.turnGlobal(Math.toRadians(400));
+        robot.turnGlobal(Math.toRadians(-220));
         robot.driveStraight(0.5, 24, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(270));
+        robot.turnGlobal(Math.toRadians(-90));
 
     }
 }

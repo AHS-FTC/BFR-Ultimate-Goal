@@ -8,6 +8,7 @@ import com.bfr.hardware.Robot;
 import com.bfr.hardware.SerialServo;
 import com.bfr.hardware.Shooter;
 import com.bfr.hardware.WestCoast;
+import com.bfr.hardware.WobbleArm;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -30,9 +31,14 @@ public class AutoOp extends LinearOpMode {
         Intake intake = robot.getIntake();
         robot.getShooter().setState(Shooter.ShooterState.RESTING);
 
+        WobbleArm wobbleArm = new WobbleArm();
+
+        wobbleArm.setState(WobbleArm.State.STORED);
+
         waitForStart();
 
-        robot.driveStraight(.9,60, WestCoast.Direction.FORWARDS);
+        wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
 
+        sleep(1000);
     }
 }

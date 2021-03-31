@@ -21,15 +21,15 @@ public class MB1242TestOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()){
-            MB1242DistanceSensor lateral1 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_1");
-            MB1242DistanceSensor lateral2 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_2");
+            MB1242DistanceSensor lateral1 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front_1");
+            MB1242DistanceSensor lateral2 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_front_2");
             lateral1.pingDistance();
             sleep(50);
-            telemetry.addData("left 1", lateral1.readDistance());
+            telemetry.addData("front 1", lateral1.readDistance());
 
             lateral2.pingDistance();
             sleep(50);
-            telemetry.addData("left 2", lateral2.readDistance());
+            telemetry.addData("front 2", lateral2.readDistance());
             telemetry.update();
 
 
