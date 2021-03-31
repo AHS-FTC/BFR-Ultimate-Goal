@@ -195,6 +195,7 @@ public class Robot {
                 double squareUpAngle = FTCMath.ensureIdealAngle(Math.toRadians(-90), odometry.getPosition().heading);
                 westCoast.startTurnGlobal(squareUpAngle);
                 brolafActuator.setPosition(1);
+                intake.changeState(Intake.State.IN);
                 cycleState = CycleState.INTAKING;
                 break;
         }
