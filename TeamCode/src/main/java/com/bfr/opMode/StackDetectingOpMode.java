@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "Stack Detecting OpMode", group = "Linear Opmode")
-//@Disabled
+@Disabled
 public class StackDetectingOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {

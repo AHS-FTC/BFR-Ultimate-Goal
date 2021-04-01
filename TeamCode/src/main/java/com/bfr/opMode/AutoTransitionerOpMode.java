@@ -9,12 +9,13 @@ import com.bfr.hardware.WobbleArm;
 import com.bfr.util.AutoTransitioner;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.io.IOException;
 
 @Autonomous(name="AutoTransitioner OpMode", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class AutoTransitionerOpMode extends LinearOpMode {
 
     @Override

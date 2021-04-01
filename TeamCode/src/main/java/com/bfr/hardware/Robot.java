@@ -378,8 +378,13 @@ public class Robot {
                     if (westCoast.isInDefaultMode()){
                         intake.changeState(Intake.State.STOPPED);
                         if(shooter.isState(Shooter.ShooterState.POWERSHOT)){
-                            //todo make work for other side
-                            westCoast.startTurnGlobal(Math.toRadians(-93));
+                            double angle;
+                            if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
+                                angle = Math.toRadians(-93);
+                            } else {
+                                angle = Math.toRadians(-90);
+                            }
+                            westCoast.startTurnGlobal(angle);
                             cycleState = CycleState.TURN_TO_SHOT_1;
                         } else {
                             if (FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
@@ -428,7 +433,13 @@ public class Robot {
                     break;
                 case PSHOT_1:
                     if(shooter.areIndexerServosResting()){
-                        westCoast.startTurnGlobal(Math.toRadians(-98));
+                        double angle;
+                        if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
+                            angle = Math.toRadians(-98);
+                        } else {
+                            angle = Math.toRadians(-84);
+                        }
+                        westCoast.startTurnGlobal(angle);
                         cycleState = CycleState.TURN_TO_SHOT_2;
                     }
                     break;
@@ -440,7 +451,13 @@ public class Robot {
                     break;
                 case PSHOT_2:
                     if(shooter.areIndexerServosResting()){
-                        westCoast.startTurnGlobal(Math.toRadians(-103));
+                        double angle;
+                        if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
+                            angle = Math.toRadians(-103);
+                        } else {
+                            angle = Math.toRadians(-81);
+                        }
+                        westCoast.startTurnGlobal(angle);
                         cycleState = CycleState.TURN_TO_SHOT_3;
                     }
                     break;

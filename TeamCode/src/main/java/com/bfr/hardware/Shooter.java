@@ -31,8 +31,6 @@ public class Shooter {
     private long startTime, elapsedTime, repeatStartTime;
     private final static long WAIT_TIME = 120; //175
 
-    private boolean powershotMode = false;
-
     public Shooter() {
         shooterMotor1 = new Motor("s1", 41.0,true);
         shooterMotor2 = new Motor("s2", 41.0,true);
@@ -138,7 +136,7 @@ public class Shooter {
                 break;
             case RETRACTING1:
                 if (nextState) {
-                    if(powershotMode){
+                    if(shooterState.equals(ShooterState.POWERSHOT)){
                         holderServo.setPosition(1);
                         servoState = IndexerState.RESTING;
                     } else {
