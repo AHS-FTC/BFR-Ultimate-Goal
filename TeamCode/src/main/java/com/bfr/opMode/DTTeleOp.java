@@ -96,7 +96,7 @@ public class DTTeleOp extends OpMode {
         });
 
         controller1.setAction(X, () -> {
-            robot.autoAim();
+            //robot.autoAim();
         });
 
         controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));

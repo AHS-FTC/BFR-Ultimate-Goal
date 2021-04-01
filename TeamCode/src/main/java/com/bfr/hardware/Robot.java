@@ -221,22 +221,22 @@ public class Robot {
         System.out.println("active: " + FTCUtilities.opModeIsActive());
     }
 
-    public void autoAim(){
-        cam.copyFrameTo(latestFrame);
-
-        try {
-            backboard.make(latestFrame);
-            double targetX = backboard.getMiddleX();
-            double angleToTarget = Cam.getAngleFromX(targetX);
-            westCoast.startTurnLocal(angleToTarget);
-            backboard.dump();
-        } catch (VisionException e){
-            e.printStackTrace();
-            System.out.println("frick");
-            backboard.dump();
-        }
-        cam.setOutputMat(backboard.binaryCropped);
-    }
+//    public void autoAim(){
+//        cam.copyFrameTo(latestFrame);
+//
+//        try {
+//            backboard.make(latestFrame);
+//            double targetX = backboard.getMiddleX();
+//            double angleToTarget = Cam.getAngleFromX(targetX);
+//            westCoast.startTurnLocal(angleToTarget);
+//            backboard.dump();
+//        } catch (VisionException e){
+//            e.printStackTrace();
+//            System.out.println("frick");
+//            backboard.dump();
+//        }
+//        cam.setOutputMat(backboard.binaryCropped);
+//    }
 
     /**
      * Blocking global turn method for auto only
