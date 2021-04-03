@@ -256,19 +256,23 @@ public class RedAuto extends LinearOpMode {
 
         robot.turnGlobal(Math.toRadians(-42)); //225
 
-        robot.driveStraight(0.5, 5, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(0.5, 6, WestCoast.Direction.FORWARDS);
 
         shooter.setState(Shooter.ShooterState.FAR);
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
 
         intake.changeState(Intake.State.IN);
-        robot.turnGlobal(Math.toRadians(-89));
+        robot.turnGlobal(Math.toRadians(-88));
 
-        robot.sleep(200);
-        shooter.repetitiveIndexing();
+        robot.sleep(1600);
+        intake.changeState(Intake.State.STOPPED);
+        shooter.runIndexerServos();
+        shooter.runIndexerServos();
 
-        robot.sleep(1800);
+        robot.sleep(400);
+
+        intake.changeState(Intake.State.IN);
 
         robot.driveStraight(0.15, 6, WestCoast.Direction.FORWARDS);
         shooter.setState(Shooter.ShooterState.STANDARD);
@@ -276,11 +280,13 @@ public class RedAuto extends LinearOpMode {
         robot.driveStraight(.8,20, WestCoast.Direction.FORWARDS);
 
         robot.sleep(300);
-
+        intake.changeState(Intake.State.STOPPED);
         shooter.runIndexerServos();
+
         robot.sleep(300);
 
         shooter.setState(Shooter.ShooterState.RESTING);
+        intake.changeState(Intake.State.IN);
 
         robot.driveStraight(0.8, 66, WestCoast.Direction.FORWARDS);
 
@@ -294,6 +300,7 @@ public class RedAuto extends LinearOpMode {
         robot.sleep(100);
 
         wobbleArm.setState(WobbleArm.State.RETRACTING);
+        robot.sleep(400);
 
         robot.turnGlobal(Math.toRadians(90));
 

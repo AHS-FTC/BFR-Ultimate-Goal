@@ -174,6 +174,7 @@ public class Robot {
             case AUTO_CYCLE:
                 westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
                 westCoast.startTurnGlobal(-Math.PI / 2);
+                shooter.setState(Shooter.ShooterState.STANDARD);
                 cycleState = CycleState.TURNING_TO_INTAKE;
                 break;
             case TURN_TO_SHOOT:
@@ -196,6 +197,7 @@ public class Robot {
                 westCoast.startTurnGlobal(squareUpAngle);
                 brolafActuator.setPosition(1);
                 intake.changeState(Intake.State.IN);
+                shooter.setState(Shooter.ShooterState.STANDARD);
                 cycleState = CycleState.INTAKING;
                 break;
         }
@@ -406,6 +408,7 @@ public class Robot {
                 case PSHOT_3:
                     if(shooter.areIndexerServosResting()){
                         westCoast.startTurnGlobal(-Math.PI / 2.0);
+                        shooter.setState(Shooter.ShooterState.STANDARD);
                         cycleState = CycleState.TURNING_FORWARD;
                     }
                     break;

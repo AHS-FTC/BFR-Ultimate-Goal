@@ -14,6 +14,6 @@ public class ShooterConstants {
     public static double powerShotRPM = 2500.0;
 
     public static double farFeedForward = .72;
-    public static double farRPM = 2775;
+    public static double farRPM = 2750;
 
 }
