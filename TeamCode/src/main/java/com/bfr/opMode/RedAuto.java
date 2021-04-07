@@ -111,7 +111,7 @@ public class RedAuto extends LinearOpMode {
         robot.sleep(500);
 
         robot.turnGlobal(Math.toRadians(-220));
-        robot.driveStraight(0.5, 24, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.5, 20, WestCoast.Direction.REVERSE);
 
         robot.turnGlobal(Math.toRadians(-90));
     }

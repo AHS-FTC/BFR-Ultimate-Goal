@@ -14,6 +14,8 @@ import com.bfr.util.loggers.ControlCenter;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.opencv.core.Mat;
+
 import java.io.IOException;
 
 import static com.bfr.hardware.Intake.State.*;
@@ -96,7 +98,7 @@ public class DTTeleOp extends OpMode {
         });
 
         controller1.setAction(X, () -> {
-            //robot.autoAim();
+            robot.getOdometry().getPosition().heading = Math.toRadians(-90);
         });
 
         controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
