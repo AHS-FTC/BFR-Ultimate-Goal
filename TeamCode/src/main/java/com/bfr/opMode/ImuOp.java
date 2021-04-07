@@ -6,10 +6,11 @@ import com.bfr.hardware.WestCoast;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name="IMU Op", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class ImuOp extends LinearOpMode {
 
     @Override

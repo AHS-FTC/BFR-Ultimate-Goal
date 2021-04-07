@@ -1,6 +1,11 @@
 package com.bfr.hardware.sensors;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bfr.control.path.Position;
+import com.bfr.util.FTCUtilities;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 
 /**
@@ -71,6 +76,16 @@ public class DifOdometry extends Odometry{
         position.x += globalX;
         position.y += globalY;
         position.heading += dHeading;
+
+        if(FTCUtilities.isDashboardMode()){
+            FtcDashboard.getInstance().getTelemetry().addData("odo_x", position.x);
+            FtcDashboard.getInstance().getTelemetry().addData("odo_y", position.y);
+            FtcDashboard.getInstance().getTelemetry().addData("odo_h", Math.toDegrees(position.heading));
+        }
+    }
+
+    public void incrementHeading(double increment){
+        position.heading += increment;
     }
 
 

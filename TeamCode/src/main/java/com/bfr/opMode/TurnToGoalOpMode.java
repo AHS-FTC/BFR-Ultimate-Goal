@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.R;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @TeleOp(name = "Turn to Goal OpMode", group = "Iterative Opmode")
 @Disabled
@@ -23,7 +24,7 @@ public class TurnToGoalOpMode extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         Cam cam = new Cam("Webcam 1");
-        cam.start();
+        cam.start(OpenCvCameraRotation.UPSIDE_DOWN);
 
         waitForStart();
 

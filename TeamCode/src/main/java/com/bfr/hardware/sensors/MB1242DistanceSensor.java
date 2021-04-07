@@ -1,5 +1,6 @@
 package com.bfr.hardware.sensors;
 
+import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice;

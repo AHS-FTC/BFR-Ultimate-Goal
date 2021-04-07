@@ -10,27 +10,29 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "MB1242 OpMode", group = "Iterative Opmode")
-@Disabled
+//@Disabled
 public class MB1242TestOp extends LinearOpMode {
-    @Override
+    //@Override
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
 
         telemetry = FtcDashboard.getInstance().getTelemetry();
 
-//        MB1242DistanceSensor mb = hardwareMap.get(MB1242DistanceSensor.class, "mb");
-        MB1242System mb1242System = new MB1242System();
-
         waitForStart();
 
         while (opModeIsActive()){
-            mb1242System.doPings();
-            sleep(80);
+            MB1242DistanceSensor lateral1 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_1");
+            MB1242DistanceSensor lateral2 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_2");
+            lateral1.pingDistance();
+            sleep(50);
+            telemetry.addData("front 1", lateral1.readDistance());
 
-            Point p = mb1242System.doReads();
-            telemetry.addData("x", p.x);
-            telemetry.addData("y", p.y);
+            lateral2.pingDistance();
+            sleep(50);
+            telemetry.addData("front 2", lateral2.readDistance());
             telemetry.update();
+
+
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.bfr.control.vision;
 
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -12,12 +13,13 @@ import org.opencv.core.Point3;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(name = "Camera Calibration OpMode", group = "Linear Opmode")
-//@Disabled
+@Disabled
 public class CameraCalibOpMode extends LinearOpMode {
 
     //todo tune these
@@ -30,7 +32,7 @@ public class CameraCalibOpMode extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         Cam cam = new Cam(deviceName);
-        cam.start();
+        cam.start(OpenCvCameraRotation.UPSIDE_DOWN);
 
         waitForStart();
 

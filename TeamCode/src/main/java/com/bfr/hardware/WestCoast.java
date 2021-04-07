@@ -1,6 +1,7 @@
 package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.bfr.control.path.Position;
 import com.bfr.control.pidf.FastRampdownConstants;
 import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.control.pidf.PIDFConfig;
@@ -9,11 +10,13 @@ import com.bfr.control.pidf.AccurateRampdownConstants;
 import com.bfr.control.pidf.StraightConstants;
 import com.bfr.control.pidf.AccurateTurnConstants;
 import com.bfr.hardware.sensors.IMU;
+import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
 import com.bfr.util.math.Circle;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Line;
 import com.bfr.util.math.Point;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -31,30 +34,34 @@ public class WestCoast {
 
     public static final double INCHES_PER_ROTATION = 12.2;
 
-    private Mode mode = Mode.IDLE;
+    private State state = State.IDLE;
     private final Gamepad driverGamepad;
 
     private double driveStraightPower = 0.0;
     private double driveStraightDistance = 0.0;
 
     private double targetAngle = 0.0;
+    private Position startDrivePos = null;
 
     private double initalDriveHeading = 0.0;
 
     private final IMU imu;
+    private final Odometry odometry;
 
     private PIDFController rampdownController, turnController, straightController;
 
-    private Mode defaultMode = Mode.IDLE;
+    private State defaultState = State.IDLE;
     private MovementMode rampdownMode = MovementMode.ACCURATE;
-    private MovementMode turnMode = MovementMode.ACCURATE;
+    private MovementMode turnMode = MovementMode.FAST;
 
     //adds a slight wait after a drive straight (and maybe turn???)
     private boolean waitingState = false;
     private long waitingStartTime = FTCUtilities.getCurrentTimeMillis();
     private static final long WAIT_TIME = 100;
 
-    public enum Mode {
+    private Direction direction;
+
+    public enum State {
         IDLE,
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
@@ -66,8 +73,22 @@ public class WestCoast {
         FAST;
     }
 
-    public WestCoast(IMU imu) {
+
+
+    public enum Direction {
+        FORWARDS(1),
+        REVERSE(-1);
+
+        public final int sign;
+
+        Direction(int sign) {
+            this.sign = sign;
+        }
+    }
+
+    public WestCoast(IMU imu, Odometry odometry) {
         this.imu = imu;
+        this.odometry = odometry;
         driverGamepad = FTCUtilities.getOpMode().gamepad1;
 
         leftMotor = new Motor("L", 1440.0,false);
@@ -159,9 +180,11 @@ public class WestCoast {
         rampdownController.setStabilityThreshold(0.005);
     }
 
-    private double getAvgDistance(){
-        double avgRotations = (leftMotor.getRotations() + rightMotor.getRotations()) / 2.0;
-        return avgRotations * INCHES_PER_ROTATION;
+    private double getDistance(){
+        return startDrivePos.distanceTo(odometry.getPosition());
+
+//        double avgRotations = (leftMotor.getRotations() + rightMotor.getRotations()) / 2.0;
+//        return avgRotations * INCHES_PER_ROTATION;
     }
 
     public void resetEncoders(){
@@ -170,7 +193,7 @@ public class WestCoast {
     }
 
     public boolean isInDefaultMode(){
-        return mode.equals(defaultMode);
+        return state.equals(defaultState);
     }
 
     /**
@@ -217,6 +240,10 @@ public class WestCoast {
         leftMotor.setPower(leftPower);
         rightMotor.setPower(rightPower);
     }
+    
+    public void setState(State state){
+        this.state = state;
+    }
 
     public void setTankPower(double l, double r){
         leftMotor.setPower(l);
@@ -234,39 +261,42 @@ public class WestCoast {
     }
 
     public void startDriverControl(){
-        mode = Mode.DRIVER_CONTROL;
+        state = State.DRIVER_CONTROL;
     }
 
-    public void startDriveStraight(double power, double targetDistance){
+    public void startDriveStraight(double power, double targetDistance, Direction direction){
+        this.direction = direction;
+
         driveStraightPower = power;
         driveStraightDistance = targetDistance;
-        resetEncoders();
-        initalDriveHeading = imu.getHeading();
+        startDrivePos = new Position(odometry.getPosition());
+
+        initalDriveHeading = startDrivePos.heading;
         straightController.reset(initalDriveHeading, initalDriveHeading);
 
-        rampdownController.reset(getAvgDistance(), driveStraightDistance);
+        rampdownController.reset(getDistance(), driveStraightDistance);
 
-        mode = Mode.DRIVE_STRAIGHT;
+        state = State.DRIVE_STRAIGHT;
     }
 
     public void startTurnGlobal(double globalAngle){
         targetAngle = globalAngle;
 
-        turnController.reset(imu.getHeading(), globalAngle);
-        mode = Mode.POINT_TURN;
+        turnController.reset(odometry.getPosition().heading, globalAngle);
+        state = State.POINT_TURN;
 
     }
 
     public void startTurnLocal(double globalAngle){
-        startTurnGlobal(imu.getHeading() + globalAngle);
+        startTurnGlobal(odometry.getPosition().heading + globalAngle);
     }
 
-    public Mode getMode() {
-        return mode;
+    public State getState() {
+        return state;
     }
 
-    public void setDefaultMode(Mode defaultMode){
-        this.defaultMode = defaultMode;
+    public void setDefaultState(State defaultState){
+        this.defaultState = defaultState;
     }
 
     /**
@@ -281,15 +311,15 @@ public class WestCoast {
     }
 
     public void update(){
-        switch (mode){
+        switch (state){
             case IDLE:
                 break;
             case POINT_TURN:
-                double imuHeading = imu.getHeading();
-                double angleError = targetAngle - imuHeading;
+                double turnHeading = odometry.getPosition().heading;
+                double angleError = targetAngle - turnHeading;
 
                 if(FTCUtilities.isDashboardMode()){
-                    dashboardTelemetry.addData("heading", imuHeading);
+                    dashboardTelemetry.addData("heading", Math.toDegrees(turnHeading));
                     dashboardTelemetry.addData("Target Heading", targetAngle);
                     dashboardTelemetry.addData("degrees error", Math.toDegrees(angleError));
 
@@ -306,12 +336,12 @@ public class WestCoast {
                 }
 
                 if(turnController.isStable() && Math.abs(angleError) < turnFinishedThreshold){
-                    mode = defaultMode;
+                    state = defaultState;
                     brakeMotors();
                     break;
                 }
 
-                double turnPower = turnController.getOutput(imuHeading);
+                double turnPower = turnController.getOutput(turnHeading);
                 double turnMinPower;
                 double turnMaxPower;
                 if (turnMode.equals(MovementMode.ACCURATE)){
@@ -331,21 +361,24 @@ public class WestCoast {
 
                 if(waitingState){
                     if (FTCUtilities.getCurrentTimeMillis() - waitingStartTime > WAIT_TIME) {
-                        mode = defaultMode;
+                        state = defaultState;
                         waitingState = false;
                     }
                     break;
                 }
 
-                double avgDistance = getAvgDistance();
-                double distanceError = driveStraightDistance - avgDistance;
-                double rampdownPower = rampdownController.getOutput(avgDistance);
+                double distance = getDistance();
+                double distanceError = driveStraightDistance - distance;
+                double rampdownPower = rampdownController.getOutput(distance);
 
-                double heading = imu.getHeading();
+                double heading = odometry.getPosition().heading;
                 double turnCorrection = straightController.getOutput(heading);
 
                 if(FTCUtilities.isDashboardMode()){
-                    dashboardTelemetry.addData("distance", avgDistance);
+                    dashboardTelemetry.addData("startX", startDrivePos.x);
+                    dashboardTelemetry.addData("startY", startDrivePos.y);
+
+                    dashboardTelemetry.addData("distance", distance);
                     dashboardTelemetry.addData("Heading", heading);
                 }
 
@@ -365,6 +398,7 @@ public class WestCoast {
                     finishedThreshold = AccurateRampdownConstants.finishedThreshold;
                     finishedCondition = rampdownController.isStable();
                     dashboardTelemetry.addData("isStable", finishedCondition);
+
                 } else { //RampDownMode.FAST
                     if(Math.abs(distanceError) < FastRampdownConstants.distanceThreshold){
                         finalPower = FastRampdownConstants.brakePower * Math.signum(distanceError);
@@ -383,7 +417,7 @@ public class WestCoast {
                     break;
                 }
 
-                setTankPower(finalPower - turnCorrection, finalPower + turnCorrection);
+                setTankPower((finalPower * direction.sign) - turnCorrection, (finalPower * direction.sign) + turnCorrection);
                 break;
             case DRIVER_CONTROL:
                 arcadeDrive(-driverGamepad.left_stick_y, -driverGamepad.right_stick_x);
