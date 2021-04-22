@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /**
- * West coast drive / 6 Wheel drive for Aokigahara
+ * West coast drive / 6 Wheel drive for Deep Temerity
  */
 public class WestCoast {
     private Motor leftMotor, rightMotor;
