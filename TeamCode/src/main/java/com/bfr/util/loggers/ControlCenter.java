@@ -25,6 +25,7 @@ public class ControlCenter {
     private static List<String> notices = new ArrayList<>();
     private static int susSensorReads = 0;
     private static Point intakingPoint;
+    private static Robot.State robotState;
 
     private static long lastTime = FTCUtilities.getCurrentTimeMillis();
 
@@ -47,6 +48,7 @@ public class ControlCenter {
         telemetry.addLine(String.format("Loop Time: %oms", loopTime));
         telemetry.addLine(String.format("Sus Sensor Reads: %o", susSensorReads));
         telemetry.addLine("Alliance Color: " + FTCUtilities.getAllianceColor());
+        telemetry.addLine("Robot State: " + robotState);
 
         for (String notice : notices) {
             telemetry.addLine(notice);
@@ -76,4 +78,6 @@ public class ControlCenter {
     public static void addNotice(String string){
         notices.add(string);
     }
+
+    public static void setRobotState(Robot.State state){robotState = state;}
 }
