@@ -46,7 +46,7 @@ public class VisionSystem2 {
     private Mat backboardThresholdMat, backboardTrimmedMat, unprocessedTarget, processedTarget;
 
     public VisionSystem2(boolean streamMode) {
-        cam = new Cam("Webcam 1");
+        cam = new Cam("Webcam 1", 1080, 1920, -1);
 
         this.streamMode = streamMode;
 

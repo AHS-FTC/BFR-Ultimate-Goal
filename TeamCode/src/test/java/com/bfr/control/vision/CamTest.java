@@ -1,7 +1,6 @@
 package com.bfr.control.vision;
 
 import org.junit.jupiter.api.Test;
-import org.opencv.core.Mat;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,19 +13,19 @@ class CamTest {
 
     @Test
     void testAngleXMiddle() {
-        double angle = Cam.getAngleFromX(Cam.MIDDLE_X);
+        double angle = Cam.getAngleFromX(Cam.middleX);
         assertEquals(0, angle);
     }
 
     @Test
     void testAngleXLeft() {
         double angle = Cam.getAngleFromX(0);
-        assertEquals(Math.toDegrees(Cam.FOV_H) / -2.0, angle);
+        assertEquals(Math.toDegrees(Cam.fovH) / -2.0, angle);
     }
 
     @Test
     void testAngleXRight() {
-        double angle = Cam.getAngleFromX(Cam.RES_WIDTH);
-        assertEquals(Math.toDegrees(Cam.FOV_H) / 2.0, angle);
+        double angle = Cam.getAngleFromX(Cam.width);
+        assertEquals(Math.toDegrees(Cam.fovH) / 2.0, angle);
     }
 }

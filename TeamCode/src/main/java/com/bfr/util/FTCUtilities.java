@@ -7,8 +7,10 @@ import com.bfr.control.path.Position;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.util.loggers.ControlCenter;
 import com.bfr.util.math.Point;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -33,6 +35,7 @@ import java.util.Map;
 public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMap exists under OpMode.
     private static HardwareMap hardwareMap;
     private static OpMode opMode;
+    private static OpModeType opModeType = OpModeType.UNKNOWN;
 
     private static boolean testMode = false;
 
@@ -94,6 +97,12 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         FTCUtilities.opMode = opMode;
         FTCUtilities.hardwareMap = opMode.hardwareMap;
 
+        if(opMode.getClass().isAnnotationPresent(TeleOp.class)){
+            opModeType = OpModeType.TELE;
+        } else if (opMode.getClass().isAnnotationPresent(Autonomous.class)){
+            opModeType = OpModeType.AUTO;
+        }
+
         Controller.deleteInstances();
 
         controller1 = new Controller(opMode.gamepad1);
@@ -106,6 +115,10 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     public static OpMode getOpMode() {
         return opMode;
+    }
+
+    public static OpModeType getOpModeType(){
+        return opModeType;
     }
 
     public static void OpLogger(String caption, Object object) {

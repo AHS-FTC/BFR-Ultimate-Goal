@@ -14,10 +14,10 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     private Mat eroded = new Mat();
     private Mat dilated = new Mat();
 
-    private Scalar min = new Scalar(100, 50, 0);
+    private Scalar min = new Scalar(100, 100, 35);
     private Scalar max = new Scalar(120, 255, 255);
 
-    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(20, 5));
 
     private static final double HUE_RANGE = 10;
 

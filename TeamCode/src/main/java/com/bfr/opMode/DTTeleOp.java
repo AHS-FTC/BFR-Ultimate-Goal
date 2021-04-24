@@ -98,14 +98,17 @@ public class DTTeleOp extends OpMode {
         });
 
         controller1.setAction(X, () -> {
-            robot.getOdometry().getPosition().heading = Math.toRadians(-90);
+            robot.setState(Robot.State.TURN_TO_SHOOT);
+
+            //todo add elsewhere
+            //robot.getOdometry().getPosition().heading = Math.toRadians(-90);
         });
 
         controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
 
         controller1.setAction(DPAD_UP, () -> robot.setState(Robot.State.SQUARE_UP));
 
-        //controller2.setAction(B, () ->);
+        controller2.setAction(B, () -> robot.setState(Robot.State.GO_TO_CHEESE));
 
         controller2.setAction(Y, () -> wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED));
 

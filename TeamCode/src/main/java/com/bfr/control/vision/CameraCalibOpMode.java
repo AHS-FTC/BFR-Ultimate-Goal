@@ -31,7 +31,7 @@ public class CameraCalibOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
 
-        Cam cam = new Cam(deviceName);
+        Cam cam = new Cam(deviceName, 1920, 1080, -1);
         cam.start(OpenCvCameraRotation.UPSIDE_DOWN);
 
         waitForStart();

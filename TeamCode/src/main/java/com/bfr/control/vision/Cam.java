@@ -19,18 +19,21 @@ public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
     private OpenCvCamera openCvCamera;
 
-    public static final int RES_WIDTH = 1920;
-    public static final int RES_HEIGHT = 1080;
-    public static final double MIDDLE_X = RES_WIDTH / 2.0;
+    private boolean streaming = false;
 
-    public static final double FOV_H = Math.toRadians(87.0);
+    public final int width;
+    public final int height;
+    public final double middleX;
 
-    //todo make these gud
-    public static final double FOV_V = Math.toRadians(60.6);
-    public static final double FOCAL_LENGTH_PX = RES_WIDTH / (2 * Math.tan(FOV_H) / 2.0);
-    public static final double FOCAL_LENGTH_PX_2 = RES_HEIGHT / (2 * Math.tan(FOV_V) / 2.0);
+    public final double fovH; //= Math.toRadians(87.0);
 
-    public Cam(String deviceName) {
+    public Cam(String deviceName, int width, int height, double fovH) {
+        this.width = width;
+        this.height = height;
+        this.fovH = fovH;
+
+        middleX = width / 2.0;
+
         HardwareMap hardwareMap = FTCUtilities.getHardwareMap();
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -44,32 +47,39 @@ public class Cam {
      */
     public void start(OpenCvCameraRotation rot){
         openCvCamera.openCameraDeviceAsync(() -> {
-            openCvCamera.startStreaming(RES_WIDTH, RES_HEIGHT, rot);
+            openCvCamera.startStreaming(width, height, rot);
         });
 
         //wait for the camera to initialize
         while (!frameEjector.isInitialized()){
             try {
-                Thread.sleep(100);
+                Thread.sleep(25);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
+        streaming = true;
     }
 
     //todo use the more accurate method to do this.
-    public static double getAngleFromX(double pixelX){
+    public double getAngleFromX(double pixelX){
 
         //positive is left, ccw; negative is right, cw
-        double distanceFromCenter = MIDDLE_X - pixelX;
+        double distanceFromCenter = middleX - pixelX;
 
-        double degreesPerPixel = Math.toDegrees(FOV_H) / RES_WIDTH;
+        double radiansPerPixel = fovH / width;
 
-        return distanceFromCenter * degreesPerPixel;
+        return distanceFromCenter * radiansPerPixel;
+    }
+
+    public boolean isStreaming(){
+        return streaming;
     }
 
     public void stop(){
         openCvCamera.stopStreaming();
+        streaming = false;
     }
 
     /**

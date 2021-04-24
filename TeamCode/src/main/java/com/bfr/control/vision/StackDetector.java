@@ -45,7 +45,7 @@ public class StackDetector {
     }
 
     public StackDetector() {
-        cam = new Cam("stack_cam");
+        cam = new Cam("stack_cam", 1920, 1080, -1);
 
         //todo tune
         if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
