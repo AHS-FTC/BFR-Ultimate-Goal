@@ -286,7 +286,6 @@ public class WestCoast {
 
         turnController.reset(odometry.getPosition().heading, globalAngle);
         state = State.POINT_TURN;
-
     }
 
     public void startTurnLocal(double globalAngle){
