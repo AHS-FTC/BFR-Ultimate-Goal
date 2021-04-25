@@ -60,7 +60,7 @@ public class WestCoast {
     private static final long WAIT_TIME = 100;
 
     private Direction direction;
-    private double cheeseHeading = Math.toRadians(285); //BLUE
+    private double cheeseHeading = Math.toRadians(279); //BLUE
 
     public enum State {
         IDLE,
@@ -280,9 +280,9 @@ public class WestCoast {
     }
 
     public void startTurnGlobal(double globalAngle){
-        targetAngle = globalAngle;
+        targetAngle = FTCMath.ensureIdealAngle(globalAngle, odometry.getPosition().heading);
 
-        turnController.reset(odometry.getPosition().heading, globalAngle);
+        turnController.reset(odometry.getPosition().heading, targetAngle);
         state = State.POINT_TURN;
     }
 

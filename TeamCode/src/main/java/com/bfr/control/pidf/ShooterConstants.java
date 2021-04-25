@@ -10,8 +10,8 @@ public class ShooterConstants {
     public static double standardRPM = 2800;
     public static double standardFeedforward = 0.71;
 
-    public static double powerShotFeedforward = 0.63;
-    public static double powerShotRPM = 2500.0;
+    public static double powerShotFeedforward = 0.61;
+    public static double powerShotRPM = 2450.0;
 
     public static double farFeedForward = .72;
     public static double farRPM = 2750;

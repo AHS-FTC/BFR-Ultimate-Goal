@@ -40,7 +40,7 @@ public class Robot {
     private Point shootingPoint = new Point(-42,66); //BLUE
     private Point intakingPoint = new Point(-42,20); //BLUE
 
-    private Point cheesePoint = new Point(-48, 70); //BLUE
+    private Point cheesePoint = new Point(-50, 70); //BLUE
 
     private StackDetector stackDetector;
     private StackDetector.FieldConfiguration fieldConfiguration;
@@ -195,7 +195,7 @@ public class Robot {
                     cycleState = CycleState.TURNING_TO_INTAKE;
 
                 }
-                previousState = state;
+                previousState = this.state;
                 break;
             case TURN_TO_SHOOT:
                 try {
@@ -204,11 +204,11 @@ public class Robot {
                     westCoast.startTurnLocal(angleToGoal);
 
                     westCoast.setCheeseHeading(odometry.getPosition().heading + angleToGoal);
-                    state = previousState;
                 } catch (VisionException e) {
                     ControlCenter.addNotice("Vision Exception: " + e.getMessage());
                     setState(State.FREE);
                 }
+                setState(previousState);
                 break;
             case GO_TO_HOME:
                 Position position = odometry.getPosition();
@@ -230,7 +230,8 @@ public class Robot {
                 break;
             case CHEESE:
                 westCoast.setState(WestCoast.State.CHEESE);
-                previousState = state;
+                shooter.setState(Shooter.ShooterState.CHEESE);
+                previousState = State.CHEESE;
                 break;
             case GO_TO_CHEESE:
                 Position currentPosition = odometry.getPosition();
@@ -242,7 +243,7 @@ public class Robot {
                 double powershotAngle;
                 if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
                     if (previousState.equals(State.CHEESE)){
-                        powershotAngle = Math.toRadians(-83);
+                        powershotAngle = Math.toRadians(-92);
                     } else {
                         powershotAngle = Math.toRadians(-93);
                     }
@@ -518,7 +519,7 @@ public class Robot {
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
                                 if (previousState.equals(State.CHEESE)){
-                                    angle = Math.toRadians(-88);
+                                    angle = Math.toRadians(-95);
                                 } else {
                                     angle = Math.toRadians(-98);
                                 }
@@ -544,7 +545,7 @@ public class Robot {
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
                                 if (previousState.equals(State.CHEESE)){
-                                    angle = Math.toRadians(-94);
+                                    angle = Math.toRadians(-103);
                                 } else {
                                     angle = Math.toRadians(-103);
                                 }

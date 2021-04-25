@@ -108,7 +108,8 @@ public class Shooter {
         RESTING,
         STANDARD,
         POWERSHOT,
-        FAR
+        FAR,
+        CHEESE
     }
 
     /**
@@ -136,7 +137,7 @@ public class Shooter {
                 break;
             case RETRACTING1:
                 if (nextState) {
-                    if(shooterState.equals(ShooterState.POWERSHOT)){
+                    if(shooterState.equals(ShooterState.POWERSHOT) || shooterState.equals((ShooterState.CHEESE))){
                         holderServo.setPosition(1);
                         servoState = IndexerState.RESTING;
                     } else {
