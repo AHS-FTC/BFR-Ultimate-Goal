@@ -3,6 +3,7 @@ package com.bfr.hardware;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
+import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.control.vision.BackboardDetector;
 import com.bfr.control.vision.StackDetector;
 import com.bfr.control.vision.VisionException;
@@ -18,9 +19,9 @@ import com.bfr.util.loggers.ControlCenter;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Point;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
 
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class Robot {
     private Point intakingPoint = new Point(-42,20); //BLUE
 
     private Point cheesePoint = new Point(-50, 70); //BLUE
+    private double cheeseHeading = Math.toRadians(279); //BLUE
 
     private StackDetector stackDetector;
     private StackDetector.FieldConfiguration fieldConfiguration;
@@ -67,7 +69,7 @@ public class Robot {
         GO_TO_HOME,
         DETECTING_STACK,
         SQUARE_UP,
-        CHEESE,
+        CHEESE_SHOOTING,
         GO_TO_CHEESE,
         AUTO_POWERSHOT;
     }
@@ -203,7 +205,7 @@ public class Robot {
 
                     westCoast.startTurnLocal(angleToGoal);
 
-                    westCoast.setCheeseHeading(odometry.getPosition().heading + angleToGoal);
+                    cheeseHeading = odometry.getPosition().heading + angleToGoal;
                 } catch (VisionException e) {
                     ControlCenter.addNotice("Vision Exception: " + e.getMessage());
                     setState(State.FREE);
@@ -228,10 +230,9 @@ public class Robot {
                 shooter.setState(Shooter.ShooterState.STANDARD);
                 cycleState = CycleState.INTAKING;
                 break;
-            case CHEESE:
-                westCoast.setState(WestCoast.State.CHEESE);
-                shooter.setState(Shooter.ShooterState.CHEESE);
-                previousState = State.CHEESE;
+            case CHEESE_SHOOTING:
+                previousState = State.CHEESE_SHOOTING;
+                westCoast.setState(WestCoast.State.IDLE);
                 break;
             case GO_TO_CHEESE:
                 Position currentPosition = odometry.getPosition();
@@ -242,13 +243,13 @@ public class Robot {
             case AUTO_POWERSHOT:
                 double powershotAngle;
                 if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                    if (previousState.equals(State.CHEESE)){
+                    if (previousState.equals(State.CHEESE_SHOOTING)){
                         powershotAngle = Math.toRadians(-92);
                     } else {
                         powershotAngle = Math.toRadians(-93);
                     }
                 } else {
-                    if (previousState.equals(State.CHEESE)){
+                    if (previousState.equals(State.CHEESE_SHOOTING)){
                         powershotAngle = Math.toRadians(-93);
                     } else {
                         powershotAngle = Math.toRadians(-90);
@@ -502,7 +503,7 @@ public class Robot {
                         break;
                     case DRIVING_TO_CHEESE:
                         if (westCoast.isInDefaultMode()){
-                            setState(State.CHEESE);
+                            setState(State.CHEESE_SHOOTING);
                         }
                 }
                 break;
@@ -518,13 +519,13 @@ public class Robot {
                         if(shooter.areIndexerServosResting()){
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                                if (previousState.equals(State.CHEESE)){
+                                if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-95);
                                 } else {
                                     angle = Math.toRadians(-98);
                                 }
                             } else {
-                                if (previousState.equals(State.CHEESE)){
+                                if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-88);
                                 } else {
                                     angle = Math.toRadians(-84);
@@ -544,13 +545,13 @@ public class Robot {
                         if(shooter.areIndexerServosResting()){
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                                if (previousState.equals(State.CHEESE)){
+                                if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-103);
                                 } else {
                                     angle = Math.toRadians(-103);
                                 }
                             } else {
-                                if (previousState.equals(State.CHEESE)){
+                                if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-84);
                                 } else {
                                     angle = Math.toRadians(-81);
@@ -575,10 +576,45 @@ public class Robot {
                         break;
                 }
                 break;
-            case CHEESE:
+            case CHEESE_SHOOTING:
+                Gamepad gamepad1 = FTCUtilities.getOpMode().gamepad1;
+
                 if(shooter.isState(Shooter.ShooterState.POWERSHOT)){
                     setState(State.AUTO_POWERSHOT);
                 }
+
+                double leftOffset = Math.toRadians(90) * gamepad1.left_trigger;
+                double rightOffset = Math.toRadians(-90) * gamepad1.right_trigger;
+
+                double targetHeading = cheeseHeading + leftOffset + rightOffset;
+
+                westCoast.getTurnController().setSetPoint(targetHeading);
+
+                double error = targetHeading - odometry.getPosition().heading;
+
+                double cheesePower = westCoast.getTurnController().getOutput(odometry.getPosition().heading);
+
+                //Shooting spot
+                if (Math.abs(error) < Math.toRadians(.75)){
+                    boolean leftStickMoved = (Math.abs(gamepad1.left_stick_y) > 0.1);
+                    boolean triggersPressed = (gamepad1.left_trigger > 0.1) || (gamepad1.right_trigger > 0.1);
+
+                    if(!leftStickMoved && !triggersPressed){
+                        shooter.setState(Shooter.ShooterState.CHEESE);
+                    }
+                    cheesePower = 0;
+
+                } else if (Math.abs(cheesePower) < FastTurnConstants.minPower) {
+                    cheesePower = FastTurnConstants.minPower * Math.signum(cheesePower);
+                }
+
+                if (shooter.isState(Shooter.ShooterState.CHEESE)){
+                    westCoast.brakeMotors();
+                } else {
+                    System.out.println(cheesePower);
+                    westCoast.arcadeDrive(-gamepad1.left_stick_y, cheesePower);
+                }
+
                 break;
         }
 

@@ -28,7 +28,7 @@ public class Shooter {
 
     private IndexerState servoState = IndexerState.RESTING;
     private ShooterState shooterState = ShooterState.RESTING;
-    private long startTime, elapsedTime, repeatStartTime;
+    private long startTime, elapsedTime, cheeseStartTime;
     private final static long WAIT_TIME = 120; //175
 
     public Shooter() {
@@ -208,6 +208,12 @@ public class Shooter {
             case FAR:
                 controller.setSetPoint(ShooterConstants.farRPM);
                 break;
+            case CHEESE:
+                cheeseStartTime = FTCUtilities.getCurrentTimeMillis();
+                holderServo.setPosition(0);
+                indexerServo.setPosition(1);
+                servoState = IndexerState.PUSHING1;
+                break;
         }
     }
 
@@ -251,6 +257,12 @@ public class Shooter {
         lastRotations = shooterMotor1.getRotations();
 
         updateIndexerServos();
+
+        if (shooterState.equals(ShooterState.CHEESE)){
+            if (FTCUtilities.getCurrentTimeMillis() - startTime > 135){
+                setState(ShooterState.STANDARD);
+            }
+        }
 
         if(!isState(ShooterState.RESTING)){
             setPower(controller.getOutput(rpm));

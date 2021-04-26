@@ -60,19 +60,17 @@ public class WestCoast {
     private static final long WAIT_TIME = 100;
 
     private Direction direction;
-    private double cheeseHeading = Math.toRadians(279); //BLUE
 
     public enum State {
         IDLE,
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
         POINT_TURN,
-        CHEESE;
     }
 
     public enum MovementMode {
         ACCURATE,
-        FAST;
+        FAST
     }
 
     public enum Direction {
@@ -180,6 +178,10 @@ public class WestCoast {
         rampdownController.setStabilityThreshold(0.005);
     }
 
+    public PIDFController getTurnController(){
+        return turnController;
+    }
+
     private double getDistance(){
         return startDrivePos.distanceTo(odometry.getPosition());
 
@@ -242,6 +244,10 @@ public class WestCoast {
     }
     
     public void setState(State state){
+        if (state.equals(State.IDLE)){
+            brakeMotors();
+        }
+
         this.state = state;
     }
 
@@ -309,10 +315,6 @@ public class WestCoast {
         this.turnMode = turnMode;
     }
 
-    public void setCheeseHeading(double cheeseHeading){
-        this.cheeseHeading = cheeseHeading;
-    }
-
     public void update(){
         switch (state){
             case IDLE:
@@ -361,7 +363,6 @@ public class WestCoast {
 
                 break;
             case DRIVE_STRAIGHT:
-
                 if(waitingState){
                     if (FTCUtilities.getCurrentTimeMillis() - waitingStartTime > WAIT_TIME) {
                         state = defaultState;
@@ -425,29 +426,7 @@ public class WestCoast {
             case DRIVER_CONTROL:
                 arcadeDrive(-driverGamepad.left_stick_y, -driverGamepad.right_stick_x);
                 break;
-            case CHEESE:
-                double leftOffset = Math.toRadians(90) * driverGamepad.left_trigger;
-                double rightOffset = Math.toRadians(-90) * driverGamepad.right_trigger;
 
-                double targetHeading = cheeseHeading + leftOffset + rightOffset;
-
-                turnController.setSetPoint(targetHeading);
-
-                double error = targetHeading - odometry.getPosition().heading;
-
-                double cheesePower = turnController.getOutput(odometry.getPosition().heading);
-
-                if (Math.abs(error) < Math.toRadians(.75)){
-                    cheesePower = 0;
-                } else if (Math.abs(cheesePower) < FastTurnConstants.minPower) {
-                    cheesePower = FastTurnConstants.minPower * Math.signum(cheesePower);
-                }
-
-                dashboardTelemetry.addData("targetHeading", targetHeading);
-                dashboardTelemetry.addData("cheese power", cheesePower);
-
-
-                arcadeDrive(-driverGamepad.left_stick_y, cheesePower);
         }
     }
 }
