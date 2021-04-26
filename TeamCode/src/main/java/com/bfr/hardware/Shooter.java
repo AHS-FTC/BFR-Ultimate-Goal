@@ -210,6 +210,7 @@ public class Shooter {
                 break;
             case CHEESE:
                 cheeseStartTime = FTCUtilities.getCurrentTimeMillis();
+                startTime = FTCUtilities.getCurrentTimeMillis();
                 holderServo.setPosition(0);
                 indexerServo.setPosition(1);
                 servoState = IndexerState.PUSHING1;
@@ -259,8 +260,12 @@ public class Shooter {
         updateIndexerServos();
 
         if (shooterState.equals(ShooterState.CHEESE)){
-            if (FTCUtilities.getCurrentTimeMillis() - startTime > 135){
+            if (FTCUtilities.getCurrentTimeMillis() - cheeseStartTime > 200){
                 setState(ShooterState.STANDARD);
+                indexerServo.setPosition(0);
+                holderServo.setPosition(1);
+
+                servoState = IndexerState.RESTING;
             }
         }
 

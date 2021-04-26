@@ -597,9 +597,9 @@ public class Robot {
                 //Shooting spot
                 if (Math.abs(error) < Math.toRadians(.75)){
                     boolean leftStickMoved = (Math.abs(gamepad1.left_stick_y) > 0.1);
-                    boolean triggersPressed = (gamepad1.left_trigger > 0.1) || (gamepad1.right_trigger > 0.1);
+                    boolean triggersPressed = (gamepad1.left_trigger > 0.02) || (gamepad1.right_trigger > 0.02);
 
-                    if(!leftStickMoved && !triggersPressed){
+                    if((!leftStickMoved && !triggersPressed) && !shooter.isState(Shooter.ShooterState.CHEESE)){
                         shooter.setState(Shooter.ShooterState.CHEESE);
                     }
                     cheesePower = 0;
