@@ -18,6 +18,17 @@ import java.util.List;
 
 public class VisionUtil {
 
+    /**
+     * Prevents potential memory leak with contour lists
+     */
+    public static void emptyContourList(List<MatOfPoint> contours){
+        for (MatOfPoint m : contours) {
+            m.release();
+        }
+        contours.clear();
+
+    }
+
     public enum  HSVChannel{
         HUE(0),
         SATURATION(1),

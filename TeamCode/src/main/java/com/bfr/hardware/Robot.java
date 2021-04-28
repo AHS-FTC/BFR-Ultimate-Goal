@@ -7,6 +7,7 @@ import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.control.vision.BackboardDetector;
 import com.bfr.control.vision.StackDetector;
 import com.bfr.control.vision.VisionException;
+import com.bfr.control.vision.objects.Powershots;
 import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.MB1242System;
@@ -23,7 +24,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Robot {
     private WestCoast westCoast;
@@ -57,7 +60,10 @@ public class Robot {
     private CycleState cycleState = CycleState.TURNING_TO_INTAKE;
     private GoToHomeState homeState = GoToHomeState.TURNING_TO_HOME;
     private GoToCheeseState cheeseState = GoToCheeseState.TURNING_TO_CHEESE;
-    private PowershotState powershotState = PowershotState.TURN_TO_SHOT_1;
+    private PowershotState powershotState = PowershotState.TURN_TO_90;
+
+    private double midPowershotAngle;
+    private double rightPowershotAngle;
 
     //store the state before powershot so we can return to it
     private State previousState = state;
@@ -96,6 +102,7 @@ public class Robot {
     }
 
     private enum PowershotState {
+        TURN_TO_90,
         TURN_TO_SHOT_1,
         PSHOT_1,
         TURN_TO_SHOT_2,
@@ -241,23 +248,8 @@ public class Robot {
                 cheeseState = GoToCheeseState.TURNING_TO_CHEESE;
                 break;
             case AUTO_POWERSHOT:
-                double powershotAngle;
-                if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                    if (previousState.equals(State.CHEESE_SHOOTING)){
-                        powershotAngle = Math.toRadians(-92);
-                    } else {
-                        powershotAngle = Math.toRadians(-93);
-                    }
-                } else {
-                    if (previousState.equals(State.CHEESE_SHOOTING)){
-                        powershotAngle = Math.toRadians(-93);
-                    } else {
-                        powershotAngle = Math.toRadians(-90);
-                    }
-                }
-                westCoast.startTurnGlobal(powershotAngle);
-
-                powershotState = PowershotState.TURN_TO_SHOT_1;
+                westCoast.startTurnGlobal(Math.toRadians(-90.0));
+                powershotState = PowershotState.TURN_TO_90;
                 break;
         }
 
@@ -307,6 +299,10 @@ public class Robot {
 
     public WobbleArm getWobbleArm() {
         return wobbleArm;
+    }
+
+    public BackboardDetector getBackboardDetector() {
+        return backboardDetector;
     }
 
     public void stopAll(){
@@ -509,6 +505,29 @@ public class Robot {
                 break;
             case AUTO_POWERSHOT:
                 switch (powershotState){
+                    case TURN_TO_90:
+                        if(westCoast.isInDefaultMode()){
+                            double leftPowershotAngle;
+                            Map<Powershots.Position, Double> anglesToPowershots;
+                            double currentHeading = odometry.getPosition().heading + Math.toRadians(3.0);
+
+                            try {
+                                anglesToPowershots = backboardDetector.getAnglesToPowershots();
+                            } catch (VisionException e) {
+                                ControlCenter.addNotice(e.getMessage());
+                                setState(previousState);
+                                break;
+                            }
+
+                            midPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.MID);
+                            rightPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.RIGHT);
+                            leftPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.LEFT);
+
+                            westCoast.startTurnGlobal(leftPowershotAngle);
+
+                            powershotState = PowershotState.TURN_TO_SHOT_1;
+                        }
+                        break;
                     case TURN_TO_SHOT_1:
                         if(westCoast.isInDefaultMode()){
                             shooter.runIndexerServos();
@@ -519,11 +538,7 @@ public class Robot {
                         if(shooter.areIndexerServosResting()){
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                                if (previousState.equals(State.CHEESE_SHOOTING)){
-                                    angle = Math.toRadians(-95);
-                                } else {
-                                    angle = Math.toRadians(-98);
-                                }
+                                angle = midPowershotAngle;
                             } else {
                                 if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-88);
@@ -545,11 +560,7 @@ public class Robot {
                         if(shooter.areIndexerServosResting()){
                             double angle;
                             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-                                if (previousState.equals(State.CHEESE_SHOOTING)){
-                                    angle = Math.toRadians(-103);
-                                } else {
-                                    angle = Math.toRadians(-103);
-                                }
+                                angle = rightPowershotAngle;
                             } else {
                                 if (previousState.equals(State.CHEESE_SHOOTING)){
                                     angle = Math.toRadians(-84);
@@ -564,7 +575,6 @@ public class Robot {
                     case TURN_TO_SHOT_3:
                         if(westCoast.isInDefaultMode()){
                             shooter.runIndexerServos();
-                            shooter.setState(Shooter.ShooterState.POWERSHOT);
                             powershotState = PowershotState.PSHOT_3;
                         }
                         break;
@@ -578,10 +588,6 @@ public class Robot {
                 break;
             case CHEESE_SHOOTING:
                 Gamepad gamepad1 = FTCUtilities.getOpMode().gamepad1;
-
-                if(shooter.isState(Shooter.ShooterState.POWERSHOT)){
-                    setState(State.AUTO_POWERSHOT);
-                }
 
                 double leftOffset = Math.toRadians(90) * gamepad1.left_trigger;
                 double rightOffset = Math.toRadians(-90) * gamepad1.right_trigger;
@@ -598,8 +604,9 @@ public class Robot {
                 if (Math.abs(error) < Math.toRadians(.75)){
                     boolean leftStickMoved = (Math.abs(gamepad1.left_stick_y) > 0.1);
                     boolean triggersPressed = (gamepad1.left_trigger > 0.02) || (gamepad1.right_trigger > 0.02);
+                    boolean wrongMode = !shooter.isState(Shooter.ShooterState.CHEESE) && !shooter.isState(Shooter.ShooterState.POWERSHOT);
 
-                    if((!leftStickMoved && !triggersPressed) && !shooter.isState(Shooter.ShooterState.CHEESE)){
+                    if((!leftStickMoved && !triggersPressed) && wrongMode){
                         shooter.setState(Shooter.ShooterState.CHEESE);
                     }
                     cheesePower = 0;
@@ -623,9 +630,7 @@ public class Robot {
         mb1242System.update();
 
         if(FTCUtilities.isDashboardMode()){
-            //todo remove
-            dashboardTelemetry.addLine(previousState.toString());
-            dashboardTelemetry.update();
+           dashboardTelemetry.update();
         }
     }
 }

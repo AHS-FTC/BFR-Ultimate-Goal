@@ -1,6 +1,9 @@
 package com.bfr.control.vision;
 
 
+import com.bfr.control.vision.objects.Powershots;
+
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
@@ -9,7 +12,9 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BackboardDetector {
     private Cam cam;
@@ -18,10 +23,11 @@ public class BackboardDetector {
 
     private List<MatOfPoint> contours = new ArrayList<>();
     private List<MatOfPoint> validContours = new ArrayList<>();
-
+    private List<MatOfPoint> powershotContours = new ArrayList<>();
 
 
     private BackboardThresholdPipeline backboardThresholdPipeline = new BackboardThresholdPipeline();
+    private PowershotThresholdPipeline powershotThresholdPipeline = new PowershotThresholdPipeline();
 
     public BackboardDetector() {
         cam = new Cam("shooter_cam", 1920, 1080, Math.toRadians(87.0));
@@ -36,6 +42,64 @@ public class BackboardDetector {
     }
 
     public double getAngleToGoal() throws VisionException {
+        MatOfPoint goalContour = getGoalContour();
+
+        Rect r = Imgproc.boundingRect(goalContour);
+        double x = (r.br().x + r.tl().x) / 2.0;
+
+        goalContour.release();
+
+        return cam.getAngleFromX(x);
+    }
+
+    public Map<Powershots.Position, Double> getAnglesToPowershots() throws VisionException{
+        MatOfPoint goalContour = getGoalContour();
+
+        Rect r = Imgproc.boundingRect(goalContour);
+
+        goalContour.release();
+
+        int cropHeight = (int) (r.height / 1.35);
+
+        //crop a region near the goal where the powershots should (roughly) be
+        Rect cropRegion = new Rect((int)r.br().x, (int)(r.br().y - (cropHeight * .7)), (int) (r.width * 1.35), cropHeight);
+
+        Mat threshMat = powershotThresholdPipeline.processFrame(currentFrame);
+
+        Mat croppedMat;
+        try {
+            croppedMat = threshMat.submat(cropRegion);
+        } catch (CvException e){
+            throw new VisionException("Powershots were out of frame");
+        }
+
+        //Imgproc.rectangle(threshMat, cropRegion, new Scalar(255), 3);
+        cam.setOutputMat(croppedMat);
+
+        VisionUtil.emptyContourList(powershotContours);
+        Imgproc.findContours(croppedMat, powershotContours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        Powershots powershots = new Powershots(powershotContours);
+
+        Map<Powershots.Position, Double> anglesTo = new HashMap<>();
+
+
+        //convert powershot x positions into angles and return
+        for (Powershots.Position p : Powershots.Position.values()){
+            //add back in the x value of the crop region to move from the ROI to the full frame image.
+            double angleTo = cam.getAngleFromX(powershots.xPositionsMap.get(p) + cropRegion.x);
+            anglesTo.put(p, angleTo);
+        }
+
+        threshMat.release();
+
+        croppedMat.release();
+
+        return anglesTo;
+    }
+
+
+    private MatOfPoint getGoalContour() throws VisionException{
         if (!cam.isStreaming()){
             throw new VisionException("Attempted to get the angle to goal before the camera started streaming");
         }
@@ -44,23 +108,21 @@ public class BackboardDetector {
 
         Mat thresholded = backboardThresholdPipeline.processFrame(currentFrame);
 
-        emptyContourList(contours);
+        VisionUtil.emptyContourList(contours);
         Imgproc.findContours(thresholded, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
 
         if(contours.size() == 0){
             throw new VisionException("No contours found");
         }
 
-        emptyContourList(validContours);
+        VisionUtil.emptyContourList(validContours);
         validContours = validateContours(contours);
 
-        Mat rgb = new Mat();
-        Imgproc.cvtColor(thresholded, rgb, Imgproc.COLOR_GRAY2RGB);
-        Imgproc.drawContours(rgb, validContours,-1, new Scalar(69, 255, 150), 3);
-        cam.setOutputMat(rgb);
-        rgb.release();
-
-        System.out.println(validContours.size());
+//        Mat rgb = new Mat();
+//        Imgproc.cvtColor(thresholded, rgb, Imgproc.COLOR_GRAY2RGB);
+//        Imgproc.drawContours(rgb, validContours,-1, new Scalar(69, 255, 150), 3);
+//        cam.setOutputMat(rgb);
+//        rgb.release();
 
         if(validContours.size() == 0){
             throw new VisionException("No valid contours found");
@@ -70,24 +132,9 @@ public class BackboardDetector {
             throw new VisionException("Multiple potential goals found");
         }
 
-        MatOfPoint goalContour = validContours.get(0);
-
-        Rect r = Imgproc.boundingRect(goalContour);
-        double x = (r.br().x + r.tl().x) / 2.0;
-
         thresholded.release();
-        return cam.getAngleFromX(x);
-    }
 
-    /**
-     * Prevents potential memory leak with contour lists
-     */
-    private static void emptyContourList(List<MatOfPoint> contours){
-        for (MatOfPoint m : contours) {
-            m.release();
-        }
-        contours.clear();
-
+        return validContours.get(0);
     }
 
     private static List<MatOfPoint> validateContours(List<MatOfPoint> contours){

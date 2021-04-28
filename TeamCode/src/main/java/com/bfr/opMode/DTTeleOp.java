@@ -1,6 +1,8 @@
 package com.bfr.opMode;
 
 import com.bfr.control.path.Position;
+import com.bfr.control.vision.VisionException;
+import com.bfr.control.vision.objects.Powershots;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.Shooter;
@@ -17,6 +19,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.opencv.core.Mat;
 
 import java.io.IOException;
+import java.util.Map;
 
 import static com.bfr.hardware.Intake.State.*;
 import static com.bfr.util.Controller.Input.*;
@@ -65,7 +68,13 @@ public class DTTeleOp extends OpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
 
         shooter = robot.getShooter();
-        controller1.setAction(A, () -> shooter.runIndexerServos());
+        controller1.setAction(A, () -> {
+            if (shooter.isState(Shooter.ShooterState.POWERSHOT)) {
+                robot.setState(Robot.State.AUTO_POWERSHOT);
+            } else {
+                shooter.runIndexerServos();
+            }
+        });
 
         controller1.setAction(B, () -> robot.nextCycleState());
 
@@ -110,7 +119,19 @@ public class DTTeleOp extends OpMode {
 
         controller2.setAction(B, () -> robot.setState(Robot.State.GO_TO_CHEESE));
 
-        controller2.setAction(Y, () -> wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED));
+        controller2.setAction(Y, () -> {
+            try {
+                Map<Powershots.Position, Double> anglesToPowershots = robot.getBackboardDetector().getAnglesToPowershots();
+
+                ControlCenter.clearNotices();
+                ControlCenter.addNotice("left: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.LEFT)));
+                ControlCenter.addNotice("mid: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.MID)));
+                ControlCenter.addNotice("right: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.RIGHT)));
+
+            } catch (VisionException e) {
+                ControlCenter.addNotice(e.getMessage());
+            }
+        });
 
         controller2.setAction(X, () -> robot.getBrolafActuator().setPosition(1));
 

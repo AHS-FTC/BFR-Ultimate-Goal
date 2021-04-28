@@ -80,4 +80,8 @@ public class ControlCenter {
     }
 
     public static void setRobotState(Robot.State state){robotState = state;}
+
+    public static void clearNotices(){
+        notices.clear();
+    }
 }

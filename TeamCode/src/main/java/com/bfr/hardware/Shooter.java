@@ -204,6 +204,9 @@ public class Shooter {
                 break;
             case POWERSHOT:
                 controller.setSetPoint(ShooterConstants.powerShotRPM);
+                holderServo.setPosition(1);
+                indexerServo.setPosition(0);
+                servoState = IndexerState.RESTING;
                 break;
             case FAR:
                 controller.setSetPoint(ShooterConstants.farRPM);
