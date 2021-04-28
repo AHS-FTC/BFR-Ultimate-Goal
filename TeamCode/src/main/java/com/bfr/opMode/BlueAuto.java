@@ -210,7 +210,7 @@ public class BlueAuto extends LinearOpMode {
         Intake intake = robot.getIntake();
 
         wobbleArm.setState(WobbleArm.State.HOLDING);
-        robot.driveStraight(0.8, 109, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.7, 109, WestCoast.Direction.REVERSE);
 
         wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
         robot.sleep(500);

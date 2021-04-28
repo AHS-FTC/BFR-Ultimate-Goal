@@ -6,6 +6,7 @@ import com.bfr.control.vision.objects.Powershots;
 import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -74,22 +75,32 @@ public class BackboardDetector {
         }
 
         //Imgproc.rectangle(threshMat, cropRegion, new Scalar(255), 3);
-        cam.setOutputMat(croppedMat);
+        //cam.setOutputMat(croppedMat);
 
         VisionUtil.emptyContourList(powershotContours);
         Imgproc.findContours(croppedMat, powershotContours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+
 
         Powershots powershots = new Powershots(powershotContours);
 
         Map<Powershots.Position, Double> anglesTo = new HashMap<>();
 
+        //Imgproc.drawContours(croppedMat, powershots.bigContours,-1, new Scalar(150, 150, 150), 3);
 
         //convert powershot x positions into angles and return
         for (Powershots.Position p : Powershots.Position.values()){
+
+
+            double xPos = powershots.xPositionsMap.get(p);
+            //draw debugging line on x pos
+            Imgproc.line(croppedMat, new Point(xPos, 0), new Point(xPos, croppedMat.height() - 1), new Scalar(100), 2);
+
+
             //add back in the x value of the crop region to move from the ROI to the full frame image.
-            double angleTo = cam.getAngleFromX(powershots.xPositionsMap.get(p) + cropRegion.x);
+            double angleTo = cam.getAngleFromX(xPos + cropRegion.x);
             anglesTo.put(p, angleTo);
         }
+        cam.setOutputMat(croppedMat);
 
         threshMat.release();
 

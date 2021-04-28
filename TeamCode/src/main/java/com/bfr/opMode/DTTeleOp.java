@@ -69,6 +69,7 @@ public class DTTeleOp extends OpMode {
 
         shooter = robot.getShooter();
         controller1.setAction(A, () -> {
+
             if (shooter.isState(Shooter.ShooterState.POWERSHOT)) {
                 robot.setState(Robot.State.AUTO_POWERSHOT);
             } else {

@@ -29,7 +29,6 @@ public class Powershots {
             throw new VisionException("Unable to find three or more contours when looking for powershots");
         }
 
-
         //find three largest contours
         List<PotentialContour> potentialContours = new ArrayList<>();
 
@@ -51,6 +50,7 @@ public class Powershots {
 
             xPositions[i] = x;
         }
+
 
         //sort xPositions ascending
         Arrays.sort(xPositions);

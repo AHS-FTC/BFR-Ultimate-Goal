@@ -23,7 +23,7 @@ public class Shooter {
     private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     //private RunningAvg runningAvg = new RunningAvg(20);
-    private RingBuffer<DataPoint> ringBuffer = new RingBuffer(10, new DataPoint(0, FTCUtilities.getCurrentTimeMillis()));
+    private RingBuffer<DataPoint> ringBuffer = new RingBuffer(30, new DataPoint(0, FTCUtilities.getCurrentTimeMillis()));
     private PIDFController controller;
 
     private IndexerState servoState = IndexerState.RESTING;
