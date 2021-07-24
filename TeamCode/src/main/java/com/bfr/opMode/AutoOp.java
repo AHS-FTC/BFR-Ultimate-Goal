@@ -3,6 +3,7 @@ package com.bfr.opMode;
 import android.graphics.Rect;
 
 import com.bfr.control.path.Position;
+import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.SerialServo;
@@ -26,20 +27,14 @@ public class AutoOp extends LinearOpMode {
 
         Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
-       // westCoast.setTurnMode(WestCoast.MovementMode.FAST);
-       // westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
+        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
 
-        westCoast.startTurnLocal(Math.toRadians(90));
-//        Intake intake = robot.getIntake();
-        robot.getShooter().setState(Shooter.ShooterState.RESTING);
-//
-//        WobbleArm wobbleArm = new WobbleArm();
-//
-//        wobbleArm.setState(WobbleArm.State.STORED);
-//
         waitForStart();
 
+        //westCoast.startTurnLocal(Math.toRadians(25));
+
         while (opModeIsActive()) {
+            westCoast.setTankPower(FastTurnConstants.minPower, -FastTurnConstants.minPower);
             robot.update();
         }
 

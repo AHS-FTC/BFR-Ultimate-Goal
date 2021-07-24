@@ -9,6 +9,6 @@ public class FastTurnConstants {
     public static double kI = 0.0;
     public static double kD = 100;
     public static double finishedThreshold = 1.5/CONVERSION_CONSTANT; //The maximum size of the error in which the turn is considered finished
-    public static double minPower = 0.155; //The minimum power
+    public static double minPower = 0.1; //The minimum power
     public static double maxPower = 0.8;
 }

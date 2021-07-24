@@ -17,7 +17,11 @@ public class OdometerImpl implements Odometer {
      * @param flip Whether or not this returns flipped values. Probably determine this by experimentation.
      */
     public OdometerImpl(String deviceName, double wheelDiameter, boolean flip, double ticksPerRotation) {
-        motor = new Motor(deviceName, ticksPerRotation, flip);
+        motor = new Motor(deviceName, ticksPerRotation, false);
+
+        if (flip) {
+            motor.flipEncoder();
+        }
         reset();
         wheelCircumference = wheelDiameter * Math.PI;
     }

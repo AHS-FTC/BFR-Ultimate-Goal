@@ -134,9 +134,19 @@ public class DTTeleOp extends OpMode {
 //            }
         });
 
-        controller2.setAction(X, () -> robot.getBrolafActuator().setPosition(1));
+        controller2.setAction(X, () -> {
+            if(!wobbleArm.getState().equals(WobbleArm.State.DEPLOYED_OPEN)) {
+                wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
+            } else {
+                wobbleArm.setState(WobbleArm.State.DEPLOYED_CLOSED);
+            }
+        });
 
-        controller2.setAction(A, () -> robot.getMb1242System().runSystem());
+        controller2.setAction(A, () -> {
+            if(!wobbleArm.getState().equals(WobbleArm.State.RETRACTING)) {
+                wobbleArm.setState(WobbleArm.State.RETRACTING);
+            }
+        });
 
         controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
         controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));

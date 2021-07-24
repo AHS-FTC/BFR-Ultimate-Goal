@@ -12,6 +12,7 @@ import com.bfr.control.pidf.AccurateTurnConstants;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.OpModeType;
 import com.bfr.util.math.Circle;
 import com.bfr.util.math.FTCMath;
 import com.bfr.util.math.Line;
@@ -348,6 +349,11 @@ public class WestCoast {
                     FTCUtilities.updateTelemetry();
                 }
 
+                if(FTCUtilities.getOpModeType().equals(OpModeType.TELE) && Math.abs(driverGamepad.right_stick_x) > 0.2) {
+                    setState(State.DRIVER_CONTROL);
+                    break;
+                }
+
                 double turnFinishedThreshold;
                 if (turnMode.equals(MovementMode.ACCURATE)){
                     turnFinishedThreshold = AccurateTurnConstants.finishedThreshold;
@@ -374,7 +380,7 @@ public class WestCoast {
                 double finalMaxTurnPower = FTCMath.nearestToZero(turnPower, turnMaxPower * Math.signum(angleError));
                 double turnFinalPower = FTCMath.furthestFromZero(finalMaxTurnPower, turnMinPower * Math.signum(angleError));
 
-                setTankPower(-turnFinalPower, turnFinalPower);
+                setTankPower(turnFinalPower, -turnFinalPower);
 
                 break;
             case DRIVE_STRAIGHT:
@@ -439,7 +445,7 @@ public class WestCoast {
                 setTankPower((finalPower * direction.sign) - turnCorrection, (finalPower * direction.sign) + turnCorrection);
                 break;
             case DRIVER_CONTROL:
-                arcadeDrive(-driverGamepad.left_stick_y, -driverGamepad.right_stick_x);
+                arcadeDrive(-driverGamepad.left_stick_y, driverGamepad.right_stick_x);
                 break;
             case HOLD_HEADING:
                 double motorPower = turnController.getOutput(odometry.getPosition().heading);

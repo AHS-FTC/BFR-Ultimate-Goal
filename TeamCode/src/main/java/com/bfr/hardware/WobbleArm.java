@@ -1,6 +1,7 @@
 package com.bfr.hardware;
 
 import com.bfr.util.FTCUtilities;
+import com.bfr.util.OpModeType;
 
 public class WobbleArm {
     private SerialServo gripper;
@@ -57,10 +58,31 @@ public class WobbleArm {
         }
     }
 
+    public State getState() {
+        return state;
+    }
+
     public void update(){
-        if(state.equals(State.STORED) && FTCUtilities.getCurrentTimeMillis() - lastStateChange > 500){
-            arm.setPosition(0);
-            setState(State.STORED_IDLE);
+
+        switch (state) {
+            case STORED:
+                if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 500) {
+                    arm.setPosition(0);
+                    setState(State.STORED_IDLE);
+                }
+                break;
+            case DEPLOYED_CLOSED:
+                if(FTCUtilities.getOpModeType().equals(OpModeType.TELE)){
+                    if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 250) {
+                        setState(State.HOLDING);
+                    }
+                }
+                break;
+            case RETRACTING:
+                if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 500) {
+                    setState(State.HOLDING);
+                }
+                break;
         }
     }
 }
