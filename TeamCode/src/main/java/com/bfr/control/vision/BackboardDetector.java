@@ -67,6 +67,7 @@ public class BackboardDetector {
 
         Mat threshMat = powershotThresholdPipeline.processFrame(currentFrame);
 
+
         Mat croppedMat;
         try {
             croppedMat = threshMat.submat(cropRegion);
@@ -85,8 +86,6 @@ public class BackboardDetector {
 
         Map<Powershots.Position, Double> anglesTo = new HashMap<>();
 
-        //Imgproc.drawContours(croppedMat, powershots.bigContours,-1, new Scalar(150, 150, 150), 3);
-
         //convert powershot x positions into angles and return
         for (Powershots.Position p : Powershots.Position.values()){
 
@@ -100,7 +99,8 @@ public class BackboardDetector {
             double angleTo = cam.getAngleFromX(xPos + cropRegion.x);
             anglesTo.put(p, angleTo);
         }
-        cam.setOutputMat(croppedMat);
+
+        cam.setOutputMat(threshMat);
 
         threshMat.release();
 
@@ -110,7 +110,7 @@ public class BackboardDetector {
     }
 
 
-    private MatOfPoint getGoalContour() throws VisionException{
+    private MatOfPoint getGoalContour() throws VisionException {
         if (!cam.isStreaming()){
             throw new VisionException("Attempted to get the angle to goal before the camera started streaming");
         }
@@ -148,7 +148,7 @@ public class BackboardDetector {
         return validContours.get(0);
     }
 
-    private static List<MatOfPoint> validateContours(List<MatOfPoint> contours){
+    public static List<MatOfPoint> validateContours(List<MatOfPoint> contours){
         List<MatOfPoint> retVal = new ArrayList<>();
 
         //remove contours outside of valid bounding box area, aspect ratio

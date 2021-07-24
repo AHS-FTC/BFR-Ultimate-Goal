@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Shooter
  */
 public class Shooter {
-    private Motor shooterMotor1, shooterMotor2;
+    private MotorPair motors;
 
     private SerialServo indexerServo, holderServo;
 
@@ -23,7 +23,7 @@ public class Shooter {
     private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     //private RunningAvg runningAvg = new RunningAvg(20);
-    private RingBuffer<DataPoint> ringBuffer = new RingBuffer(30, new DataPoint(0, FTCUtilities.getCurrentTimeMillis()));
+    private RingBuffer<DataPoint> ringBuffer = new RingBuffer<>(15, new DataPoint(0, FTCUtilities.getCurrentTimeMillis()));
     private PIDFController controller;
 
     private IndexerState servoState = IndexerState.RESTING;
@@ -32,8 +32,8 @@ public class Shooter {
     private final static long WAIT_TIME = 120; //175
 
     public Shooter() {
-        shooterMotor1 = new Motor("s1", 41.0,true);
-        shooterMotor2 = new Motor("s2", 41.0,true);
+        Motor shooterMotor1 = new Motor("s1", 41.0,true);
+        Motor shooterMotor2 = new Motor("s2", 41.0,true);
 
         indexerServo = new SerialServo("indexer", false);
         holderServo = new SerialServo("holder", false);
@@ -46,7 +46,9 @@ public class Shooter {
         shooterMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooterMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        lastRotations = shooterMotor1.getRotations();
+        motors = new MotorPair(shooterMotor1, shooterMotor2);
+
+        lastRotations = motors.getRotations();
 
         PIDFConfig pidfConfig = new PIDFConfig() {
             @Override
@@ -73,7 +75,9 @@ public class Shooter {
                     return ShooterConstants.powerShotFeedforward;
                 } else if (setPoint == ShooterConstants.farRPM){
                     return ShooterConstants.farFeedForward;
-                } else return 0.0;
+                } else if (setPoint == ShooterConstants.midGoalRPM){
+                    return ShooterConstants.midGoalFeedForward;
+                } return 0.0;
             }
         };
 
@@ -81,8 +85,7 @@ public class Shooter {
     }
 
     public void setPower(double power){
-        shooterMotor1.setPower(power);
-        shooterMotor2.setPower(power);
+        motors.setPower(power);
     }
 
     private enum IndexerState {
@@ -109,7 +112,8 @@ public class Shooter {
         STANDARD,
         POWERSHOT,
         FAR,
-        CHEESE
+        CHEESE,
+        MID
     }
 
     /**
@@ -218,6 +222,8 @@ public class Shooter {
                 indexerServo.setPosition(1);
                 servoState = IndexerState.PUSHING1;
                 break;
+            case MID:
+                controller.setSetPoint(ShooterConstants.midGoalRPM);
         }
     }
 
@@ -245,7 +251,7 @@ public class Shooter {
 
     public void update(long bulkReadTimestamp){
 
-        DataPoint current = new DataPoint(shooterMotor1.getRotations(), bulkReadTimestamp);
+        DataPoint current = new DataPoint(motors.getRotations(), bulkReadTimestamp);
         DataPoint last = ringBuffer.insert(current);
 
         double deltaRotations = current.rotations - last.rotations;
@@ -258,12 +264,12 @@ public class Shooter {
 
         dashboardTelemetry.addData("Shooter RPM", rpm);
 
-        lastRotations = shooterMotor1.getRotations();
+        lastRotations = motors.getRotations();
 
         updateIndexerServos();
 
         if (shooterState.equals(ShooterState.CHEESE)){
-            if (FTCUtilities.getCurrentTimeMillis() - cheeseStartTime > 200){
+            if (FTCUtilities.getCurrentTimeMillis() - cheeseStartTime > 240){
                 setState(ShooterState.STANDARD);
                 indexerServo.setPosition(0);
                 holderServo.setPosition(1);

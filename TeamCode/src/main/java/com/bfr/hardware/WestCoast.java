@@ -25,7 +25,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * West coast drive / 6 Wheel drive for Deep Temerity
  */
 public class WestCoast {
-    private Motor leftMotor, rightMotor;
+    private ThrottledMotorPair leftMotors, rightMotors;
 
     private static Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
@@ -66,6 +66,7 @@ public class WestCoast {
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
         POINT_TURN,
+        HOLD_HEADING
     }
 
     public enum MovementMode {
@@ -89,10 +90,17 @@ public class WestCoast {
         this.odometry = odometry;
         driverGamepad = FTCUtilities.getOpMode().gamepad1;
 
-        leftMotor = new Motor("L", 1440.0,false);
-        rightMotor = new Motor("R", 1440.0,false);
+        Motor leftMotor1 = new Motor("L1", 1440.0,false);
+        Motor rightMotor1 = new Motor("R1", 1440.0,false);
+        Motor leftMotor2 = new Motor("L2", 1440.0,false);
+        Motor rightMotor2 = new Motor("R2", 1440.0,false);
 
-        leftMotor.flipEncoder();
+        leftMotor1.flipEncoder();
+        leftMotor2.flipEncoder();
+
+        leftMotors = new ThrottledMotorPair(leftMotor1, leftMotor2);
+        rightMotors = new ThrottledMotorPair(rightMotor1, rightMotor2);
+
 
         straightController = new PIDFController(new PIDFConfig() {
             @Override
@@ -189,11 +197,6 @@ public class WestCoast {
 //        return avgRotations * INCHES_PER_ROTATION;
     }
 
-    public void resetEncoders(){
-        leftMotor.zeroDistance();
-        rightMotor.zeroDistance();
-    }
-
     public boolean isInDefaultMode(){
         return state.equals(defaultState);
     }
@@ -239,31 +242,40 @@ public class WestCoast {
         leftPower += turn;
         rightPower -= turn;
 
-        leftMotor.setPower(leftPower);
-        rightMotor.setPower(rightPower);
+        leftMotors.setPower(leftPower);
+
+        rightMotors.setPower(rightPower);
     }
     
     public void setState(State state){
-        if (state.equals(State.IDLE)){
-            brakeMotors();
+        switch (state) {
+            case IDLE:
+                brakeMotors();
+                break;
+            case HOLD_HEADING:
+                turnController.reset(odometry.getPosition().heading, odometry.getPosition().heading);
+                break;
         }
 
         this.state = state;
     }
 
     public void setTankPower(double l, double r){
-        leftMotor.setPower(l);
-        rightMotor.setPower(r);
+        leftMotors.setPower(l);
+
+        rightMotors.setPower(r);
     }
 
     public void arcadeDrive(double forward, double turn){
-        leftMotor.setPower(forward - turn);
-        rightMotor.setPower(forward + turn);
+        leftMotors.setPower(forward - turn);
+
+        rightMotors.setPower(forward + turn);
     }
 
     public void brakeMotors(){
-        leftMotor.setPower(0.0);
-        rightMotor.setPower(0.0);
+        leftMotors.setPower(0.0);
+
+        rightMotors.setPower(0.0);
     }
 
     public void startDriverControl(){
@@ -292,8 +304,8 @@ public class WestCoast {
         state = State.POINT_TURN;
     }
 
-    public void startTurnLocal(double globalAngle){
-        startTurnGlobal(odometry.getPosition().heading + globalAngle);
+    public void startTurnLocal(double localAngle){
+        startTurnGlobal(odometry.getPosition().heading + localAngle);
     }
 
     public State getState() {
@@ -316,6 +328,9 @@ public class WestCoast {
     }
 
     public void update(){
+        leftMotors.update();
+        rightMotors.update();
+
         switch (state){
             case IDLE:
                 break;
@@ -426,7 +441,9 @@ public class WestCoast {
             case DRIVER_CONTROL:
                 arcadeDrive(-driverGamepad.left_stick_y, -driverGamepad.right_stick_x);
                 break;
-
+            case HOLD_HEADING:
+                double motorPower = turnController.getOutput(odometry.getPosition().heading);
+                setTankPower(-motorPower, motorPower);
         }
     }
 }

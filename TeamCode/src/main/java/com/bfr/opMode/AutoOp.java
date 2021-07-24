@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @Autonomous(name="Testing OpMode", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class AutoOp extends LinearOpMode {
 
     @Override
@@ -26,19 +26,22 @@ public class AutoOp extends LinearOpMode {
 
         Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
-        westCoast.setTurnMode(WestCoast.MovementMode.FAST);
-        westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
-        Intake intake = robot.getIntake();
+       // westCoast.setTurnMode(WestCoast.MovementMode.FAST);
+       // westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
+
+        westCoast.startTurnLocal(Math.toRadians(90));
+//        Intake intake = robot.getIntake();
         robot.getShooter().setState(Shooter.ShooterState.RESTING);
-
-        WobbleArm wobbleArm = new WobbleArm();
-
-        wobbleArm.setState(WobbleArm.State.STORED);
-
+//
+//        WobbleArm wobbleArm = new WobbleArm();
+//
+//        wobbleArm.setState(WobbleArm.State.STORED);
+//
         waitForStart();
 
-        wobbleArm.setState(WobbleArm.State.DEPLOYED_OPEN);
+        while (opModeIsActive()) {
+            robot.update();
+        }
 
-        sleep(1000);
     }
 }

@@ -6,10 +6,8 @@ package com.bfr.hardware;
  * @author alex and andie
  */
 public class Intake {
-    private Motor intakeMotor1, intakeMotor2;
+    private MotorPair motors;
     private State state = State.STOPPED;
-
-    private SerialServo nineTails;
 
     public enum State {
         STOPPED(0),
@@ -37,9 +35,10 @@ public class Intake {
 //    }
 
     public Intake() {
-        intakeMotor1 = new Motor("intake_1", 103.6,true);
-        intakeMotor2 = new Motor("intake_2", 103.6, true);
+        Motor intakeMotor1 = new Motor("intake_1", 103.6, true);
+        Motor intakeMotor2 = new Motor("intake_2", 103.6, true);
 
+        motors = new MotorPair(intakeMotor1, intakeMotor2);
     }
 
 //    public void setNineTailsState(NineTailsState state){
@@ -47,8 +46,7 @@ public class Intake {
 //    }
 
     public void setPower(double power){
-        intakeMotor1.setPower(power);
-        intakeMotor2.setPower(power);
+        motors.setPower(power);
     }
 
     public State getState() {

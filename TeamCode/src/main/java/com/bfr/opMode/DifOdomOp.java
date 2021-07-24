@@ -32,8 +32,8 @@ public class DifOdomOp extends OpMode {
     public void init() {
         FTCUtilities.setOpMode(this);
 
-        left = new OdometerImpl("l_odo",1.885 ,true, 1440.0);
-        right = new OdometerImpl("r_odo", 1.89, false, 1440.0);
+        left = new OdometerImpl("R1",1.885 ,true, 1440.0);
+        right = new OdometerImpl("R2", 1.89, false, 1440.0);
 
         odometry = new DifOdometry(left, right, Position.origin,14.9);
 

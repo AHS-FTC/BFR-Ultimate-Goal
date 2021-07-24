@@ -21,7 +21,7 @@ public class WobbleArm {
         DEPLOYED_CLOSED,
         RETRACTING;
     }
-
+    
     public WobbleArm() {
         gripper = new SerialServo("gripper", false);
         arm = new SerialServo("arm", true);

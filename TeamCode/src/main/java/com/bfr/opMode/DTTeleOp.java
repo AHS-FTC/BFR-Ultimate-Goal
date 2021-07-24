@@ -83,7 +83,7 @@ public class DTTeleOp extends OpMode {
             if (!shooter.isState(Shooter.ShooterState.RESTING)){
                 shooter.setState(Shooter.ShooterState.RESTING);
             } else {
-                shooter.setState(Shooter.ShooterState.STANDARD);
+                shooter.setState(Shooter.ShooterState.MID);
             }
         });
 
@@ -121,17 +121,17 @@ public class DTTeleOp extends OpMode {
         controller2.setAction(B, () -> robot.setState(Robot.State.GO_TO_CHEESE));
 
         controller2.setAction(Y, () -> {
-            try {
-                Map<Powershots.Position, Double> anglesToPowershots = robot.getBackboardDetector().getAnglesToPowershots();
-
-                ControlCenter.clearNotices();
-                ControlCenter.addNotice("left: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.LEFT)));
-                ControlCenter.addNotice("mid: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.MID)));
-                ControlCenter.addNotice("right: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.RIGHT)));
-
-            } catch (VisionException e) {
-                ControlCenter.addNotice(e.getMessage());
-            }
+//            try {
+//                //Map<Powershots.Position, Double> anglesToPowershots = robot.getBackboardDetector().getAnglesToPowershots();
+//
+////                ControlCenter.clearNotices();
+////                ControlCenter.addNotice("left: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.LEFT)));
+////                ControlCenter.addNotice("mid: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.MID)));
+////                ControlCenter.addNotice("right: " + Math.toDegrees(anglesToPowershots.get(Powershots.Position.RIGHT)));
+//
+//            } catch (VisionException e) {
+//                ControlCenter.addNotice(e.getMessage());
+//            }
         });
 
         controller2.setAction(X, () -> robot.getBrolafActuator().setPosition(1));
@@ -152,7 +152,7 @@ public class DTTeleOp extends OpMode {
     @Override
     public void start() {
         westCoast.startDriverControl();
-        shooter.setState(Shooter.ShooterState.STANDARD);
+        shooter.setState(Shooter.ShooterState.MID);
 //        robot.getIntake().setNineTailsState(Intake.NineTailsState.DEPLOYED);
     }
 

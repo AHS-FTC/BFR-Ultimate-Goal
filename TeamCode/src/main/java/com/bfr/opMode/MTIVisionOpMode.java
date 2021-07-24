@@ -1,35 +1,35 @@
 package com.bfr.opMode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.bfr.hardware.sensors.MB1242DistanceSensor;
+import com.bfr.control.vision.Cam;
+import com.bfr.control.vision.MTIVisionBridge;
+import com.bfr.control.vision.objects.MTIBackboardDetectionPipeline;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp(name = "MB1242 OpMode", group = "Iterative Opmode")
+import org.openftc.easyopencv.OpenCvCameraRotation;
+
+@TeleOp(name = "MTI Vision OpMode", group = "Iterative Opmode")
 //@Disabled
 public class MTIVisionOpMode extends LinearOpMode {
-    //@Override
+
+    @Override
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
 
-        telemetry = FtcDashboard.getInstance().getTelemetry();
+        Cam cam = new Cam("shooter_cam", 640, 360, Math.toRadians(87.0));
+
+        cam.startPipelineAsync(new MTIBackboardDetectionPipeline(), OpenCvCameraRotation.UPSIDE_DOWN);
+        MTIVisionBridge.instance.setActiveCam(cam);
 
         waitForStart();
 
         while (opModeIsActive()){
-            MB1242DistanceSensor lateral1 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_1");
-            MB1242DistanceSensor lateral2 = FTCUtilities.getHardwareMap().get(MB1242DistanceSensor.class, "dist_left_2");
-            lateral1.pingDistance();
-            sleep(50);
-            telemetry.addData("front 1", lateral1.readDistance());
+            telemetry.addData("Is Goal Visible", MTIVisionBridge.instance.isGoalVisible());
+            telemetry.addData("Angle To Goal", Math.toDegrees(MTIVisionBridge.instance.getAngleToGoal()));
 
-            lateral2.pingDistance();
-            sleep(50);
-            telemetry.addData("front 2", lateral2.readDistance());
             telemetry.update();
-
-
         }
     }
 }

@@ -5,9 +5,13 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.bfr.control.path.Position;
 import com.bfr.control.pidf.FastTurnConstants;
 import com.bfr.control.vision.BackboardDetector;
+import com.bfr.control.vision.Cam;
+import com.bfr.control.vision.MTIVisionBridge;
 import com.bfr.control.vision.StackDetector;
 import com.bfr.control.vision.VisionException;
+import com.bfr.control.vision.objects.MTIBackboardDetectionPipeline;
 import com.bfr.control.vision.objects.Powershots;
+import com.bfr.hardware.sensors.CurrentMonitor;
 import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.MB1242System;
@@ -23,6 +27,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,8 +54,7 @@ public class Robot {
 
     private StackDetector stackDetector;
     private StackDetector.FieldConfiguration fieldConfiguration;
-    private BackboardDetector backboardDetector;
-    private long stackDetectorStartTime;
+    private long stackDetectorStartTime, powershotStartTime;
     private Position position;
 
     private boolean nextCycleState = false;
@@ -62,6 +66,8 @@ public class Robot {
     private GoToCheeseState cheeseState = GoToCheeseState.TURNING_TO_CHEESE;
     private PowershotState powershotState = PowershotState.TURN_TO_90;
 
+    private long startWaitTime = 0;
+
     private double midPowershotAngle;
     private double rightPowershotAngle;
 
@@ -72,6 +78,7 @@ public class Robot {
         FREE,
         AUTO_CYCLE,
         TURN_TO_SHOOT,
+        WAITING_FOR_VISION,
         GO_TO_HOME,
         DETECTING_STACK,
         SQUARE_UP,
@@ -102,6 +109,7 @@ public class Robot {
     }
 
     private enum PowershotState {
+        BUFFER,
         TURN_TO_90,
         TURN_TO_SHOT_1,
         PSHOT_1,
@@ -129,9 +137,10 @@ public class Robot {
 
         wobbleArm.setState(WobbleArm.State.STORED);
 
+        //r1 is left odo
         odometry = new DifOdometry(
-                new OdometerImpl("l_odo", 1.885, true, 1440.0),
-                new OdometerImpl("r_odo", 1.89, false, 1440.0),
+                new OdometerImpl("R1", 1.885, true, 1440.0),
+                new OdometerImpl("R2", 1.89, false, 1440.0),
                 startingPosition, 15.6
         );
         ControlCenter.setPosition(odometry.getPosition());
@@ -147,8 +156,10 @@ public class Robot {
         if(FTCUtilities.getOpModeType().equals(OpModeType.AUTO)) {
             stackDetector = new StackDetector();
         } else {
-            backboardDetector = new BackboardDetector();
-            backboardDetector.start();
+            Cam cam = new Cam("shooter_cam", 640, 360, Math.toRadians(87.0));
+
+            cam.startPipelineAsync(new MTIBackboardDetectionPipeline(), OpenCvCameraRotation.UPSIDE_DOWN);
+            MTIVisionBridge.instance.setActiveCam(cam);
         }
 
         for (LynxModule hub : hubs) {
@@ -193,7 +204,7 @@ public class Robot {
     public void setState(State state){
         switch(state){
             case FREE:
-                return;
+                break;
             case AUTO_CYCLE:
                 westCoast.setRampdownMode(WestCoast.MovementMode.FAST);
                 westCoast.startTurnGlobal(-Math.PI / 2);
@@ -207,17 +218,13 @@ public class Robot {
                 previousState = this.state;
                 break;
             case TURN_TO_SHOOT:
-                try {
-                    double angleToGoal = backboardDetector.getAngleToGoal();
+                double angleToGoal = MTIVisionBridge.instance.getAngleToGoal();
 
-                    westCoast.startTurnLocal(angleToGoal);
+                westCoast.startTurnLocal(angleToGoal);
 
-                    cheeseHeading = odometry.getPosition().heading + angleToGoal;
-                } catch (VisionException e) {
-                    ControlCenter.addNotice("Vision Exception: " + e.getMessage());
-                    setState(State.FREE);
-                }
-                setState(previousState);
+                cheeseHeading = odometry.getPosition().heading + angleToGoal;
+
+                //setState(previousState);
                 break;
             case GO_TO_HOME:
                 Position position = odometry.getPosition();
@@ -251,6 +258,8 @@ public class Robot {
                 westCoast.startTurnGlobal(Math.toRadians(-90.0));
                 powershotState = PowershotState.TURN_TO_90;
                 break;
+            case WAITING_FOR_VISION:
+                startWaitTime = FTCUtilities.getCurrentTimeMillis();
         }
 
         this.state = state;
@@ -301,15 +310,10 @@ public class Robot {
         return wobbleArm;
     }
 
-    public BackboardDetector getBackboardDetector() {
-        return backboardDetector;
-    }
-
     public void stopAll(){
         westCoast.brakeMotors();
         shooter.setState(Shooter.ShooterState.RESTING);
         intake.changeState(Intake.State.STOPPED);
-        backboardDetector.stop();
     }
 
     /**
@@ -465,7 +469,18 @@ public class Robot {
                 break;
             case TURN_TO_SHOOT:
                 if(westCoast.isInDefaultMode()){
-                    setState(State.FREE);
+                    setState(State.WAITING_FOR_VISION);
+                }
+                break;
+            case WAITING_FOR_VISION:
+                if (FTCUtilities.getCurrentTimeMillis() - startWaitTime > 0) {
+                    double angleToGoal = MTIVisionBridge.instance.getAngleToGoal();
+
+                    if (MTIVisionBridge.instance.isGoalVisible() && Math.abs(angleToGoal) > Math.toRadians(3)) {
+                        setState(State.TURN_TO_SHOOT);
+                    } else {
+                        setState(State.FREE);
+                    }
                 }
                 break;
             case GO_TO_HOME:
@@ -506,24 +521,30 @@ public class Robot {
             case AUTO_POWERSHOT:
                 switch (powershotState){
                     case TURN_TO_90:
-                        if(westCoast.isInDefaultMode()){
+                        if (westCoast.isInDefaultMode()){
+                            powershotStartTime = FTCUtilities.getCurrentTimeMillis();
+                            powershotState = PowershotState.BUFFER;
+                        }
+                        break;
+                    case BUFFER:
+                        if(FTCUtilities.getCurrentTimeMillis() - powershotStartTime > 500){
                             double leftPowershotAngle;
                             Map<Powershots.Position, Double> anglesToPowershots;
-                            double currentHeading = odometry.getPosition().heading + Math.toRadians(3.0);
+                            double currentHeading = odometry.getPosition().heading - Math.toRadians(4.0);
 
-                            try {
-                                anglesToPowershots = backboardDetector.getAnglesToPowershots();
-                            } catch (VisionException e) {
-                                ControlCenter.addNotice(e.getMessage());
-                                setState(previousState);
-                                break;
-                            }
+//                            try {
+//                                //anglesToPowershots = 0.0;//backboardDetector.getAnglesToPowershots();
+//                            } catch (VisionException e) {
+//                                ControlCenter.addNotice(e.getMessage());
+//                                setState(previousState);
+//                                break;
+//                            }
 
-                            midPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.MID);
-                            rightPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.RIGHT);
-                            leftPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.LEFT);
+                            //midPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.MID);
+                            //rightPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.RIGHT);
+                            //leftPowershotAngle = currentHeading + anglesToPowershots.get(Powershots.Position.LEFT);
 
-                            westCoast.startTurnGlobal(leftPowershotAngle);
+                            //westCoast.startTurnGlobal(leftPowershotAngle);
 
                             powershotState = PowershotState.TURN_TO_SHOT_1;
                         }
@@ -630,7 +651,10 @@ public class Robot {
         mb1242System.update();
 
         if(FTCUtilities.isDashboardMode()){
-           dashboardTelemetry.update();
+            dashboardTelemetry.addData("Angle to Goal", Math.toDegrees(MTIVisionBridge.instance.getAngleToGoal()));
+            dashboardTelemetry.addData("is Goal Visible", MTIVisionBridge.instance.isGoalVisible());
+
+            dashboardTelemetry.update();
         }
     }
 }

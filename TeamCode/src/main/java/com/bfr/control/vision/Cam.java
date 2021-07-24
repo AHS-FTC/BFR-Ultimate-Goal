@@ -9,6 +9,7 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvPipeline;
 
 /**
  * Wrapper class for OpenCvCamera, frameEjector and all the nasty low level vision stuff
@@ -60,6 +61,13 @@ public class Cam {
         }
 
         streaming = true;
+    }
+
+    public void startPipelineAsync(OpenCvPipeline pipeline, OpenCvCameraRotation rot) {
+        openCvCamera.setPipeline(pipeline);
+        openCvCamera.openCameraDeviceAsync(() -> {
+            openCvCamera.startStreaming(width, height, rot);
+        });
     }
 
     //todo use the more accurate method to do this.

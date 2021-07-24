@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name = "MB1242 OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class MB1242TestOp extends LinearOpMode {
     //@Override
     public void runOpMode() throws InterruptedException {
