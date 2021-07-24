@@ -11,5 +11,5 @@ public class AccurateRampdownConstants {
 
     //The maximum size of the error in which driveStraight() is considered finished.
     public static double finishedThreshold = 0.1;
-    public static double minPower = .155;
+    public static double minPower = .1;
 }

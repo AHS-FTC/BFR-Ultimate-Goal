@@ -442,7 +442,7 @@ public class WestCoast {
                     break;
                 }
 
-                setTankPower((finalPower * direction.sign) - turnCorrection, (finalPower * direction.sign) + turnCorrection);
+                setTankPower((finalPower * direction.sign) + turnCorrection, (finalPower * direction.sign) - turnCorrection);
                 break;
             case DRIVER_CONTROL:
                 arcadeDrive(-driverGamepad.left_stick_y, driverGamepad.right_stick_x);

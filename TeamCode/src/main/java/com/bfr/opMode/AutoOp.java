@@ -1,23 +1,16 @@
 package com.bfr.opMode;
 
-import android.graphics.Rect;
-
 import com.bfr.control.path.Position;
-import com.bfr.control.pidf.FastTurnConstants;
-import com.bfr.hardware.Intake;
 import com.bfr.hardware.Robot;
-import com.bfr.hardware.SerialServo;
-import com.bfr.hardware.Shooter;
+
 import com.bfr.hardware.WestCoast;
-import com.bfr.hardware.WobbleArm;
-import com.bfr.hardware.sensors.IMU;
+
 import com.bfr.util.FTCUtilities;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@Autonomous(name="Testing OpMode", group="Linear OpMode")
+@TeleOp(name="Testing OpMode", group="Linear OpMode")
 //@Disabled
 public class AutoOp extends LinearOpMode {
 
@@ -28,15 +21,16 @@ public class AutoOp extends LinearOpMode {
         Robot robot = new Robot(new Position(0, 0, Math.toRadians(0)));
         WestCoast westCoast = robot.getWestCoast();
         westCoast.setTurnMode(WestCoast.MovementMode.FAST);
+        westCoast.setRampdownMode(WestCoast.MovementMode.ACCURATE);
 
         waitForStart();
 
-        //westCoast.startTurnLocal(Math.toRadians(25));
+        robot.driveStraight(0.8, 70, WestCoast.Direction.FORWARDS);
 
-        while (opModeIsActive()) {
-            westCoast.setTankPower(FastTurnConstants.minPower, -FastTurnConstants.minPower);
-            robot.update();
-        }
+        sleep(1000);
+
+        robot.driveStraight(0.8, 10, WestCoast.Direction.REVERSE);
+
 
     }
 }
