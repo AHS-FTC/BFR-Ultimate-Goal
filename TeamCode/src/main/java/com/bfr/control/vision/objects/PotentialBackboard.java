@@ -16,11 +16,13 @@ import java.util.List;
 
 public class PotentialBackboard extends VisionObject{
     public final int numSides;
-    public static List<MatOfPoint> drawableContours = new ArrayList<>();
     private MatOfPoint2f approx, contour2f;
     public final MatOfPoint contour;
+    public final int index;
+    public List<MatOfPoint> subContours = new ArrayList<>();
+    public final MatOfPoint approxContour;
 
-    public PotentialBackboard(MatOfPoint contour) {
+    public PotentialBackboard(MatOfPoint contour, int index) {
         this.contour = contour;
         approx = new MatOfPoint2f();
         contour2f = new MatOfPoint2f(contour.toArray());
@@ -30,7 +32,8 @@ public class PotentialBackboard extends VisionObject{
         Imgproc.approxPolyDP(contour2f, approx, epsilon, true);
 
         numSides = approx.toArray().length;
-        drawableContours.add(new MatOfPoint(approx.toArray()));
+        approxContour = new MatOfPoint(approx.toArray());
+        this.index = index;
     }
 
     public void release() {

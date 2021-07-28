@@ -1,6 +1,7 @@
 package com.bfr.control.vision;
 
 
+import com.bfr.control.vision.objects.PotentialBackboard;
 import com.bfr.control.vision.objects.Powershots;
 
 import org.opencv.core.CvException;
@@ -23,7 +24,7 @@ public class BackboardDetector {
     private Mat hierarchy = new Mat();
 
     private List<MatOfPoint> contours = new ArrayList<>();
-    private List<MatOfPoint> validContours = new ArrayList<>();
+    private List<PotentialBackboard> potentialBackboards = new ArrayList<>();
     private List<MatOfPoint> powershotContours = new ArrayList<>();
 
 
@@ -126,8 +127,7 @@ public class BackboardDetector {
             throw new VisionException("No contours found");
         }
 
-        VisionUtil.emptyContourList(validContours);
-        validContours = validateContours(contours);
+        potentialBackboards = validateContours(contours);
 
 //        Mat rgb = new Mat();
 //        Imgproc.cvtColor(thresholded, rgb, Imgproc.COLOR_GRAY2RGB);
@@ -135,24 +135,25 @@ public class BackboardDetector {
 //        cam.setOutputMat(rgb);
 //        rgb.release();
 
-        if(validContours.size() == 0){
+        if(potentialBackboards.size() == 0){
             throw new VisionException("No valid contours found");
         }
 
-        if(validContours.size() > 1){
+        if(potentialBackboards.size() > 1){
             throw new VisionException("Multiple potential goals found");
         }
 
         thresholded.release();
 
-        return validContours.get(0);
+        return potentialBackboards.get(0).contour;
     }
 
-    public static List<MatOfPoint> validateContours(List<MatOfPoint> contours){
-        List<MatOfPoint> retVal = new ArrayList<>();
+    public static List<PotentialBackboard> validateContours(List<MatOfPoint> contours){
+        List<PotentialBackboard> retVal = new ArrayList<>();
 
         //remove contours outside of valid bounding box area, aspect ratio
-        for (MatOfPoint m : contours) {
+        for (int i = 0, contoursSize = contours.size(); i < contoursSize; i++) {
+            MatOfPoint m = contours.get(i);
             Rect r = Imgproc.boundingRect(m);
 
             double area = r.area();
@@ -161,8 +162,8 @@ public class BackboardDetector {
             boolean validArea = area > BackboardDetectorConstants.minArea && area < BackboardDetectorConstants.maxArea;
             boolean validAspectRatio = aspectRatio > BackboardDetectorConstants.minAspectRatio && aspectRatio < BackboardDetectorConstants.maxAspectRatio;
 
-            if(validArea && validAspectRatio){
-                retVal.add(m);
+            if (validArea && validAspectRatio) {
+                retVal.add(new PotentialBackboard(m, i));
             }
         }
         return retVal;

@@ -9,4 +9,6 @@ public class StraightConstants {
     public static double kD = 0.0;
     //The maximum size of the error in which driveStraight() is considered finished.
 
+    //for maintaining heading in teleop
+    public static double kP_TELE = 2.0;
 }

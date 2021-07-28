@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Environment;
 
 import com.bfr.control.path.Position;
+import com.bfr.control.vision.objects.MTIBackboardDetectionPipeline;
 import com.bfr.hardware.sensors.OdometerImpl;
 import com.bfr.util.loggers.ControlCenter;
 import com.bfr.util.math.Point;
@@ -49,6 +50,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static long mockTime = 0;
 
     private static AllianceColor allianceColor = AllianceColor.BLUE;
+    private static MTIBackboardDetectionPipeline pipeline = null;
 
     private static final Point blueGoal = new Point(-36, 0);
     private static final Point redGoal = new Point(36, 0);
@@ -59,6 +61,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
 
     public static void setAllianceColor(AllianceColor color){
         allianceColor = color;
+
+        if (pipeline != null) {
+            pipeline.setColor(color);
+        }
+    }
+
+    public static void setPipeline(MTIBackboardDetectionPipeline pipeline) {
+        FTCUtilities.pipeline = pipeline;
     }
 
     public static String getLogDirectory() {

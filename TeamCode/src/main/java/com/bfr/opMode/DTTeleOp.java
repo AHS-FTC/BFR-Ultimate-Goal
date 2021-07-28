@@ -161,7 +161,7 @@ public class DTTeleOp extends OpMode {
 
     @Override
     public void start() {
-        westCoast.startDriverControl();
+        westCoast.setState(WestCoast.State.DRIVER_CONTROL);
         shooter.setState(Shooter.ShooterState.MID);
 //        robot.getIntake().setNineTailsState(Intake.NineTailsState.DEPLOYED);
     }

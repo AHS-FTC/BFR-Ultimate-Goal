@@ -9,6 +9,7 @@ import com.bfr.control.pidf.PIDFController;
 import com.bfr.control.pidf.AccurateRampdownConstants;
 import com.bfr.control.pidf.StraightConstants;
 import com.bfr.control.pidf.AccurateTurnConstants;
+import com.bfr.control.teleop.NormalControlCurve;
 import com.bfr.hardware.sensors.IMU;
 import com.bfr.hardware.sensors.Odometry;
 import com.bfr.util.FTCUtilities;
@@ -49,11 +50,17 @@ public class WestCoast {
     private final IMU imu;
     private final Odometry odometry;
 
-    private PIDFController rampdownController, turnController, straightController;
+    private PIDFController rampdownController, turnController, straightController, fixedHeadingController;
 
     private State defaultState = State.IDLE;
+    private DriverControlState driverControlState;
+    private long lastHeadingChangeTimestamp = 0;
+
     private MovementMode rampdownMode = MovementMode.ACCURATE;
     private MovementMode turnMode = MovementMode.FAST;
+
+    private final NormalControlCurve increasingDriveCurve = new NormalControlCurve(1, 0.2, 0.25, false);
+    private final NormalControlCurve decreasingDriveCurve = new NormalControlCurve(-1, -0.2, 0.25, true);
 
     //adds a slight wait after a drive straight (and maybe turn???)
     private boolean waitingState = false;
@@ -67,7 +74,11 @@ public class WestCoast {
         DRIVER_CONTROL,
         DRIVE_STRAIGHT,
         POINT_TURN,
-        HOLD_HEADING
+    }
+
+    private enum DriverControlState {
+        HEADING_CHANGING,
+        FIXED
     }
 
     public enum MovementMode {
@@ -101,7 +112,6 @@ public class WestCoast {
 
         leftMotors = new ThrottledMotorPair(leftMotor1, leftMotor2);
         rightMotors = new ThrottledMotorPair(rightMotor1, rightMotor2);
-
 
         straightController = new PIDFController(new PIDFConfig() {
             @Override
@@ -180,6 +190,30 @@ public class WestCoast {
             }
         };
 
+        fixedHeadingController = new PIDFController(new PIDFConfig() {
+            @Override
+            public double kP() {
+                return StraightConstants.kP_TELE;
+            }
+
+            @Override
+            public double kI() {
+                return 0;
+            }
+
+            @Override
+            public double kD() {
+                return 0;
+            }
+
+            @Override
+            public double feedForward(double setPoint, double error) {
+                return 0;
+            }
+        }, odometry.getPosition().heading , odometry.getPosition().heading , 1);
+
+        setDriverControlState(DriverControlState.FIXED);
+
         //initial val doesnt matter
         turnController = new PIDFController(pidfConfig, 0, 0,3);
         turnController.setStabilityThreshold(0.00008);
@@ -247,14 +281,24 @@ public class WestCoast {
 
         rightMotors.setPower(rightPower);
     }
+
+    private void setDriverControlState(DriverControlState driverControlState) {
+        this.driverControlState = driverControlState;
+
+        switch (driverControlState) {
+            case FIXED:
+                fixedHeadingController.setSetPoint(odometry.getPosition().heading);
+                break;
+            case HEADING_CHANGING:
+                lastHeadingChangeTimestamp = FTCUtilities.getCurrentTimeMillis();
+                break;
+        }
+    }
     
     public void setState(State state){
         switch (state) {
             case IDLE:
                 brakeMotors();
-                break;
-            case HOLD_HEADING:
-                turnController.reset(odometry.getPosition().heading, odometry.getPosition().heading);
                 break;
         }
 
@@ -279,10 +323,6 @@ public class WestCoast {
         rightMotors.setPower(0.0);
     }
 
-    public void startDriverControl(){
-        state = State.DRIVER_CONTROL;
-    }
-
     public void startDriveStraight(double power, double targetDistance, Direction direction){
         this.direction = direction;
 
@@ -299,6 +339,10 @@ public class WestCoast {
     }
 
     public void startTurnGlobal(double globalAngle){
+        if(FTCUtilities.getOpModeType().equals(OpModeType.TELE)) {
+            setDriverControlState(DriverControlState.HEADING_CHANGING);
+        }
+
         targetAngle = FTCMath.ensureIdealAngle(globalAngle, odometry.getPosition().heading);
 
         turnController.reset(odometry.getPosition().heading, targetAngle);
@@ -326,6 +370,17 @@ public class WestCoast {
 
     public void setTurnMode(MovementMode turnMode){
         this.turnMode = turnMode;
+    }
+
+    //math: https://www.desmos.com/calculator/mmqjgd83fd
+    private double normalizeSticks(double input) {
+        if (Math.abs(input) < 0.01 ) {
+            return 0.0;
+        } else if (input > 0.0) {
+            return increasingDriveCurve.eval(input);
+        } else {
+            return decreasingDriveCurve.eval(input);
+        }
     }
 
     public void update(){
@@ -362,6 +417,10 @@ public class WestCoast {
                 }
 
                 if(turnController.isStable() && Math.abs(angleError) < turnFinishedThreshold){
+                    if(FTCUtilities.getOpModeType().equals(OpModeType.TELE)) {
+                        setDriverControlState(DriverControlState.FIXED);
+                    }
+
                     state = defaultState;
                     brakeMotors();
                     break;
@@ -445,11 +504,32 @@ public class WestCoast {
                 setTankPower((finalPower * direction.sign) + turnCorrection, (finalPower * direction.sign) - turnCorrection);
                 break;
             case DRIVER_CONTROL:
-                arcadeDrive(-driverGamepad.left_stick_y, driverGamepad.right_stick_x);
+                double dcTurnCurrection;
+
+                if (Math.abs(driverGamepad.right_stick_x) > 0.01) {
+                    setDriverControlState(DriverControlState.HEADING_CHANGING);
+                }
+
+                switch (driverControlState){
+                    case HEADING_CHANGING:
+                        fixedHeadingController.setSetPoint(odometry.getPosition().heading);
+                        dcTurnCurrection = 0;
+
+                        //wait for skidding to stop before entering fixed heading mode
+                        if(FTCUtilities.getCurrentTimeMillis() - lastHeadingChangeTimestamp > 250) {
+                            setDriverControlState(DriverControlState.FIXED);
+                        }
+
+                        break;
+                    case FIXED:
+                        dcTurnCurrection = fixedHeadingController.getOutput(odometry.getPosition().heading);
+                        break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + driverControlState);
+                }
+
+                arcadeDrive(normalizeSticks(-driverGamepad.left_stick_y), normalizeSticks(driverGamepad.right_stick_x) - dcTurnCurrection);
                 break;
-            case HOLD_HEADING:
-                double motorPower = turnController.getOutput(odometry.getPosition().heading);
-                setTankPower(-motorPower, motorPower);
         }
     }
 }

@@ -1,15 +1,20 @@
 package com.bfr.control.vision;
 
+import com.bfr.control.pidf.ThresholdConstants;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Wrapper class for OpenCvCamera, frameEjector and all the nasty low level vision stuff
@@ -18,7 +23,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
  */
 public class Cam {
     private FrameEjector frameEjector = new FrameEjector();
-    private OpenCvCamera openCvCamera;
+    private OpenCvWebcam openCvCamera;
 
     private boolean streaming = false;
 
@@ -41,6 +46,7 @@ public class Cam {
         openCvCamera  = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, deviceName), cameraMonitorViewId);
 
         openCvCamera.setPipeline(frameEjector);
+
     }
 
     /**

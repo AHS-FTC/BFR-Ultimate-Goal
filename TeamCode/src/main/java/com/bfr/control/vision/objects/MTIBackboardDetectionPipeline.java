@@ -4,11 +4,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import com.bfr.control.pidf.ThresholdConstants;
 import com.bfr.control.vision.BackboardDetector;
 import com.bfr.control.vision.BackboardThresholdPipeline;
 import com.bfr.control.vision.MTIVisionBridge;
 import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.VisionUtil;
+import com.bfr.util.AllianceColor;
 import com.bfr.util.FTCUtilities;
 
 import org.firstinspires.ftc.teamcode.R;
@@ -25,6 +27,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MTIBackboardDetectionPipeline extends OpenCvPipeline {
@@ -32,8 +35,7 @@ public class MTIBackboardDetectionPipeline extends OpenCvPipeline {
     private Mat referenceMat = new Mat();
     private BackboardThresholdPipeline backboardThresholdPipeline = new BackboardThresholdPipeline();
     private List<MatOfPoint> contours = new ArrayList<>();
-    private List<MatOfPoint> validContours = new ArrayList<>();
-    private MatOfPoint goalContour = new MatOfPoint();
+    private List<PotentialBackboard> potentialBackboards = new ArrayList<>();
 
     private Mat hsv = new Mat();
     private Mat thresholded = new Mat();
@@ -71,42 +73,78 @@ public class MTIBackboardDetectionPipeline extends OpenCvPipeline {
         Imgproc.cvtColor(thresholded, out, Imgproc.COLOR_GRAY2RGB);
 
         VisionUtil.emptyContourList(contours);
-        Imgproc.findContours(thresholded, contours, hierarchy, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(thresholded, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-        VisionUtil.emptyContourList(validContours);
-        validContours = BackboardDetector.validateContours(contours);
+        potentialBackboards = BackboardDetector.validateContours(contours);
 
-
-        if (validContours.size() == 0 ) {
+        if (potentialBackboards.size() == 0 ) {
             MTIVisionBridge.instance.setGoalVisible(false);
-            return out;
-        }
 
-        if (validContours.size() == 1) {
-            goalContour = validContours.get(0);
-        } else {
-            List<PotentialBackboard> allBackboards = new ArrayList<>();
-            for (MatOfPoint contour : validContours) {
-                Rect boundingBox = Imgproc.boundingRect(contour);
-
-                PotentialBackboard potentialBackboard = new PotentialBackboard(contour);
-                allBackboards.add(potentialBackboard);
-
-                Imgproc.rectangle(out, boundingBox, new Scalar(0, 255, 0), 3);
-
-                Imgproc.putText(out, "numSides: " + potentialBackboard.numSides, boundingBox.br(), 0, 1, new Scalar(0, 255, 0), 3);
-                potentialBackboard.release();
+            if(ThresholdConstants.showRaw) {
+                return input;
+            } else {
+                return out;
             }
-            goalContour = getMostViablePotentialBackboard(allBackboards).contour;
-            Imgproc.drawContours(out, PotentialBackboard.drawableContours, -1, new Scalar(255, 0, 0), 3);
-            VisionUtil.emptyContourList(PotentialBackboard.drawableContours);
         }
 
-        MTIVisionBridge.instance.setAngleToGoal(goalContour);
+        for (PotentialBackboard potentialBackboard : potentialBackboards) {
+            //draw potential backboards
+            Rect boundingBox = Imgproc.boundingRect(potentialBackboard.contour);
+
+            Imgproc.rectangle(out, boundingBox, new Scalar(0, 255, 0), 3);
+
+            List<MatOfPoint> subcontours = findSubcontours(potentialBackboard.index);
+            potentialBackboard.subContours = subcontours;
+            Imgproc.drawContours(out, subcontours, -1, new Scalar(0, 0, 255), 3);
+
+            Imgproc.putText(out, "numSides: " + potentialBackboard.numSides, boundingBox.br(), 0, 1, new Scalar(0, 255, 0), 3);
+        }
+
+        PotentialBackboard finalBackboard;
+        if (potentialBackboards.size() == 1) {
+            finalBackboard = potentialBackboards.get(0);
+        } else {
+            finalBackboard = getMostViablePotentialBackboard(potentialBackboards);
+
+        }
+
+        if(finalBackboard.subContours.size() == 0 ) {
+            MTIVisionBridge.instance.setAngleToGoal(finalBackboard.contour);
+        } else {
+            try {
+                MTIVisionBridge.instance.setAngleToGoal(VisionUtil.findLargestContour(finalBackboard.subContours));
+            } catch (VisionException e) {
+                e.printStackTrace();
+            }
+        }
 
         MTIVisionBridge.instance.setGoalVisible(true);
 
-        return out;
+
+        if(ThresholdConstants.showRaw) {
+            return input;
+        } else {
+            return out;
+        }
+
+    }
+
+    private List<MatOfPoint> findSubcontours(int index) {
+        List<MatOfPoint> retVal = new ArrayList<>();
+
+        for (int i = 0, cols = hierarchy.cols(); i < cols; i++) {
+            int[] data = new int[4];
+
+            hierarchy.get(0, i, data);
+
+            System.out.println(Arrays.toString(data));
+
+            if(data[3] == index) {
+                retVal.add(contours.get(i));
+            }
+        }
+
+        return retVal;
     }
 
     //finds the potential backboard that has the closest to 8 sides.
@@ -124,5 +162,13 @@ public class MTIBackboardDetectionPipeline extends OpenCvPipeline {
         }
 
         return mostViableBackBoard;
+    }
+
+    public void setColor(AllianceColor color) {
+        if (color.equals(AllianceColor.BLUE)) {
+            backboardThresholdPipeline.setHue(110);
+        } else {
+            backboardThresholdPipeline.setHue(0);
+        }
     }
 }

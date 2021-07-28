@@ -158,7 +158,12 @@ public class Robot {
         } else {
             Cam cam = new Cam("shooter_cam", 640, 360, Math.toRadians(87.0));
 
-            cam.startPipelineAsync(new MTIBackboardDetectionPipeline(), OpenCvCameraRotation.UPSIDE_DOWN);
+
+            MTIBackboardDetectionPipeline pipeline = new MTIBackboardDetectionPipeline();
+            FTCUtilities.setPipeline(pipeline);
+            pipeline.setColor(AllianceColor.RED);
+
+            cam.startPipelineAsync(pipeline, OpenCvCameraRotation.UPSIDE_DOWN);
             MTIVisionBridge.instance.setActiveCam(cam);
         }
 

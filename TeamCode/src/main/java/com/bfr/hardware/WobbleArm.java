@@ -7,16 +7,15 @@ public class WobbleArm {
     private SerialServo gripper;
     private SerialServo arm;
 
-    private static final double DEPLOYED = 1.0;
-    private static final double STORED = 0.0;
-    private static final double HOLDING = 0.35;
+    private static final double DEPLOYED = 0.00;
+    private static final double STORED = 1;
+    private static final double HOLDING = 0.99;
 
     private long lastStateChange;
     private State state;
 
     public enum State {
         STORED,
-        STORED_IDLE,
         HOLDING,
         DEPLOYED_OPEN,
         DEPLOYED_CLOSED,
@@ -65,15 +64,9 @@ public class WobbleArm {
     public void update(){
 
         switch (state) {
-            case STORED:
-                if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 500) {
-                    arm.setPosition(0);
-                    setState(State.STORED_IDLE);
-                }
-                break;
             case DEPLOYED_CLOSED:
                 if(FTCUtilities.getOpModeType().equals(OpModeType.TELE)){
-                    if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 250) {
+                    if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 350) {
                         setState(State.HOLDING);
                     }
                 }

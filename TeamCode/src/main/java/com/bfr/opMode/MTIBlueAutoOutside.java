@@ -18,7 +18,7 @@ import java.io.IOException;
 
 @Autonomous(name = "MTI Blue Auto - Outside", group = "MTI")
 //@Disabled
-public class MTIBlueAuto extends LinearOpMode {
+public class MTIBlueAutoOutside extends LinearOpMode {
     private Robot robot;
     private Shooter shooter;
     private Intake intake;
@@ -111,11 +111,10 @@ public class MTIBlueAuto extends LinearOpMode {
 
         robot.driveStraight(0.6, 34, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(70));
+        robot.turnGlobal(Math.toRadians(60));
         dropWobbleGoal();
 
-        robot.turnGlobal(Math.toRadians(60));
-        robot.driveStraight(0.6, 12, WestCoast.Direction.FORWARDS);
+
     }
 
     private void path4() {
@@ -131,7 +130,7 @@ public class MTIBlueAuto extends LinearOpMode {
         robot.sleep(3000);
         intake.changeState(Intake.State.STOPPED);
 
-        robot.turnGlobal(Math.toRadians(260));
+        robot.turnGlobal(Math.toRadians(258));
 
         shoot();
 
