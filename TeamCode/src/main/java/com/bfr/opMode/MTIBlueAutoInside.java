@@ -26,8 +26,8 @@ public class MTIBlueAutoInside extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
-
         FTCUtilities.setAllianceColor(AllianceColor.BLUE);
+        FTCUtilities.setIsInside(true);
         robot = new Robot(new Position(-8,124, Math.toRadians(90)));
         shooter = robot.getShooter();
         intake = robot.getIntake();

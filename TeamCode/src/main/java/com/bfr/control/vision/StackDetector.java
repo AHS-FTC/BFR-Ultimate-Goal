@@ -49,9 +49,19 @@ public class StackDetector {
 
         //todo tune
         if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)){
-            stackRect = new Rect(1663, 38, 150, 150);
+            if(FTCUtilities.getIsInside()){
+                stackRect = new Rect(16, 46, 150, 150);
+            }
+            else {
+                stackRect = new Rect(1663, 38, 150, 150);
+            }
         } else {
-            stackRect = new Rect(16, 46, 150, 150);
+            if(FTCUtilities.getIsInside()) {
+                stackRect = new Rect(1663, 38, 150, 150);
+            }
+            else{
+                stackRect = new Rect(16, 46, 150, 150);
+            }
         }
 
         cam.start(OpenCvCameraRotation.UPRIGHT);

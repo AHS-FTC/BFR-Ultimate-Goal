@@ -26,12 +26,14 @@ public class MTIRedAutoInside extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
-
         FTCUtilities.setAllianceColor(AllianceColor.RED);
+        FTCUtilities.setIsInside(true);
         robot = new Robot(new Position(8,124, Math.toRadians(90)));
         shooter = robot.getShooter();
         intake = robot.getIntake();
         wobbleArm = robot.getWobbleArm();
+
+
 
         robot.setState(Robot.State.DETECTING_STACK);
         while(!isStarted() && !isStopRequested()){

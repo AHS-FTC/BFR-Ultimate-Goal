@@ -17,6 +17,7 @@ public class MTIVisionOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         FTCUtilities.setOpMode(this);
+        FTCUtilities.startVisionTuningMode();
 
         Cam cam = new Cam("shooter_cam", 640, 360, Math.toRadians(87.0));
 

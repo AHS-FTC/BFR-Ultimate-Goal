@@ -118,7 +118,13 @@ public class DTTeleOp extends OpMode {
 
         controller1.setAction(DPAD_UP, () -> robot.setState(Robot.State.SQUARE_UP));
 
-        controller2.setAction(B, () -> robot.setState(Robot.State.GO_TO_CHEESE));
+        controller2.setAction(B, () -> {
+            if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)) {
+                FTCUtilities.setAllianceColor(AllianceColor.RED);
+            } else {
+                FTCUtilities.setAllianceColor(AllianceColor.BLUE);
+            }
+        });
 
         controller2.setAction(Y, () -> {
 //            try {
@@ -148,11 +154,15 @@ public class DTTeleOp extends OpMode {
             }
         });
 
-        controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
-        controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
+        //controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
+        //controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
 
-        controller2.setAction(DPAD_UP, () -> robot.getIntakingPoint().y += 1.0);
-        controller2.setAction(DPAD_DN, () -> robot.getIntakingPoint().y -= 1.0);
+        controller2.setAction(DPAD_UP, () -> shooter.setState(Shooter.ShooterState.STANDARD));
+        controller2.setAction(DPAD_DN, () -> shooter.setState(Shooter.ShooterState.MID));
+
+
+        //controller2.setAction(DPAD_UP, () -> robot.getIntakingPoint().y += 1.0);
+        //controller2.setAction(DPAD_DN, () -> robot.getIntakingPoint().y -= 1.0);
     }
 
     @Override

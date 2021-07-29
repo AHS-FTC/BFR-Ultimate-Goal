@@ -38,6 +38,7 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static OpMode opMode;
     private static OpModeType opModeType = OpModeType.UNKNOWN;
 
+
     private static boolean testMode = false;
 
     //for logging with Dashboard
@@ -50,10 +51,15 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
     private static long mockTime = 0;
 
     private static AllianceColor allianceColor = AllianceColor.BLUE;
+
+
+    private static boolean isInside;
     private static MTIBackboardDetectionPipeline pipeline = null;
 
     private static final Point blueGoal = new Point(-36, 0);
     private static final Point redGoal = new Point(36, 0);
+
+    private static boolean visionTuningMode = false;
 
     public static AllianceColor getAllianceColor(){
         return allianceColor;
@@ -65,6 +71,14 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         if (pipeline != null) {
             pipeline.setColor(color);
         }
+    }
+
+    public static void startVisionTuningMode() {
+        visionTuningMode = true;
+    }
+
+    public static boolean isVisionTuningMode() {
+        return visionTuningMode;
     }
 
     public static void setPipeline(MTIBackboardDetectionPipeline pipeline) {
@@ -185,6 +199,16 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
             return mockTime++;
         }
     }
+
+    public static boolean getIsInside() {
+        return isInside;
+    }
+
+    public static void setIsInside(boolean isInside) {
+        FTCUtilities.isInside = isInside;
+    }
+
+
 
     /**
      * Saves a bitmap to the phone. Sets the file name using time & date information.

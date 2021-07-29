@@ -1,6 +1,8 @@
 package com.bfr.control.vision;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.bfr.util.FTCUtilities;
+
 import static com.bfr.control.pidf.ThresholdConstants.*;
 
 import org.opencv.core.Core;
@@ -17,6 +19,9 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     private Mat eroded = new Mat();
     private Mat dilated = new Mat();
 
+    public Scalar min = new Scalar(100, 50, 50);
+    public Scalar max = new Scalar(120, 255, 255);
+
     private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 1));
 
     private static final double HUE_RANGE = 10;
@@ -24,8 +29,10 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat input) {
 
-         Scalar min = new Scalar(min_h, min_s, min_v);
-         Scalar max = new Scalar(max_h, max_s, max_v);
+        if (FTCUtilities.isVisionTuningMode()){
+            min = new Scalar(min_h, min_s, min_v);
+            max = new Scalar(max_h, max_s, max_v);
+        }
 
         //Imgproc.cvtColor(input, hsv, Imgproc.COLOR_BGR2HSV);
         Core.inRange(input, min, max, thresh);
@@ -47,7 +54,7 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     }
 
     public void setHue(double middleHueVal){
-        //min.set(new double[] {middleHueVal - HUE_RANGE, 50, 0});
-        //max.set(new double[] {middleHueVal + HUE_RANGE, 255, 255});
+        min.set(new double[] {middleHueVal - HUE_RANGE, 50, 0});
+        max.set(new double[] {middleHueVal + HUE_RANGE, 255, 255});
     }
 }

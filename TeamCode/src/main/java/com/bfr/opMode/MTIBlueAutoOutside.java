@@ -29,6 +29,8 @@ public class MTIBlueAutoOutside extends LinearOpMode {
         FTCUtilities.setOpMode(this);
 
         FTCUtilities.setAllianceColor(AllianceColor.BLUE);
+        FTCUtilities.setIsInside(false);
+
         robot = new Robot(new Position(-8,124, Math.toRadians(90)));
         shooter = robot.getShooter();
         intake = robot.getIntake();
