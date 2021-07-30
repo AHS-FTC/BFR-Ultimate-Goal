@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
-@TeleOp(name = "MTI Vision OpMode", group = "Iterative Opmode")
+@TeleOp(name = "MTI Vision OpMode", group = "MTI")
 //@Disabled
 public class MTIVisionOpMode extends LinearOpMode {
 

@@ -18,7 +18,7 @@ import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 @TeleOp(name = "Backboard OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class BackboardDetectorOpMode extends LinearOpMode {
     @Override
     public void runOpMode() {

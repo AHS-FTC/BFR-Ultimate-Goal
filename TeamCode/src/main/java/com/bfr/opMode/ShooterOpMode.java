@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
  * Simple opMode to find the right power for shooter feedforward
  */
 @Autonomous(name="Shooter Testing OpMode", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class ShooterOpMode extends LinearOpMode {
 
     @Override

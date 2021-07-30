@@ -3,6 +3,7 @@ package com.bfr.opMode;
 import com.bfr.hardware.Motor;
 import com.bfr.hardware.SerialServo;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,7 +23,7 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.har
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.opMode;
 
 @TeleOp(name = "SmokeTestOp", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class SmokeTestOp extends OpMode {
     private Motor r, l, s1, s2, intakeMotor;
     SerialServo indexerServo, holderServo;

@@ -70,7 +70,6 @@ public class MTIBlueAutoInside extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
         robot.driveStraight(0.6, 54, WestCoast.Direction.REVERSE);
         robot.turnGlobal(Math.toRadians(-75));
-        robot.sleep(250);
 
         shoot();
     }
@@ -125,6 +124,7 @@ public class MTIBlueAutoInside extends LinearOpMode {
 
     }
     private void shoot() {
+        robot.sleep(250);
         shooter.runIndexerServos();
         while (!shooter.areIndexerServosResting()) {
             robot.update();

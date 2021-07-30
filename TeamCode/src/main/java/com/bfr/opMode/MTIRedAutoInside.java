@@ -72,7 +72,6 @@ public class MTIRedAutoInside extends LinearOpMode {
         wobbleArm.setState(WobbleArm.State.HOLDING);
         robot.driveStraight(0.6, 54, WestCoast.Direction.REVERSE);
         robot.turnGlobal(Math.toRadians(254));
-        robot.sleep(250);
 
         shoot();
     }
@@ -84,10 +83,10 @@ public class MTIRedAutoInside extends LinearOpMode {
         robot.driveStraight(.6, 12, WestCoast.Direction.REVERSE);
 
         robot.turnGlobal(Math.toRadians(0));
-        robot.driveStraight(.6, 30, WestCoast.Direction.REVERSE);
+        robot.driveStraight(.6, 26, WestCoast.Direction.REVERSE);
         dropWobbleGoal();
 
-        robot.driveStraight(.6, 34, WestCoast.Direction.FORWARDS);
+        robot.driveStraight(.6, 30, WestCoast.Direction.FORWARDS);
 
         robot.turnGlobal(Math.toRadians(-90));
     }
@@ -103,7 +102,7 @@ public class MTIRedAutoInside extends LinearOpMode {
         dropWobbleGoal();
 
         robot.turnGlobal(Math.toRadians(270));
-        robot.driveStraight(0.6, 10, WestCoast.Direction.REVERSE);
+        robot.driveStraight(0.6, 16, WestCoast.Direction.REVERSE);
 
     }
 
@@ -124,6 +123,7 @@ public class MTIRedAutoInside extends LinearOpMode {
 
     }
     private void shoot() {
+        robot.sleep(250);
         shooter.runIndexerServos();
         while (!shooter.areIndexerServosResting()) {
             robot.update();

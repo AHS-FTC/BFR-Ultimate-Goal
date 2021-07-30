@@ -1,6 +1,5 @@
 package com.bfr.control.vision;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.bfr.util.FTCUtilities;
 
 import static com.bfr.control.pidf.ThresholdConstants.*;
@@ -22,7 +21,8 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
     public Scalar min = new Scalar(100, 50, 50);
     public Scalar max = new Scalar(120, 255, 255);
 
-    private static final Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 1));
+    private static final Mat erodeKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 1));
+    private static final Mat dilateKernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
 
     private static final double HUE_RANGE = 10;
 
@@ -47,8 +47,9 @@ public class BackboardThresholdPipeline extends OpenCvPipeline {
             extra.release();
         }
 
-        Imgproc.erode(thresh, eroded, kernel);
-        Imgproc.dilate(eroded, dilated, kernel);
+        Imgproc.erode(thresh, eroded, erodeKernel);
+        //dilate slightly more than we erode, hopefully enclosing logo contour in goal contour.
+        Imgproc.dilate(eroded, dilated, dilateKernel);
 
         return dilated;
     }

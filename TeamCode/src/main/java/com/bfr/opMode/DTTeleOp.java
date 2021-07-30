@@ -37,26 +37,16 @@ public class DTTeleOp extends OpMode {
     @Override
     public void init() {
         FTCUtilities.setOpMode(this);
+
         Position startPosition = new Position(0,0, Math.toRadians(-90));
-        try {
-            startPosition = AutoTransitioner.readJSON();
-        } catch (IOException e) {
-            e.printStackTrace();
-            ControlCenter.addNotice("Failed to read JSON");
-        }
-
-        if (gamepad2.x){
-            FTCUtilities.setAllianceColor(AllianceColor.BLUE);
-        }
-
-        if (gamepad2.b){
-            FTCUtilities.setAllianceColor(AllianceColor.RED);
-        }
 
         Controller controller1 = FTCUtilities.getController1();
         Controller controller2 = FTCUtilities.getController2();
 
         robot = new Robot(startPosition);
+
+        FTCUtilities.setAllianceColor(FTCUtilities.getAllianceColor());
+
         Intake intake = robot.getIntake();
         westCoast = robot.getWestCoast();
         westCoast.setDefaultState(WestCoast.State.DRIVER_CONTROL);
@@ -77,7 +67,7 @@ public class DTTeleOp extends OpMode {
             }
         });
 
-        controller1.setAction(B, () -> robot.nextCycleState());
+        //controller1.setAction(B, () -> robot.nextCycleState());
 
         controller1.setAction(Y, () -> {
             if (!shooter.isState(Shooter.ShooterState.RESTING)){
@@ -114,11 +104,11 @@ public class DTTeleOp extends OpMode {
             //robot.getOdometry().getPosition().heading = Math.toRadians(-90);
         });
 
-        controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
+        //controller1.setAction(DPAD_DN, () -> robot.setState(Robot.State.GO_TO_HOME));
 
-        controller1.setAction(DPAD_UP, () -> robot.setState(Robot.State.SQUARE_UP));
+        //controller1.setAction(DPAD_UP, () -> robot.setState(Robot.State.SQUARE_UP));
 
-        controller2.setAction(B, () -> {
+        controller1.setAction(B, () -> {
             if(FTCUtilities.getAllianceColor().equals(AllianceColor.BLUE)) {
                 FTCUtilities.setAllianceColor(AllianceColor.RED);
             } else {
@@ -157,8 +147,8 @@ public class DTTeleOp extends OpMode {
         //controller2.setAction(DPAD_R, () -> ControlCenter.incrementOffset(Math.toRadians(1)));
         //controller2.setAction(DPAD_L, () -> ControlCenter.incrementOffset(Math.toRadians(-1)));
 
-        controller2.setAction(DPAD_UP, () -> shooter.setState(Shooter.ShooterState.STANDARD));
-        controller2.setAction(DPAD_DN, () -> shooter.setState(Shooter.ShooterState.MID));
+        controller1.setAction(DPAD_UP, () -> shooter.setState(Shooter.ShooterState.STANDARD));
+        controller1.setAction(DPAD_DN, () -> shooter.setState(Shooter.ShooterState.MID));
 
 
         //controller2.setAction(DPAD_UP, () -> robot.getIntakingPoint().y += 1.0);

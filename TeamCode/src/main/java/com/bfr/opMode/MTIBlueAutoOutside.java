@@ -45,6 +45,7 @@ public class MTIBlueAutoOutside extends LinearOpMode {
 
         waitForStart();
 
+
         robot.setState(Robot.State.FREE);
 
         StackDetector.FieldConfiguration fieldConfiguration = robot.getFieldConfiguration();
@@ -94,6 +95,8 @@ public class MTIBlueAutoOutside extends LinearOpMode {
     }
 
     private void path1() {
+        robot.sleep(10000);
+
         shootPreloads();
 
         robot.turnGlobal(Math.toRadians(135));
@@ -115,6 +118,9 @@ public class MTIBlueAutoOutside extends LinearOpMode {
 
         robot.turnGlobal(Math.toRadians(60));
         dropWobbleGoal();
+
+        robot.driveStraight(.6, 6, WestCoast.Direction.FORWARDS);
+        robot.turnGlobal(Math.toRadians(-90));
 
 
     }
@@ -169,6 +175,7 @@ public class MTIBlueAutoOutside extends LinearOpMode {
     }
 
     private void shoot() {
+        robot.sleep(250);
         shooter.runIndexerServos();
         while (!shooter.areIndexerServosResting()) {
             robot.update();

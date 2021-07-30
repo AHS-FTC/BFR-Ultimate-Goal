@@ -9,12 +9,13 @@ import com.bfr.util.AllianceColor;
 import com.bfr.util.AutoTransitioner;
 import com.bfr.util.FTCUtilities;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import java.io.IOException;
 
 @Autonomous(name="Blue Park And Shoot", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class BlueParkAndShoot extends LinearOpMode {
 
     @Override

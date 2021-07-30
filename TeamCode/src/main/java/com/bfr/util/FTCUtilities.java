@@ -69,7 +69,12 @@ public class FTCUtilities { //handles inaccessable objects in FTCApp. hardwareMa
         allianceColor = color;
 
         if (pipeline != null) {
-            pipeline.setColor(color);
+            //aim for opposite
+            if(color.equals(AllianceColor.RED)) {
+                pipeline.setColor(AllianceColor.BLUE);
+            } else {
+                pipeline.setColor(AllianceColor.RED);
+            }
         }
     }
 

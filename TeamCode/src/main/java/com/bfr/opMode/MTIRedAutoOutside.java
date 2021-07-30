@@ -81,7 +81,7 @@ public class MTIRedAutoOutside extends LinearOpMode {
 
         shootPreloads();
 
-        robot.turnGlobal(Math.toRadians(45));
+        robot.turnGlobal(Math.toRadians(35));
 
         dropWobbleGoal();
 
@@ -93,6 +93,7 @@ public class MTIRedAutoOutside extends LinearOpMode {
     }
 
     private void path1() {
+        robot.sleep(10000);
         shootPreloads();
 
         robot.turnGlobal(Math.toRadians(45));
@@ -103,7 +104,7 @@ public class MTIRedAutoOutside extends LinearOpMode {
         robot.sleep(500);
         intake.changeState(Intake.State.STOPPED);
 
-        robot.turnGlobal(Math.toRadians(-83));
+        robot.turnGlobal(Math.toRadians(-85));
         shoot();
 
         shooter.setState(Shooter.ShooterState.RESTING);
@@ -112,8 +113,11 @@ public class MTIRedAutoOutside extends LinearOpMode {
 
         robot.driveStraight(0.6, 34, WestCoast.Direction.REVERSE);
 
-        robot.turnGlobal(Math.toRadians(75));
+        robot.turnGlobal(Math.toRadians(65));
         dropWobbleGoal();
+
+        robot.driveStraight(.6, 6, WestCoast.Direction.FORWARDS);
+        robot.turnGlobal(Math.toRadians(-90));
 
 
     }
@@ -168,6 +172,7 @@ public class MTIRedAutoOutside extends LinearOpMode {
     }
 
     private void shoot() {
+        robot.sleep(250);
         shooter.runIndexerServos();
         while (!shooter.areIndexerServosResting()) {
             robot.update();

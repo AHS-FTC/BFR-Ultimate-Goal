@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name="Testing OpMode", group="Linear OpMode")
-//@Disabled
+@Disabled
 public class AutoOp extends LinearOpMode {
 
     @Override

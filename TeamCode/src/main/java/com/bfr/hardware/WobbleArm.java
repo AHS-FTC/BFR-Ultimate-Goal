@@ -9,7 +9,7 @@ public class WobbleArm {
 
     private static final double DEPLOYED = 0.00;
     private static final double STORED = 1;
-    private static final double HOLDING = 0.99;
+    private static final double HOLDING = 0.85;
 
     private long lastStateChange;
     private State state;
@@ -66,7 +66,7 @@ public class WobbleArm {
         switch (state) {
             case DEPLOYED_CLOSED:
                 if(FTCUtilities.getOpModeType().equals(OpModeType.TELE)){
-                    if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 350) {
+                    if (FTCUtilities.getCurrentTimeMillis() - lastStateChange > 500) {
                         setState(State.HOLDING);
                     }
                 }

@@ -3,6 +3,7 @@ package com.bfr.util.loggers;
 import android.annotation.SuppressLint;
 
 import com.bfr.control.path.Position;
+import com.bfr.control.vision.MTIVisionBridge;
 import com.bfr.hardware.Robot;
 import com.bfr.hardware.sensors.DifOdometry;
 import com.bfr.util.FTCUtilities;
@@ -49,6 +50,8 @@ public class ControlCenter {
         telemetry.addLine(String.format("Sus Sensor Reads: %o", susSensorReads));
         telemetry.addLine("Alliance Color: " + FTCUtilities.getAllianceColor());
         telemetry.addLine("Robot State: " + robotState);
+        telemetry.addLine(String.format("Angle To Goal: %f degs", MTIVisionBridge.instance.getAngleToGoal()));
+        telemetry.addLine("Is goal visible? " + MTIVisionBridge.instance.isGoalVisible());
 
         for (String notice : notices) {
             telemetry.addLine(notice);

@@ -481,7 +481,7 @@ public class Robot {
                 if (FTCUtilities.getCurrentTimeMillis() - startWaitTime > 0) {
                     double angleToGoal = MTIVisionBridge.instance.getAngleToGoal();
 
-                    if (MTIVisionBridge.instance.isGoalVisible() && Math.abs(angleToGoal) > Math.toRadians(3)) {
+                    if (MTIVisionBridge.instance.isGoalVisible() && Math.abs(angleToGoal) > Math.toRadians(shooter.getTolerance())) {
                         setState(State.TURN_TO_SHOOT);
                     } else {
                         setState(State.FREE);

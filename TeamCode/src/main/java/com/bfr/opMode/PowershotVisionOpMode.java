@@ -5,13 +5,14 @@ import com.bfr.control.vision.BackboardDetector;
 import com.bfr.control.vision.VisionException;
 import com.bfr.control.vision.objects.Powershots;
 import com.bfr.util.FTCUtilities;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.Map;
 
 @TeleOp(name = "Powershot Vision OpMode", group = "Iterative Opmode")
-//@Disabled
+@Disabled
 public class PowershotVisionOpMode extends LinearOpMode {
     @Override
     public void runOpMode() {

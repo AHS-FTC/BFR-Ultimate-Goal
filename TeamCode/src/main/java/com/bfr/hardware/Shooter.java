@@ -235,6 +235,14 @@ public class Shooter {
         return servoState.equals(IndexerState.RESTING);
     }
 
+    public double getTolerance() {
+        if(shooterState.equals(ShooterState.STANDARD)) {
+            return 2.0;
+        } else {
+            return 2.5;
+        }
+    }
+
 
     /**
      * Unifies encoder readings with their timestamps

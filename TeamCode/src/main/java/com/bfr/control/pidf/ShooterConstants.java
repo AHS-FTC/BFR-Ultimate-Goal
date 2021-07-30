@@ -16,6 +16,6 @@ public class ShooterConstants {
     public static double farFeedForward = .72;
     public static double farRPM = 2750.0;
 
-    public static double midGoalFeedForward = .55;
-    public static double midGoalRPM = 2200.0;
+    public static double midGoalFeedForward = .58;
+    public static double midGoalRPM = 2300.0;
 }
